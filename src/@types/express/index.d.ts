@@ -4,13 +4,14 @@ import { CurrentUser } from '../../domain.types/miscellaneous/current.user';
 declare global {
     namespace Express {
         interface Request {
-            currentUser: CurrentUser;
-            currentClient: CurrentClient;
-            context: string;
-            resourceType: string;
-            resourceId: string | number | null | undefined;
+            tenantName         : string;
+            currentUser        : CurrentUser;
+            currentClient      : CurrentClient;
+            context            : string;
+            resourceType       : string;
+            resourceId         : string | number | null | undefined;
             resourceOwnerUserId: string;
-            authorizeRequest: boolean;
+            authorizeRequest   : boolean;
         }
     }
 }
