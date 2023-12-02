@@ -7,7 +7,7 @@ export interface WebhookAuthTokens {
 
 export interface IWebhookAuthenticator {
 
-    authenticate(request: express.Request, response?: express.Request): void;
+    authenticate(request: express.Request): void;
 
     get tokens() : WebhookAuthTokens;
 

@@ -6,14 +6,14 @@ import { IWebhookAuthenticator, WebhookAuthTokens } from '../webhook.authenticat
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
-export class ClickUpAuthenticator implements IWebhookAuthenticator{
+export class TelegramAuthenticator implements IWebhookAuthenticator{
 
     constructor(
         @inject(TenantEnvironmentProvider) private _envService?: TenantEnvironmentProvider
     ){}
 
     get tokens(): WebhookAuthTokens {
-        const urlToken = this._envService.getTenantEnvironmentVariable('WEBHOOK_CLICKUP_CLIENT_URL_TOKEN');
+        const urlToken = this._envService.getTenantEnvironmentVariable('WEBHOOK_TELEGRAM_CLIENT_URL_TOKEN');
         const tokens: WebhookAuthTokens = {
             UrlToken : urlToken
         };
@@ -25,7 +25,7 @@ export class ClickUpAuthenticator implements IWebhookAuthenticator{
         if (tokens.UrlToken === request.params.unique_token){
             return;
         }
-        throw new Error(`Unable to authenticate webhook request from Clickup for tenant ${request.tenantName}.`);
+        throw new Error(`Unable to authenticate webhook request from Telegram for tenant ${request.tenantName}.`);
     }
 
 }
