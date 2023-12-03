@@ -1,7 +1,7 @@
 import express from 'express';
 import { logger } from '../../logger/logger';
 import { scoped, Lifecycle } from 'tsyringe';
-// import { EnvVariableCache } from '../env.variable.cache'; //Use this
+import { EnvVariableCache } from './env.variable.cache';
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -9,6 +9,8 @@ import { scoped, Lifecycle } from 'tsyringe';
 export class TenantEnvironmentProvider {
 
     private _tenantName;
+
+    private _useCache = process.env.USE_ENV_CACHE === 'true' ? true : false;
 
     setTenantName = (tenantName) => {
         this._tenantName = tenantName;
@@ -22,16 +24,20 @@ export class TenantEnvironmentProvider {
     };
 
     getTenantEnvironmentVariable = (variableName) => {
-
-        //Environment variables through the EnvVariableCache
-        // const envVariable = EnvVariableCache.get(this._tenantName, variableName);
-        // if (!envVariable) {
-        //     throw new Error("No environment variable found for " + variableName);
-        // }
-
-        // Environment variables through the process.env
-        const envVariable = process.env[this._tenantName + "_" + variableName];
-        return process.env[envVariable];
+        if (this._useCache) {
+            const envVariable = EnvVariableCache.get(this._tenantName, variableName);
+            if (envVariable) {
+                return envVariable;
+            }
+            throw new Error("No environment variable found for " + variableName);
+        }
+        else {
+            const envVariable = process.env[this._tenantName + "_" + variableName];
+            if (envVariable) {
+                return process.env[envVariable];
+            }
+            throw new Error("No environment variable found for " + variableName);
+        }
     };
 
     tenantNameMiddleware = (request: express.Request, response: express.Response, next:express.NextFunction) => {

@@ -7,6 +7,7 @@ import { Seeder } from './startup/seeder';
 import { Injector } from './startup/injector';
 import DatabaseConnector from './database/database.connector';
 import { MiddlewareHandler } from './startup/middleware.handler';
+import { EnvSecretsManager } from './auth/tenant.environment/env.secret.manager';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,6 +44,7 @@ export default class Application {
 
     warmUp = async () => {
         try {
+            await EnvSecretsManager.populateEnvVariables();
             await Injector.registerInjections();
             await DatabaseConnector.setup();
             await MiddlewareHandler.setup(this.expressApp());
