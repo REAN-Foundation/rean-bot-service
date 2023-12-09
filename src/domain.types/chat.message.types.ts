@@ -20,6 +20,7 @@ export interface ChatMessageCreateModel {
     AssessmentId             ?: uuid;
     AssessmentNodeId          : uuid;
     FeedbackType             ?: UserFeedbackType;
+    Metadata                 ?: Record<string, unknown>;
     IdentifiedIntent         ?: string;
 }
 

@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { HttpLogger } from '../logger/http.logger';
 import { logger } from '../logger/logger';
+import { Injector } from './injector';
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -12,6 +13,14 @@ export class MiddlewareHandler {
     public static setup = async (expressApp: express.Application): Promise<boolean> => {
         return new Promise((resolve, reject) => {
             try {
+
+                //Create child container and register scoped injections
+                expressApp.use((req, _res, next) => {
+                    req.container = Injector.BaseContainer.createChildContainer();
+                    Injector.registerScopedInjections(req.container);
+                    next();
+                });
+
                 expressApp.use(express.urlencoded({ extended: true }));
                 expressApp.use(express.json());
                 expressApp.use(helmet());

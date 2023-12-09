@@ -6,7 +6,7 @@ import { IWebhookAuthenticator, WebhookAuthTokens } from '../webhook.authenticat
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
-export class WhatsappAuthenticator implements IWebhookAuthenticator{
+export class WhatsAppAuthenticator implements IWebhookAuthenticator{
 
     constructor(
         @inject(TenantEnvironmentProvider) private _envService?: TenantEnvironmentProvider
@@ -14,21 +14,18 @@ export class WhatsappAuthenticator implements IWebhookAuthenticator{
 
     get tokens(): WebhookAuthTokens {
         const urlToken = this._envService.getTenantEnvironmentVariable('WEBHOOK_WHATSAPP_CLIENT_URL_TOKEN');
-        const headerToken = this._envService.getTenantEnvironmentVariable('WEBHOOK_WHATSAPP_CLIENT_HEADER_TOKEN');
         const tokens: WebhookAuthTokens = {
-            UrlToken    : urlToken,
-            HeaderToken : headerToken
+            UrlToken : urlToken
         };
         return tokens;
     }
 
     authenticate(request: express.Request): void {
         const tokens = this.tokens;
-        if (tokens.HeaderToken === request.headers.authentication &&
-            tokens.UrlToken === request.params.unique_token){
+        if (tokens.UrlToken === request.params.unique_token){
             return;
         }
-        throw new Error(`Unable to authenticate webhook request from WhatsApp for tenant ${request.tenantName}.`);
+        throw new Error(`Unable to authenticate webhook request from Whatsapp-Meta for tenant ${request.tenantName}.`);
     }
 
 }

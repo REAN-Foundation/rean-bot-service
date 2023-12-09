@@ -44,7 +44,7 @@ class TypeORMDatabaseConnector {
 
     static setup = async (): Promise<boolean> => {
         var schemaType: DatabaseSchema = 'primary';
-        const databaseClient: DatabaseClient = Injector.Container.resolve(DatabaseClient);
+        const databaseClient: DatabaseClient = Injector.BaseContainer.resolve(DatabaseClient);
         if (process.env.NODE_ENV === 'test') {
             //Note: This is only for test environment
             //Drop all tables in db

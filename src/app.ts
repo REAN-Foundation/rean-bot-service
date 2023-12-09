@@ -44,10 +44,10 @@ export default class Application {
 
     warmUp = async () => {
         try {
-            await EnvSecretsManager.populateEnvVariables();
-            await Injector.registerInjections();
-            await DatabaseConnector.setup();
             await MiddlewareHandler.setup(this.expressApp());
+            await EnvSecretsManager.populateEnvVariables();
+            await Injector.registerInjections(); //Global injections
+            await DatabaseConnector.setup();
             await RouteHandler.setup(this.expressApp());
             await Seeder.seed();
             await Scheduler.instance().schedule();
