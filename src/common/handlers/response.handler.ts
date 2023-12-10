@@ -28,8 +28,8 @@ export class ResponseHandler {
             Message  : msg,
             HttpCode : httpErrorCode ? httpErrorCode : 500,
             Trace    : trace_path,
-            Client   : request ? request.currentClient : null,
-            User     : request ? request.currentUser : null,
+            // Client   : request ? request.currentClient : null,
+            // User     : request ? request.currentUser : null,
             Context  : request ? request.context : null,
             Request  : {
                 Method  : request ? request.method : null,
@@ -73,8 +73,8 @@ export class ResponseHandler {
             HttpCode : httpCode ?? 200,
             Data     : data ?? null,
             Trace    : null,
-            Client   : request ? request.currentClient : null,
-            User     : request ? request.currentUser : null,
+            // Client   : request ? request.currentClient : null,
+            // User     : request ? request.currentUser : null,
             Context  : request ? request.context : null,
             Request  : {
                 Method  : request ? request.method : null,
@@ -103,7 +103,7 @@ export class ResponseHandler {
         //Sanitize response: Don't send request and trace related info in response, only use it for logging
         delete responseObject.Request;
         delete responseObject.Trace;
-        delete responseObject.User;
+        // delete responseObject.User;
 
         return response.status(httpCode).send(responseObject);
     }

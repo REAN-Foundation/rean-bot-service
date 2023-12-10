@@ -5,7 +5,6 @@ import { logger } from './logger/logger';
 import { Scheduler } from './startup/scheduler';
 import { Seeder } from './startup/seeder';
 import { Injector } from './startup/injector';
-import DatabaseConnector from './database/database.connector';
 import { MiddlewareHandler } from './startup/middleware.handler';
 import { EnvSecretsManager } from './auth/tenant.environment/env.secret.manager';
 
@@ -47,7 +46,6 @@ export default class Application {
             await MiddlewareHandler.setup(this.expressApp());
             await EnvSecretsManager.populateEnvVariables();
             await Injector.registerInjections(); //Global injections
-            await DatabaseConnector.setup();
             await RouteHandler.setup(this.expressApp());
             await Seeder.seed();
             await Scheduler.instance().schedule();

@@ -1,5 +1,5 @@
-import { CurrentClient } from './current.client';
-import { CurrentUser } from './current.user';
+// import { CurrentClient } from './current.client';
+// import { CurrentUser } from './current.user';
 import { RequestDto } from './request.dto';
 
 export interface ResponseDto {
@@ -8,8 +8,8 @@ export interface ResponseDto {
     HttpCode       : number;
     Data          ?: any;
     Trace         ?: string[];
-    Client         : CurrentClient;
-    User           : CurrentUser;
+    // Client         : CurrentClient;
+    // User           : CurrentUser;
     Context        : string;
     Request       ?: RequestDto;
     ClientIps      : string[];
