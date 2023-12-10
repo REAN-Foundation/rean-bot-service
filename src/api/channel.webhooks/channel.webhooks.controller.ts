@@ -9,22 +9,32 @@ import {
     WebhookSearchFilters,
     WebhookUpdateModel,
 } from '../../domain.types/chat.message.types';
+import { Lifecycle, inject, scoped } from 'tsyringe';
+import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
+import { IChannel } from '../../channels/channel.interface';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+@scoped(Lifecycle.ContainerScoped)
 export class ChannelWebhookController {
 
-    //#region member variables and constructors
+    // //#region member variables and constructors
 
-    _service: ChannelWebhookService = new WebhookService();
+    // _validator: WebhookValidator = new WebhookValidator();
 
-    _validator: WebhookValidator = new WebhookValidator();
+    // //#endregion
 
-    //#endregion
-
-    create = async (request: express.Request, response: express.Response) => {
+    sendMessage = async (request: express.Request, response: express.Response) => {
         try {
-            var model: WebhookCreateModel = await this._validator.validateCreateRequest(request);
+            const channelName = request.params.channel;
+            const tenantName = request.params.client;
+            const uniqueToken = request.params.unique_token;
+
+            const container = request.container;
+            const channel = container.resolve(`${channelName}Channel`) as IChannel;
+            const msg = request.body;
+            const response = await channel.send(msg);
+
             const record = await this._service.create(model);
             if (record === null) {
                 ErrorHandler.throwInternalServerError('Unable to add chat message!');

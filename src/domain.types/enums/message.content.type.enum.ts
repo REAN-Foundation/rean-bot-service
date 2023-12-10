@@ -8,6 +8,7 @@ export enum MessageContentType {
     OptionChoice = 'OptionChoice',  // User's selection of choice for a given options
     File         = 'File',          // Uploaded File message
     OptionsUI    = 'OptionsUI',     // User is presented with Options UI
+    Feedback     = 'Feedback',      // User feedback message
 }
 
 export const MessageContentTypeList: MessageContentType[] = [
@@ -20,4 +21,5 @@ export const MessageContentTypeList: MessageContentType[] = [
     MessageContentType.File,
     MessageContentType.OptionChoice,
     MessageContentType.OptionsUI,
+    MessageContentType.Feedback,
 ];

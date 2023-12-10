@@ -11,8 +11,8 @@ import { MobileAppAuthenticator } from '../auth/webhook.authenticator/providers/
 import { ClickUpAuthenticator } from '../auth/webhook.authenticator/providers/clickup.authenticator';
 import { SlackAuthenticator } from '../auth/webhook.authenticator/providers/slack.authenticator';
 
-import { WhatsAppChannel } from '../channels/providers/whatsapp.channel';
-import { WhatsAppD360Channel } from '../channels/providers/whatsapp.d360.channel';
+import { WhatsAppChannel } from '../channels/providers/whatsapp/whatsapp.channel';
+import { WhatsAppD360Channel } from '../channels/providers/whatsapp/whatsapp.d360.channel';
 
 import { ModuleInjector } from '../modules/module.injector';
 import { DatabaseInjector } from '../database/database.injector';

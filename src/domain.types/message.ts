@@ -1,72 +1,55 @@
 import { ChannelType, MessageContentType } from "./enums";
+import { MessageHandlerType } from "./enums/message.handler.enum";
 import { uuid } from "./miscellaneous/system.types";
+import { Language } from "./language";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export interface Message {
-    id                      ?: uuid;
-    PrevIncomingMessageId   ?: uuid;
-    PrevOutgoingMessageId   ?: uuid;
-    TenantId                ?: uuid;
-    TenantName               : string;
-    UserId                   : uuid;
+export interface MessageChannelDetails {
     Channel                  : ChannelType;
-    SessionId                : uuid;
-    MessageType              : MessageContentType;
-    LanguageCode            ?: string;
-    MessageContent          ?: string | unknown;
-    ImageContent            ?: string;
-    ImageUrl                ?: string;
     ChannelUserId           ?: string;
     ChannelMessageId        ?: string;
     ChannelResponseMessageId?: string;
-    SentTimestamp            : Date;
-    PrimaryMessageHandler    : string;
-    Metadata                 : Record<string, unknown>;
+    SupportTaskId           ?: string; // for support channels
 }
 
-export interface IncomingMessage extends Message {
-    PrevIncomingMessageId   ?: uuid;
-    PrevOutgoingMessageId   ?: uuid;
+export interface GeoLocation {
+    Latitude ?: number;
+    Longitude?: number;
+    Country  ?: string;
+    State    ?: string;
+    City     ?: string;
 }
 
-// export interface IncomingMessage {
-//     id                      ?: uuid;
-//     PrevOutgoingMessageId   ?: uuid;
-//     TenantId                ?: uuid;
-//     TenantName               : string;
-//     UserId                   : uuid;
-//     Channel                  : ChannelType;
-//     SessionId                : uuid;
-//     MessageType              : MessageContentType;
-//     LanguageCode             : string;
-//     MessageContent           : string | unknown;
-//     ImageContent             : string;
-//     ImageUrl                 : string;
-//     ChannelUserId            : string;
-//     ChannelMessageId         : string;
-//     ChannelResponseMessageId : string;
-//     SentTimestamp            : Date;
-//     Metadata                 : Record<string, unknown>;
-// }
-
-export interface OutgoingMessage {
-    id                       : uuid;
-    PrevIncomingMessageId   ?: uuid;
+export interface Message {
+    id                      ?: uuid;
     TenantId                ?: uuid;
     TenantName               : string;
     UserId                   : uuid;
     Channel                  : ChannelType;
-    SessionId                : uuid;
     MessageType              : MessageContentType;
-    LanguageCode             : string;
-    MessageContent           : string | unknown;
-    ImageContent             : string;
-    ImageUrl                 : string;
-    ChannelUserId            : string;
-    ChannelMessageId         : string;
-    ChannelResponseMessageId : string;
+    SessionId               ?: uuid;
+    Language                ?: Language;
+    MessageContent          ?: string | unknown;
+    ImageContent            ?: string;
+    ImageUrl                ?: string;
+    OriginLocation          ?: GeoLocation;
+    ChannelDetails          ?: MessageChannelDetails;
     SentTimestamp            : Date;
-    PrimaryMessageHandler    : string;
-    Metadata                 : Record<string, unknown>;
+    Metadata                ?: Record<string, unknown>;
+    PrevHistory             ?: Message[];
+}
+
+export interface IncomingMessage extends Message {
+    PrevOutgoingMessageId   ?: uuid;
+    IdentifiedIntent         : string;
+    IsFeedbackMessage       ?: boolean;
+    Feedback                 : any;
+}
+
+export interface OutgoingMessage extends Message {
+    PrevIncomingMessageId   ?: uuid;
+    PrimaryMessageHandler    : MessageHandlerType;
+    HumanHandoff             : boolean;
+    SupportChannel          ?: MessageChannelDetails;
 }

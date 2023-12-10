@@ -2,22 +2,22 @@
 import express from "express";
 import http from 'https';
 import { scoped, Lifecycle, inject } from "tsyringe";
-import { Message } from "../../domain.types/message";
-import { ChannelType } from "../../domain.types/enums";
-import { ChannelBase } from "../channel.base";
-import { TenantEnvironmentProvider } from "../../auth/tenant.environment/tenant.environment.provider";
-import { IWebhookAuthenticator } from "../../auth/webhook.authenticator/webhook.authenticator.interface";
-import { WhatsAppD360Authenticator } from "../../auth/webhook.authenticator/providers/whatsapp.d360.authenticator";
-import { logger } from "../../logger/logger";
+import { Message } from "../../../domain.types/message";
+import { ChannelType } from "../../../domain.types/enums";
+import { ChannelBase } from "../../channel.base";
+import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";
+import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";
+import { WhatsAppAuthenticator } from "../../../auth/webhook.authenticator/providers/whatsapp.authenticator";
+import { logger } from "../../../logger/logger";
 
 //////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
-export class WhatsAppD360Channel extends ChannelBase {
+export class WhatsAppChannel extends ChannelBase {
 
     constructor(
         @inject(TenantEnvironmentProvider) private _tenantEnvProvider: TenantEnvironmentProvider,
-        @inject(WhatsAppD360Authenticator) private _authenticator?: IWebhookAuthenticator,
+        @inject(WhatsAppAuthenticator) private _authenticator?: IWebhookAuthenticator,
     ) {
         super();
         this._channelType = ChannelType.WhatsApp;
@@ -92,5 +92,9 @@ export class WhatsAppD360Channel extends ChannelBase {
     public acknowledge = async (response: express.Response, message: Message): Promise<boolean> => {
         throw new Error("Method not implemented.");
     };
+
+    //#region  Private Methods
+
+    //#endregion
 
 }
