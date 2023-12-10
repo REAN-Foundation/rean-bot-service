@@ -1,16 +1,17 @@
 import fs from 'fs';
 import sqlite3, { OPEN_CREATE } from 'sqlite3';
 import { logger } from '../../../logger/logger';
-import { DatabaseSchema, getDatabaseConfig } from '../../database.configs';
+import { getDatabaseConfig } from '../../database.configs';
 import { IDatabaseClient } from '../database.client.interface';
+import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
 
 ////////////////////////////////////////////////////////////////
 
 export class SQLiteClient implements IDatabaseClient {
 
-    public createDb = async (schemaType: DatabaseSchema): Promise<boolean> => {
+    public createDb = async (envProvider: TenantEnvironmentProvider): Promise<boolean> => {
         try {
-            const config = getDatabaseConfig(schemaType);
+            const config = getDatabaseConfig(envProvider);
             const databaseName = config?.DatabaseName ?? 'database.db';
             const db = new sqlite3.Database(databaseName, OPEN_CREATE);
             return db != null;
@@ -20,9 +21,9 @@ export class SQLiteClient implements IDatabaseClient {
         }
     };
 
-    public dropDb = async (schemaType: DatabaseSchema): Promise<boolean> => {
+    public dropDb = async (envProvider: TenantEnvironmentProvider): Promise<boolean> => {
         try {
-            const config = getDatabaseConfig(schemaType);
+            const config = getDatabaseConfig(envProvider);
             const databaseName = config?.DatabaseName ?? 'database.db';
             fs.unlinkSync(databaseName);
             return true;
@@ -32,9 +33,9 @@ export class SQLiteClient implements IDatabaseClient {
         }
     };
 
-    public executeQuery = async (schemaType: DatabaseSchema, query: string): Promise<boolean> => {
+    public executeQuery = async (envProvider: TenantEnvironmentProvider, query: string): Promise<boolean> => {
         try {
-            const config = getDatabaseConfig(schemaType);
+            const config = getDatabaseConfig(envProvider);
             const databaseName = config?.DatabaseName ?? 'database.db';
             const db = new sqlite3.Database(databaseName);
             db.run(query, (err) => {

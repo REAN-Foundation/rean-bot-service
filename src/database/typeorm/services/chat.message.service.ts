@@ -2,7 +2,6 @@ import { FindManyOptions, Like, Repository } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { Source } from '../typeorm.database.connector';
 import { BaseService } from './base.service';
 import {
     ChatMessageCreateModel,
@@ -15,25 +14,25 @@ import { ChatMessageMapper } from '../mappers/chat.message.mapper';
 import { Session } from '../models/session.entity';
 import { User } from '../models/user.entity';
 import { ChatMessage } from '../models/chat.message.entity';
+import { Lifecycle, inject, scoped } from 'tsyringe';
+import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
 
 ///////////////////////////////////////////////////////////////////////
 
+@scoped(Lifecycle.ContainerScoped)
 export class ChatMessageService extends BaseService {
 
-    //#region Repositories
-
-    _sessionRepository: Repository<Session> = Source.getRepository(Session);
-
-    _userRepository: Repository<User> = Source.getRepository(User);
-
-    _chatMessageRepository: Repository<ChatMessage> = Source.getRepository(ChatMessage);
-
-    //#endregion
+    constructor(
+        @inject(TenantEnvironmentProvider) private _envProvider: TenantEnvironmentProvider
+    ) {
+        super();
+    }
 
     public create = async (createModel: ChatMessageCreateModel): Promise<ChatMessageResponseDto> => {
         // const session = await this.getSession(createModel.SessionId);
         // const user = await this.getUser(createModel.UserId);
-        const chatMessage = this._chatMessageRepository.create({
+        const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+        const chatMessage = repo.create({
             // Session                   : session,
             // User                      : user,
             TenantId                  : createModel.TenantId,
@@ -55,13 +54,15 @@ export class ChatMessageService extends BaseService {
             FeedbackType              : createModel.FeedbackType,
             IdentifiedIntent          : createModel.IdentifiedIntent,
         });
-        var record = await this._chatMessageRepository.save(chatMessage);
+        var record = await repo.save(chatMessage);
         return ChatMessageMapper.toResponseDto(record);
     };
 
     public getById = async (id: uuid): Promise<ChatMessageResponseDto> => {
         try {
-            var chatMessage = await this._chatMessageRepository.findOne({
+            const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+
+            var chatMessage = await repo.findOne({
                 where : {
                     id : id,
                 },
@@ -123,7 +124,8 @@ export class ChatMessageService extends BaseService {
         try {
             var search = this.getSearchObject(filters);
             var { search, pageIndex, limit, order, orderByColumn } = this.addSortingAndPagination(search, filters);
-            const [list, count] = await this._chatMessageRepository.findAndCount(search);
+            const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+            const [list, count] = await repo.findAndCount(search);
             const searchResults = {
                 TotalCount     : count,
                 RetrievedCount : list.length,
@@ -142,7 +144,8 @@ export class ChatMessageService extends BaseService {
 
     public update = async (id: uuid, model: ChatMessageUpdateModel): Promise<ChatMessageResponseDto> => {
         try {
-            const chatMessage = await this._chatMessageRepository.findOne({
+            const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+            const chatMessage = await repo.findOne({
                 where : {
                     id : id,
                 },
@@ -235,7 +238,7 @@ export class ChatMessageService extends BaseService {
                 // chatMessage.User = user;
             }
 
-            var record = await this._chatMessageRepository.save(chatMessage);
+            var record = await repo.save(chatMessage);
             return ChatMessageMapper.toResponseDto(record);
         } catch (error) {
             logger.error(error.message);
@@ -245,12 +248,13 @@ export class ChatMessageService extends BaseService {
 
     public delete = async (id: string): Promise<boolean> => {
         try {
-            var record = await this._chatMessageRepository.findOne({
+            const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+            var record = await repo.findOne({
                 where : {
                     id : id,
                 },
             });
-            var result = await this._chatMessageRepository.remove(record);
+            var result = await repo.remove(record);
             return result != null;
         } catch (error) {
             logger.error(error.message);
@@ -402,7 +406,8 @@ export class ChatMessageService extends BaseService {
     //#endregion
 
     private async getSession(sessionId: uuid) {
-        const session = await this._sessionRepository.findOne({
+        const sessionRepo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+        const session = await sessionRepo.findOne({
             where : {
                 id : sessionId,
             },
@@ -414,7 +419,8 @@ export class ChatMessageService extends BaseService {
     }
 
     private async getUser(userId: uuid) {
-        const user = await this._userRepository.findOne({
+        const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
+        const user = await userRepo.findOne({
             where : {
                 id : userId,
             },

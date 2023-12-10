@@ -2,7 +2,6 @@ import { FindManyOptions, Like, Repository } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { Source } from '../typeorm.database.connector';
 import { BaseService } from './base.service';
 import {
     SessionCreateModel,
@@ -13,37 +12,37 @@ import {
 } from '../../../domain.types/session.types';
 import { SessionMapper } from '../mappers/session.mapper';
 import { User } from '../models/user.entity';
-import { ChatMessage } from '../models/chat.message.entity';
 import { Session } from '../models/session.entity';
+import { Lifecycle, inject, scoped } from 'tsyringe';
+import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
 
 ///////////////////////////////////////////////////////////////////////
 
+@scoped(Lifecycle.ContainerScoped)
 export class SessionService extends BaseService {
 
-    //#region Repositories
-
-    _userRepository: Repository<User> = Source.getRepository(User);
-
-    _chatMessageRepository: Repository<ChatMessage> = Source.getRepository(ChatMessage);
-
-    _sessionRepository: Repository<Session> = Source.getRepository(Session);
-
-    //#endregion
+    constructor(
+        @inject(TenantEnvironmentProvider) private _envProvider: TenantEnvironmentProvider
+    ) {
+        super();
+    }
 
     public create = async (createModel: SessionCreateModel): Promise<SessionResponseDto> => {
         // const user = await this.getUser(createModel.UserId);
-        const session = this._sessionRepository.create({
+        const repo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+        const session = repo.create({
             // User     : user,
             UserId   : createModel.UserId,
             Platform : createModel.Platform,
         });
-        var record = await this._sessionRepository.save(session);
+        var record = await repo.save(session);
         return SessionMapper.toResponseDto(record);
     };
 
     public getById = async (id: uuid): Promise<SessionResponseDto> => {
         try {
-            var session = await this._sessionRepository.findOne({
+            const repo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+            var session = await repo.findOne({
                 where : {
                     id : id,
                 },
@@ -79,13 +78,14 @@ export class SessionService extends BaseService {
         try {
             var search = this.getSearchObject(filters);
             var { search, pageIndex, limit, order, orderByColumn } = this.addSortingAndPagination(search, filters);
-            const [list, count] = await this._sessionRepository.findAndCount(search);
+            const repo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+            const [list, count] = await repo.findAndCount(search);
             const searchResults = {
                 TotalCount     : count,
                 RetrievedCount : list.length,
                 PageIndex      : pageIndex,
                 ItemsPerPage   : limit,
-                Order          : order === 'DESC' ? 'descending'                : 'ascending',
+                Order          : order === 'DESC' ? 'descending' : 'ascending',
                 OrderedBy      : orderByColumn,
                 Items          : list.map((x) => SessionMapper.toResponseDto(x)),
             };
@@ -98,7 +98,8 @@ export class SessionService extends BaseService {
 
     public update = async (id: uuid, model: SessionUpdateModel): Promise<SessionResponseDto> => {
         try {
-            const session = await this._sessionRepository.findOne({
+            const repo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+            const session = await repo.findOne({
                 where : {
                     id : id,
                 },
@@ -120,7 +121,7 @@ export class SessionService extends BaseService {
                 // const user = await this.getUser(model.UserId);
                 // session.User = user;
             }
-            var record = await this._sessionRepository.save(session);
+            var record = await repo.save(session);
             return SessionMapper.toResponseDto(record);
         } catch (error) {
             logger.error(error.message);
@@ -130,12 +131,13 @@ export class SessionService extends BaseService {
 
     public delete = async (id: string): Promise<boolean> => {
         try {
-            var record = await this._sessionRepository.findOne({
+            const repo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+            var record = await repo.findOne({
                 where : {
                     id : id,
                 },
             });
-            var result = await this._sessionRepository.remove(record);
+            var result = await repo.remove(record);
             return result != null;
         } catch (error) {
             logger.error(error.message);
@@ -189,7 +191,8 @@ export class SessionService extends BaseService {
     //#endregion
 
     private async getUser(userId: uuid) {
-        const user = await this._userRepository.findOne({
+        const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
+        const user = await userRepo.findOne({
             where : {
                 id : userId,
             },

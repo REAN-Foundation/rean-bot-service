@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe';
 import { IDatabaseClient } from './database.client.interface';
-import { DatabaseSchema } from '../database.configs';
+import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -9,16 +9,16 @@ export class DatabaseClient {
 
     constructor(@inject('IDatabaseClient') private _client: IDatabaseClient) {}
 
-    public createDb = async (schemaType: DatabaseSchema): Promise<boolean> => {
-        return await this._client.createDb(schemaType);
+    public createDb = async (envProvider: TenantEnvironmentProvider): Promise<boolean> => {
+        return await this._client.createDb(envProvider);
     };
 
-    public dropDb = async (schemaType: DatabaseSchema): Promise<boolean> => {
-        return await this._client.dropDb(schemaType);
+    public dropDb = async (envProvider: TenantEnvironmentProvider): Promise<boolean> => {
+        return await this._client.dropDb(envProvider);
     };
 
-    public executeQuery = async (schemaType: DatabaseSchema, query: string): Promise<boolean> => {
-        return await this._client.executeQuery(schemaType, query);
+    public executeQuery = async (envProvider: TenantEnvironmentProvider, query: string): Promise<boolean> => {
+        return await this._client.executeQuery(envProvider, query);
     };
 
 }
