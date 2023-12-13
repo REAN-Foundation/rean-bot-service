@@ -30,6 +30,7 @@ export interface ChatMessageCreateModel {
     Direction            ?: MessageDirection;
     MessageType          ?: MessageContentType;
     Content              ?: string;
+    TranslatedContent    ?: string;
     Timestamp            ?: Date;
     PrevMessageId        ?: uuid;
     OriginLocation       ?: JsonString;
@@ -48,6 +49,7 @@ export interface ChatMessageUpdateModel {
     LanguageCode         ?: LangCode;
     MessageType          ?: MessageContentType;
     Content              ?: string;
+    TranslatedContent    ?: string;
     OriginLocation       ?: JsonString;
     ChannelSpecifics     ?: JsonString;
     PrimaryMessageHandler?: MessageHandlerType;
@@ -69,6 +71,7 @@ export interface ChatMessageBaseDto {
     SessionId            ?: uuid;
     Language             ?: Language;
     Content              ?: string | unknown;
+    TranslatedContent    ?: string;
     Timestamp             : Date;
     PrevMessageId        ?: uuid;
 }

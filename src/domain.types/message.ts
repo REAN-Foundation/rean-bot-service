@@ -78,20 +78,21 @@ export interface QnADetails {
 }
 
 export interface Message {
-    id              ?: uuid;
-    TenantId        ?: uuid;
-    TenantName       : string;
-    UserId           : uuid;
-    Channel          : ChannelType;
-    MessageType      : MessageContentType;
-    SessionId       ?: uuid;
-    Language        ?: Language;
-    Content         ?: string | unknown;
-    Timestamp        : Date;
-    Metadata        ?: Record<string, unknown> | unknown;
-    OriginLocation  ?: GeoLocation;
-    ChannelSpecifics?: MessageChannelDetails;
-    PrevHistory     ?: Message[];
+    id               ?: uuid;
+    TenantId         ?: uuid;
+    TenantName        : string;
+    UserId            : uuid;
+    Channel           : ChannelType;
+    MessageType       : MessageContentType;
+    SessionId        ?: uuid;
+    Language         ?: Language;
+    Content          ?: string | unknown;
+    TranslatedContent?: string | unknown;
+    Timestamp         : Date;
+    Metadata         ?: Record<string, unknown> | unknown;
+    OriginLocation   ?: GeoLocation;
+    ChannelSpecifics ?: MessageChannelDetails;
+    PrevHistory      ?: Message[];
 }
 
 export interface IncomingMessage extends Message {

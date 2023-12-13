@@ -2,13 +2,15 @@
 import express from "express";
 import http from 'https';
 import { scoped, Lifecycle, inject } from "tsyringe";
-import { Message } from "../../../domain.types/message";
+import { Message, OutgoingMessage } from "../../../domain.types/message";
 import { ChannelType } from "../../../domain.types/enums";
 import { ChannelBase } from "../../channel.base";
 import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";
 import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";
 import { WhatsAppD360Authenticator } from "../../../auth/webhook.authenticator/providers/whatsapp.d360.authenticator";
 import { logger } from "../../../logger/logger";
+import WhatsAppMessageConverter from "./whatsapp.message.converter";
+import { IChannelMessageConverter } from "../../channel.message.converter.interface";
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -18,6 +20,7 @@ export class WhatsAppD360Channel extends ChannelBase {
     constructor(
         @inject(TenantEnvironmentProvider) private _tenantEnvProvider: TenantEnvironmentProvider,
         @inject(WhatsAppD360Authenticator) private _authenticator?: IWebhookAuthenticator,
+        @inject(WhatsAppMessageConverter) private _messageConverter?: IChannelMessageConverter,
     ) {
         super();
         this._channelType = ChannelType.WhatsApp;
@@ -77,11 +80,12 @@ export class WhatsAppD360Channel extends ChannelBase {
 
     };
 
-    public processIncoming = async (message: Message): Promise<Message> => {
-        throw new Error("Method not implemented.");
+    public processIncoming = async (message: any): Promise<Message> => {
+        const incomingMessage = await this._messageConverter.fromChannel(message);
+        return incomingMessage;
     };
 
-    public processOutgoing = async (message: Message): Promise<Message> => {
+    public processOutgoing = async (message: OutgoingMessage): Promise<Message> => {
         throw new Error("Method not implemented.");
     };
 
