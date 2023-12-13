@@ -1,8 +1,9 @@
 
 export enum MessageHandlerType {
-    DialogFlow  = 'DialogFlow',
+    NLP         = 'NLP',
     LLM         = 'LLM',
     Assessments = 'Assessments',
     Feedback    = 'Feedback',
     Custom      = 'Custom',
+    Unhandled   = 'Unhandled',
 }

@@ -13,9 +13,12 @@ export type MaritalStatus =
     | 'Unmarried'
     | null;
 
-export type uuid = string | undefined | null;
-export type decimal = number | undefined | null;
-export type integer = number | undefined | null;
+export type uuid         = string | undefined | null;
+export type decimal      = number | undefined | null;
+export type integer      = number | undefined | null;
+export type Json         = Record<string, unknown> | undefined | null;
+export type JsonString   = string | undefined | null;
+export type LangCode = string | undefined | null;
 
 export const BloodGroupList: BloodGroup[] = ['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-'];
 

@@ -1,5 +1,11 @@
-import { ChannelType, MessageContentType } from "./enums";
-import { MessageHandlerType } from "./enums/message.handler.enum";
+import {
+    ChannelType,
+    MessageContentType,
+    NlpProviderType,
+    UserFeedbackType,
+    MessageHandlerType,
+    QnADocumentType
+} from "./enums";
 import { uuid } from "./miscellaneous/system.types";
 import { Language } from "./language";
 
@@ -10,7 +16,10 @@ export interface MessageChannelDetails {
     ChannelUserId           ?: string;
     ChannelMessageId        ?: string;
     ChannelResponseMessageId?: string;
-    SupportTaskId           ?: string; // for support channels
+}
+
+export interface SupportChannel extends MessageChannelDetails {
+    SupportTaskId: string;
 }
 
 export interface GeoLocation {
@@ -19,37 +28,82 @@ export interface GeoLocation {
     Country  ?: string;
     State    ?: string;
     City     ?: string;
+    ZipCode  ?: string;
+    MapUrl   ?: string;
+}
+
+export interface Feedback {
+    FeedbackContent?: string;
+    FeedbackType   ?: UserFeedbackType;
+    SupportHandler ?: SupportChannel;
+    Rating         ?: number;
+}
+
+export interface HumanHandoff {
+    IsHandoff      : boolean;
+    SupportHandler?: SupportChannel;
+}
+
+export interface AssessmentDetails {
+    AssessmentId   : uuid;
+    AssessmentName : string;
+    TemplateId     : uuid;
+    CurrentNodeId ?: uuid;
+    Question      ?: string;
+    Hint          ?: string;
+    UserResponse  ?: string | number | boolean | unknown;
+}
+
+export interface IntentDetails {
+    NLPProvider     : NlpProviderType;
+    IntentName      : string;
+    Confidence     ?: number;
+    Handlers       ?: string[];
+    HandlerResponse?: string | unknown;
+}
+
+export interface QnADocument {
+    DocumentId: string;
+    Type      : QnADocumentType; // CSV, Text, JSON, etc.
+    Title     : string;
+    Url       : string;
+}
+
+export interface QnADetails {
+    Question          : string;
+    SelectedDocuments : QnADocument[];
+    Prompt            : string;
+    Answer           ?: string;
+    Confidence       ?: number;
 }
 
 export interface Message {
-    id                      ?: uuid;
-    TenantId                ?: uuid;
-    TenantName               : string;
-    UserId                   : uuid;
-    Channel                  : ChannelType;
-    MessageType              : MessageContentType;
-    SessionId               ?: uuid;
-    Language                ?: Language;
-    MessageContent          ?: string | unknown;
-    ImageContent            ?: string;
-    ImageUrl                ?: string;
-    OriginLocation          ?: GeoLocation;
-    ChannelDetails          ?: MessageChannelDetails;
-    SentTimestamp            : Date;
-    Metadata                ?: Record<string, unknown>;
-    PrevHistory             ?: Message[];
+    id              ?: uuid;
+    TenantId        ?: uuid;
+    TenantName       : string;
+    UserId           : uuid;
+    Channel          : ChannelType;
+    MessageType      : MessageContentType;
+    SessionId       ?: uuid;
+    Language        ?: Language;
+    Content         ?: string | unknown;
+    Timestamp        : Date;
+    Metadata        ?: Record<string, unknown> | unknown;
+    OriginLocation  ?: GeoLocation;
+    ChannelSpecifics?: MessageChannelDetails;
+    PrevHistory     ?: Message[];
 }
 
 export interface IncomingMessage extends Message {
-    PrevOutgoingMessageId   ?: uuid;
-    IdentifiedIntent         : string;
-    IsFeedbackMessage       ?: boolean;
-    Feedback                 : any;
+    PrevOutgoingMessageId ?: uuid;
 }
 
 export interface OutgoingMessage extends Message {
-    PrevIncomingMessageId   ?: uuid;
-    PrimaryMessageHandler    : MessageHandlerType;
-    HumanHandoff             : boolean;
-    SupportChannel          ?: MessageChannelDetails;
+    PrevIncomingMessageId ?: uuid;
+    PrimaryMessageHandler  : MessageHandlerType;
+    Intent                ?: IntentDetails;
+    Assessment            ?: AssessmentDetails;
+    Feedback              ?: Feedback;
+    HumanHandoff          ?: HumanHandoff;
+    QnA                   ?: QnADetails;
 }

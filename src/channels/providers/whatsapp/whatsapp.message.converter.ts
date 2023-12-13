@@ -6,15 +6,18 @@ import { OutgoingMessage, IncomingMessage } from '../../../domain.types/message'
 
 export default class WhatsAppMessageConverter implements IChannelMessageConverter {
 
-    public outMessageToChannelFormat = async (outMessage: OutgoingMessage): Promise<any> => {
+    public toChannel = async (outMessage: OutgoingMessage): Promise<any> => {
+
+        const messageType = outMessage.MessageType;
+
         return null;
     };
 
-    public inMessageFromChannelFormat = async (inMessage: any): Promise<IncomingMessage> => {
+    public fromChannel = async (inMessage: any): Promise<IncomingMessage> => {
         return null;
     };
 
-    public sendMessageBodyToChannelFormat = async (body: any): Promise<any> => {
+    public sendRequestBodyToChannel = async (body: any): Promise<any> => {
         return null;
     };
 

@@ -9,6 +9,12 @@ export enum MessageContentType {
     File         = 'File',          // Uploaded File message
     OptionsUI    = 'OptionsUI',     // User is presented with Options UI
     Feedback     = 'Feedback',      // User feedback message
+    ImageUrl     = 'ImageUrl',      // Image url
+    LocationUrl  = 'LocationUrl',   // Location url
+    VideoUrl     = 'VideoUrl',      // Video url
+    AudioUrl     = 'AudioUrl',      // Audio url
+    FileUrl      = 'FileUrl',       // File url
+    Other        = 'Other',         // Other type of message
 }
 
 export const MessageContentTypeList: MessageContentType[] = [
@@ -22,4 +28,10 @@ export const MessageContentTypeList: MessageContentType[] = [
     MessageContentType.OptionChoice,
     MessageContentType.OptionsUI,
     MessageContentType.Feedback,
+    MessageContentType.ImageUrl,
+    MessageContentType.LocationUrl,
+    MessageContentType.VideoUrl,
+    MessageContentType.AudioUrl,
+    MessageContentType.FileUrl,
+    MessageContentType.Other,
 ];
