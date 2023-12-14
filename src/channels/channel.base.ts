@@ -1,32 +1,31 @@
 import express from 'express';
-import { Message } from '../domain.types/message';
+import { IncomingMessage, Message, OutgoingMessage } from '../domain.types/message';
 import { IChannel } from './channel.interface';
-import { logger } from '../logger/logger';
 import { IWebhookAuthenticator } from '../auth/webhook.authenticator/webhook.authenticator.interface';
+import { IChannelMessageConverter } from './channel.message.converter.interface';
+import { ChannelType } from '../domain.types/enums';
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export abstract class ChannelBase implements IChannel {
 
-    public _channelType: string = '';
+    public _channelType: ChannelType = ChannelType.Mock;
 
-    init(): Promise<void> {
-        throw new Error('Method not implemented.');
-    }
-
-    get ChannelType(): string {
+    public channelType(): ChannelType {
         return this._channelType;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async setupWebhook(tenantName: string): Promise<boolean> {
-        logger.info(`Setting up webhook for ${this._channelType} channel for tenant ${tenantName}.`);
-        throw new Error('Method not implemented.');
-    }
+    abstract init(): Promise<void>;
 
-    abstract processIncoming (message: Message): Promise<Message>;
+    abstract webhookAuthenticator(): IWebhookAuthenticator;
 
-    abstract processOutgoing (message: Message): Promise<Message>;
+    abstract messageConverter(): IChannelMessageConverter;
+
+    abstract setupWebhook(): Promise<boolean>;
+
+    abstract processIncoming (message: IncomingMessage): Promise<IncomingMessage>;
+
+    abstract processOutgoing (message: OutgoingMessage): Promise<OutgoingMessage>;
 
     abstract send (message: Message): Promise<boolean>;
 
@@ -34,7 +33,5 @@ export abstract class ChannelBase implements IChannel {
     async acknowledge (response: express.Response, message: Message): Promise<boolean> {
         throw new Error('Method not implemented.');
     }
-
-    abstract webhookAuthenticator(): IWebhookAuthenticator;
 
 }

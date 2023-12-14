@@ -5,6 +5,7 @@ import cors from 'cors';
 import { HttpLogger } from '../logger/http.logger';
 import { logger } from '../logger/logger';
 import { Injector } from './injector';
+import { getChannelType } from '../domain.types/enums';
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -15,9 +16,12 @@ export class MiddlewareHandler {
             try {
 
                 //Create child container and register scoped injections
-                expressApp.use((req, _res, next) => {
-                    req.container = Injector.BaseContainer.createChildContainer();
-                    Injector.registerScopedInjections(req.container);
+                expressApp.use((request, _response, next) => {
+                    request.container = Injector.BaseContainer.createChildContainer();
+                    const tenantName = request.params.client ?? null;
+                    const channelName = request.params.channel ?? null;
+                    const channelType = getChannelType(channelName);
+                    Injector.registerScopedInjections(request.container, tenantName, channelType);
                     next();
                 });
 

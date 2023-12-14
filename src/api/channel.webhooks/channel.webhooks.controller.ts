@@ -1,16 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import express from 'express';
 import { ResponseHandler } from '../../common/handlers/response.handler';
 import { ErrorHandler } from '../../common/handlers/error.handler';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
-import { WebhookValidator } from './channel.webhooks.validator';
-import { WebhookService } from '../../database/typeorm/services/chat.message.service';
-import {
-    WebhookCreateModel,
-    WebhookSearchFilters,
-    WebhookUpdateModel,
-} from '../../domain.types/chat.message.types';
 import { Lifecycle, inject, scoped } from 'tsyringe';
-import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
+import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 import { IChannel } from '../../channels/channel.interface';
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -26,14 +20,49 @@ export class ChannelWebhookController {
 
     sendMessage = async (request: express.Request, response: express.Response) => {
         try {
+            const uniqueToken = request.params.unique_token;
+
+            const channelName = request.params.channel;
+            const tenantName = request.params.client;
+            const container = request.container;
+
+            //Register tenant name as a dependency
+            container.register("TenantName", { useValue: tenantName });
+            container.register("ChannelName", { useValue: channelName });
+
+            const channel = container.resolve(`IChannel`) as IChannel;
+            const envProvider = container.resolve(TenantEnvironmentProvider);
+
+            const messageConverter = channel.getMessageConverter();
+
+            const msg = request.body;
+            const response = await channel.send(msg);
+
+            const record = await this._service.create(model);
+            if (record === null) {
+                ErrorHandler.throwInternalServerError('Unable to add chat message!');
+            }
+            const message = 'Chat message added successfully!';
+            return ResponseHandler.success(request, response, message, 201, record);
+        } catch (error) {
+            ResponseHandler.handleError(request, response, error);
+        }
+    };
+
+    receiveMessage = async (request: express.Request, response: express.Response) => {
+        try {
             const channelName = request.params.channel;
             const tenantName = request.params.client;
             const uniqueToken = request.params.unique_token;
 
+
             const container = request.container;
+
             const channel = container.resolve(`${channelName}Channel`) as IChannel;
+            const envProvider = container.resolve(TenantEnvironmentProvider);
+
             const msg = request.body;
-            const response = await channel.send(msg);
+            const response = await channel.receive(msg);
 
             const record = await this._service.create(model);
             if (record === null) {

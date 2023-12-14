@@ -7,9 +7,7 @@ import { ChannelType } from "../../../domain.types/enums";
 import { ChannelBase } from "../../channel.base";
 import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";
 import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";
-import { WhatsAppD360Authenticator } from "../../../auth/webhook.authenticator/providers/whatsapp.d360.authenticator";
 import { logger } from "../../../logger/logger";
-import WhatsAppMessageConverter from "./whatsapp.message.converter";
 import { IChannelMessageConverter } from "../../channel.message.converter.interface";
 
 //////////////////////////////////////////////////////////////////////////////
@@ -18,12 +16,13 @@ import { IChannelMessageConverter } from "../../channel.message.converter.interf
 export class WhatsAppD360Channel extends ChannelBase {
 
     constructor(
-        @inject(TenantEnvironmentProvider) private _tenantEnvProvider: TenantEnvironmentProvider,
-        @inject(WhatsAppD360Authenticator) private _authenticator?: IWebhookAuthenticator,
-        @inject(WhatsAppMessageConverter) private _messageConverter?: IChannelMessageConverter,
+        @inject('TenantName') private _tenantName?: string,
+        @inject('IWebhookAuthenticator') private _authenticator?: IWebhookAuthenticator,
+        @inject('IChannelMessageConverter') private _messageConverter?: IChannelMessageConverter,
+        @inject(TenantEnvironmentProvider) private _tenantEnvProvider?: TenantEnvironmentProvider
     ) {
         super();
-        this._channelType = ChannelType.WhatsApp;
+        this._channelType = ChannelType.WhatsAppD360;
     }
 
     async init(): Promise<void> {
@@ -34,14 +33,18 @@ export class WhatsAppD360Channel extends ChannelBase {
         return this._authenticator;
     };
 
-    public setupWebhook = async (tenantName: string): Promise<boolean> => {
+    public messageConverter = (): IChannelMessageConverter => {
+        return this._messageConverter;
+    };
+
+    public setupWebhook = async (): Promise<boolean> => {
 
         const baseUrl = this._tenantEnvProvider.getTenantEnvironmentVariable("BASE_URL");
         const apiKey = this._tenantEnvProvider.getTenantEnvironmentVariable("WHATSAPP_LIVE_API_KEY");
         const host = this._tenantEnvProvider.getTenantEnvironmentVariable("WHATSAPP_LIVE_API_HOST");
         const urlToken = this._authenticator.tokens?.UrlToken;
         const headerToken = this._authenticator.tokens?.HeaderToken;
-        const webhookUrl = `${baseUrl}/v1/${tenantName}/whatsapp/${urlToken}/receive`;
+        const webhookUrl = `${baseUrl}/v1/${this._tenantName}/whatsapp/${urlToken}/receive`;
 
         const postData = JSON.stringify({
             'url'     : webhookUrl,
@@ -85,7 +88,7 @@ export class WhatsAppD360Channel extends ChannelBase {
         return incomingMessage;
     };
 
-    public processOutgoing = async (message: OutgoingMessage): Promise<Message> => {
+    public processOutgoing = async (message: OutgoingMessage): Promise<OutgoingMessage> => {
         throw new Error("Method not implemented.");
     };
 

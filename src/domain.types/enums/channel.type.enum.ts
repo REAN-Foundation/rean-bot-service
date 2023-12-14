@@ -7,6 +7,7 @@ export enum ChannelType {
     Mobile       = 'Mobile',
     Clickup      = 'Clickup',
     Slack        = 'Slack',
+    Mock         = 'Mock',
 }
 
 export const ChannelTypeList: ChannelType[] = [
@@ -19,3 +20,9 @@ export const ChannelTypeList: ChannelType[] = [
     ChannelType.Clickup,
     ChannelType.Slack,
 ];
+
+export const getChannelType = (channel: string): ChannelType => {
+    const channel_ = channel.toLowerCase();
+    const channelType = ChannelTypeList.find(x => x.toLowerCase() === channel_);
+    return channelType;
+};

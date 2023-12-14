@@ -35,10 +35,7 @@ export class ChannelWebhookRoutes {
 
         router.post(`/:client/:channel/:unique_token/send`, context(`${contextBase}.SendMessage`), this._controller.sendMessage);
         router.post(`/:client/:channel/:unique_token/receive`, context(`${contextBase}.ReceiveMessage`), this._controller.receiveMessage);
-        router.get(`/:client/:channel/:unique_token/webhook`, context(`${contextBase}.SendMessage`),
-        this._controller.authenticateMetaWhatsappWebhook);
-
-        //router.post(`/:client/:channel/:unique_token/webhook`, context(`${contextBase}.SendMessage`), this._controller.receiveMessageMetaWhatsapp);
+        router.get(`/:client/:channel/:unique_token/webhook`, context(`${contextBase}.AuthenticateWebhook`), this._controller.authenticateWebhook);
 
         app.use('/v1/', router);
     };
