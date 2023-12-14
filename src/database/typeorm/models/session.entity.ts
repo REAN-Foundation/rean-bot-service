@@ -29,7 +29,11 @@ export class Session {
     @IsEmail()
     @Max(128)
     @Min(2)
-    Platform: string;
+    Channel: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    @Max(256)
+    ChannelUserId: string;
 
     @Column({ type: 'timestamp', nullable: false })
     LastMessageDate: Date;

@@ -2,7 +2,7 @@ import express from 'express';
 import { ChannelWebhookController } from './channel.webhooks.controller';
 import { context } from '../../auth/context.handler';
 import { Lifecycle, inject, scoped } from 'tsyringe';
-import { logger } from '../../logger/logger';
+// import { logger } from '../../logger/logger';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -24,7 +24,6 @@ export class ChannelWebhookRoutes {
     constructor (
         @inject(ChannelWebhookController) private _controller?: ChannelWebhookController
     ) {
-        logger.log("Inside whatsapp Routes...");
     }
 
     public register = (app: express.Application): void => {
@@ -35,7 +34,8 @@ export class ChannelWebhookRoutes {
 
         router.post(`/:client/:channel/:unique_token/send`, context(`${contextBase}.SendMessage`), this._controller.sendMessage);
         router.post(`/:client/:channel/:unique_token/receive`, context(`${contextBase}.ReceiveMessage`), this._controller.receiveMessage);
-        router.get(`/:client/:channel/:unique_token/webhook`, context(`${contextBase}.AuthenticateWebhook`), this._controller.authenticateWebhook);
+        // router.get(`/:client/:channel/:unique_token/webhook`,
+        //context(`${contextBase}.AuthenticateWebhook`), this._controller.authenticateWebhook);
 
         app.use('/v1/', router);
     };

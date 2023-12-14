@@ -6,6 +6,9 @@ import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { Lifecycle, inject, scoped } from 'tsyringe';
 import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 import { IChannel } from '../../channels/channel.interface';
+import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
+import { SessionService } from '../../database/typeorm/services/session.service';
+import { UserService } from '../../database/typeorm/services/user.service';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -32,16 +35,46 @@ export class ChannelWebhookController {
 
             const channel = container.resolve(`IChannel`) as IChannel;
             const envProvider = container.resolve(TenantEnvironmentProvider);
+            const messageConverter = channel.messageConverter();
+            const dbChatMessageService = container.resolve(ChatMessageService);
+            const dbSessionService = container.resolve(SessionService);
+            const dbUserService = container.resolve(UserService);
 
-            const messageConverter = channel.getMessageConverter();
+            //1. Convert incoming message to a standard format
+            const incomingMessage = await messageConverter.fromChannel(request.body);
+            //2. Process the message along the pre-processing pipeline
+            const preprocessedMessage = await channel.processIncoming(incomingMessage);
+            //3. Get User and Session details from the database
+            const session = await dbSessionService.getByChannelUserId(incomingMessage.ChannelSpecifics.ChannelUserId);
+            if (session === null) {
+                ErrorHandler.throwNotFoundError(`Session not found for user ${incomingMessage.ChannelSpecifics.ChannelUserId}`);
+            }
+            const user = session.UserId;
+            //4. Store the incoming message in the database
+            const serializableMessage = await dbChatMessageService.getCreateModel(preprocessedMessage, user, session);
+            const storedMessage = await dbChatMessageService.create(serializableMessage);
+            //4. Update the message cache with the incoming message from user
+
+            //4. Send the message to the message handlers
+
+            //5. Handle feedback if needed
+
+            //6. Handle Human-Handoff if needed
+
+            //7. Process outgoing message
+            const outgoingMessage = await channel.processOutgoing(storedMessage);
+
+            //8. Store the outgoing message in the database
+            const serializableOutgoingMessage = await dbChatMessageService.getCreateModel(outgoingMessage);
+            const storedOutgoingMessage = await dbChatMessageService.create(serializableOutgoingMessage);
+            //9. Send the message to the channel
+            const sent = await channel.send(outgoingMessage);
+
+            const respMessage = 'Chat message sent successfully!';
 
             const msg = request.body;
-            const response = await channel.send(msg);
+            const channelSendResponse = await channel.send(msg);
 
-            const record = await this._service.create(model);
-            if (record === null) {
-                ErrorHandler.throwInternalServerError('Unable to add chat message!');
-            }
             const message = 'Chat message added successfully!';
             return ResponseHandler.success(request, response, message, 201, record);
         } catch (error) {

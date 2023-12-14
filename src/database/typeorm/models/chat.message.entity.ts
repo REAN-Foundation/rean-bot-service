@@ -9,10 +9,14 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { Max, Min, IsUrl } from 'class-validator';
-import { MessageDirection } from '../../../domain.types/enums';
-import { MessageContentType } from '../../../domain.types/enums';
-import { UserFeedbackType } from '../../../domain.types/enums';
+import { Max, Min } from 'class-validator';
+import {
+    ChannelType,
+    MessageDirection,
+    MessageHandlerType,
+    MessageContentType,
+} from '../../../domain.types/enums';
+
 // import { Session } from './session.entity';
 // import { User } from './user.entity';
 
@@ -24,8 +28,13 @@ export class ChatMessage {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column({ type: 'uuid', nullable: false })
+    @Column({ type: 'uuid', nullable: true })
     TenantId: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    @Max(256)
+    @Min(1)
+    TenantName: string;
 
     @Column({ type: 'uuid', nullable: false })
     UserId: string;
@@ -33,89 +42,65 @@ export class ChatMessage {
     @Column({ type: 'uuid', nullable: false })
     SessionId: string;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({ type: 'enum', enum: ChannelType, default: ChannelType.Mock })
+    Channel: ChannelType;
+
+    @Column({ type: 'varchar', nullable: false })
     @Max(256)
     @Min(1)
-    Platform: string;
+    ChannelUserId: string;
 
     @Column({ type: 'varchar', nullable: true, default: 'en-US' })
     @Max(8)
     @Min(1)
     LanguageCode: string;
 
-    @Column({ type: 'varchar', nullable: true })
+    @Column({ type: 'enum', enum: MessageDirection, default: MessageDirection.In })
     @Max(256)
     @Min(1)
-    Name: string;
-
-    @Column({ type: 'text', nullable: true })
-    @Max(256)
-    @Min(0)
-    MessageContent: string;
-
-    @Column({ type: 'text', nullable: true })
-    @Max(256)
-    @Min(0)
-    ImageContent: string;
-
-    @Column({ type: 'text', nullable: true })
-    @IsUrl()
-    @Max(256)
-    @Min(0)
-    ImageUrl: string;
-
-    @Column({ type: 'varchar', nullable: true })
-    @Max(256)
-    @Min(1)
-    PlatformUserId: string;
-
-    @Column({ type: 'varchar', nullable: true })
-    @Max(256)
-    @Min(1)
-    PlatformMessageId: string;
-
-    @Column({ type: 'varchar', nullable: true })
-    @Max(256)
-    @Min(1)
-    PlatformResponseMessageId: string;
-
-    @Column({ type: 'timestamp', nullable: true })
-    SentTimestamp: Date;
-
-    @Column({ type: 'timestamp', nullable: true })
-    DeliveredTimestamp: Date;
-
-    @Column({ type: 'timestamp', nullable: true })
-    ReadTimestamp: Date;
-
-    @Column({ type: 'enum', enum: MessageDirection, nullable: false, default: MessageDirection.In })
     Direction: MessageDirection;
 
-    @Column({ type: 'enum', enum: MessageContentType, nullable: false, default: MessageContentType.Text })
-    ContentType: MessageContentType;
+    @Column({ type: 'enum', enum: MessageContentType, default: MessageContentType.Text })
+    MessageType: MessageContentType;
 
-    @Column({ type: 'uuid', nullable: false })
-    AssessmentId: string;
+    @Column({ type: 'text', nullable: true })
+    Content: string;
 
-    @Column({ type: 'uuid', nullable: false })
-    AssessmentNodeId: string;
+    @Column({ type: 'text', nullable: true })
+    TranslatedContent: string;
 
-    @Column({ type: 'enum', enum: UserFeedbackType, nullable: false, default: UserFeedbackType.Positive })
-    FeedbackType: UserFeedbackType;
+    @Column({ type: 'enum', enum: MessageHandlerType, default: MessageHandlerType.Unhandled })
+    PrimaryMessageHandler: MessageHandlerType;
 
-    @Column({ type: 'varchar', nullable: true })
-    @Max(256)
-    @Min(1)
-    IdentifiedIntent: string;
+    @Column({ type: 'timestamp', nullable: true })
+    Timestamp: Date;
 
-    @Column({ type: 'boolean', nullable: false, default: false })
-    HumanHandoff: boolean;
+    @Column({ type: 'uuid', nullable: true })
+    PrevMessageId: string;
 
-    // @ManyToOne(() => Session, (session) => session.ChatMessages)
-    // Session: Session;
+    @Column({ type: 'json', nullable: true })
+    GeoLocation: string;
 
-    // @ManyToOne(() => User, (user) => user.ChatMessages)
-    // User: User;
+    @Column({ type: 'json', nullable: true })
+    ChannelSpecifics: string;
+
+    @Column({ type: 'json', nullable: true })
+    Metadata: string;
+
+    @Column({ type: 'json', nullable: true })
+    Intent: string;
+
+    @Column({ type: 'json', nullable: true })
+    Assessment: string;
+
+    @Column({ type: 'json', nullable: true })
+    Feedback: string;
+
+    @Column({ type: 'json', nullable: true })
+    HumanHandoff: string;
+
+    @Column({ type: 'json', nullable: true })
+    QnA: string;
 
     @CreateDateColumn()
     CreatedAt: Date;

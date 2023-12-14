@@ -14,6 +14,7 @@ import { UserMapper } from '../mappers/user.mapper';
 import { User } from '../models/user.entity';
 import { Lifecycle, inject, scoped } from 'tsyringe';
 import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
+import { Session } from '../models/session.entity';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -60,12 +61,35 @@ export class UserService extends BaseService {
                     Gender            : true,
                     BirthDate         : true,
                     PreferredLanguage : true,
-                },
-                relations : {
-                },
+                }
             });
             return UserMapper.toResponseDto(user);
         } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getByChannelUserId = async (channelUserId: string): Promise<UserResponseDto> => {
+        try {
+            const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
+            const sessionRepo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+            var session = await sessionRepo.findOne({
+                where : {
+                    ChannelUserId : channelUserId,
+                }
+            });
+            if (!session) {
+                ErrorHandler.throwNotFoundError('User not found!');
+            }
+            const user = await userRepo.findOne({
+                where : {
+                    id : session.UserId,
+                }
+            });
+            return UserMapper.toResponseDto(user);
+        }
+        catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
         }

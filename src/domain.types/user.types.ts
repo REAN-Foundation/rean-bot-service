@@ -1,6 +1,7 @@
 import { BaseSearchFilters, BaseSearchResults } from './miscellaneous/base.search.types';
 import { uuid } from './miscellaneous/system.types';
 import { Gender } from './enums';
+import { SessionResponseDto } from './session.types';
 
 export interface UserCreateModel {
     TenantId         ?: uuid;
@@ -37,6 +38,7 @@ export interface UserResponseDto {
     Gender           : Gender;
     BirthDate        : Date;
     PreferredLanguage: string;
+    Sessions        ?: SessionResponseDto[];
 }
 
 export interface UserSearchDto {

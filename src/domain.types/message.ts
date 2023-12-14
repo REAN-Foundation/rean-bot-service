@@ -90,7 +90,7 @@ export interface Message {
     TranslatedContent?: string | unknown;
     Timestamp         : Date;
     Metadata         ?: Record<string, unknown> | unknown;
-    OriginLocation   ?: GeoLocation;
+    GeoLocation   ?: GeoLocation;
     ChannelSpecifics ?: MessageChannelDetails;
     PrevHistory      ?: Message[];
 }

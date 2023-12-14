@@ -63,8 +63,8 @@ export class User {
     @Min(2)
     PreferredLanguage: string;
 
-    // @OneToMany(() => Session, (session) => session.User)
-    // Sessions: Promise<Session[]>; //Lazy loaded
+    // @OneToMany(() => Session, (session) => session.User, { cascade: true  })
+    // Sessions: Session[]; //To lazy load --- use Promise<Session[]> instead
 
     // @OneToMany(() => ChatMessage, (chatMessage) => chatMessage.User)
     // ChatMessages: Promise<ChatMessage[]>; //Lazy loaded

@@ -29,16 +29,16 @@ export class ChatMessageService extends BaseService {
     }
 
     public create = async (createModel: ChatMessageCreateModel): Promise<ChatMessageResponseDto> => {
-        // const session = await this.getSession(createModel.SessionId);
-        // const user = await this.getUser(createModel.UserId);
-        const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
-        const chatMessage = repo.create({
-            // Session                   : session,
-            // User                      : user,
+        const chatMessageRepo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+        // const sessionRepo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+        // const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
+
+        const chatMessage = chatMessageRepo.create({
             TenantId                  : createModel.TenantId,
+            TenantName                : createModel.TenantName,
             UserId                    : createModel.UserId,
             SessionId                 : createModel.SessionId,
-            Platform                  : createModel.Platform,
+            Channel                   : createModel.Channel,
             LanguageCode              : createModel.LanguageCode,
             Name                      : createModel.Name,
             MessageContent            : createModel.MessageContent,
@@ -54,7 +54,7 @@ export class ChatMessageService extends BaseService {
             FeedbackType              : createModel.FeedbackType,
             IdentifiedIntent          : createModel.IdentifiedIntent,
         });
-        var record = await repo.save(chatMessage);
+        var record = await chatMessageRepo.save(chatMessage);
         return ChatMessageMapper.toResponseDto(record);
     };
 
@@ -92,7 +92,8 @@ export class ChatMessageService extends BaseService {
                     // Session                   : {
                     //     id              : true,
                     //     UserId          : true,
-                    //     Platform        : true,
+                    //     Channel         : true,
+                    //     ChannelUserId   : true,
                     //     LastMessageDate : true,
                     // },
                     // User : {

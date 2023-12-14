@@ -26,6 +26,7 @@ export interface ChatMessageCreateModel {
     UserId                : uuid;
     SessionId             : uuid;
     Channel              ?: ChannelType;
+    ChannelUserId        ?: string;
     LanguageCode         ?: LangCode;
     Direction            ?: MessageDirection;
     MessageType          ?: MessageContentType;
@@ -33,7 +34,7 @@ export interface ChatMessageCreateModel {
     TranslatedContent    ?: string;
     Timestamp            ?: Date;
     PrevMessageId        ?: uuid;
-    OriginLocation       ?: JsonString;
+    GeoLocation          ?: JsonString;
     ChannelSpecifics     ?: JsonString;
     PrimaryMessageHandler?: MessageHandlerType;
     Metadata             ?: JsonString;
@@ -50,7 +51,7 @@ export interface ChatMessageUpdateModel {
     MessageType          ?: MessageContentType;
     Content              ?: string;
     TranslatedContent    ?: string;
-    OriginLocation       ?: JsonString;
+    GeoLocation          ?: JsonString;
     ChannelSpecifics     ?: JsonString;
     PrimaryMessageHandler?: MessageHandlerType;
     Metadata             ?: JsonString;
@@ -77,7 +78,7 @@ export interface ChatMessageBaseDto {
 }
 
 export interface ChatMessageResponseDto extends ChatMessageBaseDto {
-    OriginLocation       ?: GeoLocation;
+    GeoLocation       ?: GeoLocation;
     ChannelSpecifics     ?: MessageChannelDetails;
     Metadata             ?: Record<string, unknown> | unknown;
     PrimaryMessageHandler : MessageHandlerType;

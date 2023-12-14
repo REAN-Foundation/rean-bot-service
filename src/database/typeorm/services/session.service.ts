@@ -1,8 +1,13 @@
-import { FindManyOptions, Like, Repository } from 'typeorm';
+import { FindManyOptions, Like, Repository, MoreThanOrEqual } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
 import { BaseService } from './base.service';
+import { SessionMapper } from '../mappers/session.mapper';
+import { User } from '../models/user.entity';
+import { Session } from '../models/session.entity';
+import { Lifecycle, inject, scoped } from 'tsyringe';
+import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
 import {
     SessionCreateModel,
     SessionResponseDto,
@@ -10,11 +15,6 @@ import {
     SessionSearchResults,
     SessionUpdateModel,
 } from '../../../domain.types/session.types';
-import { SessionMapper } from '../mappers/session.mapper';
-import { User } from '../models/user.entity';
-import { Session } from '../models/session.entity';
-import { Lifecycle, inject, scoped } from 'tsyringe';
-import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -31,9 +31,9 @@ export class SessionService extends BaseService {
         // const user = await this.getUser(createModel.UserId);
         const repo: Repository<Session> = await this.getRepository(this._envProvider, Session);
         const session = repo.create({
-            // User     : user,
-            UserId   : createModel.UserId,
-            Platform : createModel.Platform,
+            UserId        : createModel.UserId,
+            Channel       : createModel.Channel,
+            ChannelUserId : createModel.ChannelUserId,
         });
         var record = await repo.save(session);
         return SessionMapper.toResponseDto(record);
@@ -48,27 +48,54 @@ export class SessionService extends BaseService {
                 },
                 select : {
                     UserId          : true,
-                    Platform        : true,
+                    Channel         : true,
+                    ChannelUserId   : true,
                     LastMessageDate : true,
-                    // User            : {
-                    //     id                : true,
-                    //     TenantId          : true,
-                    //     Prefix            : true,
-                    //     FirstName         : true,
-                    //     LastName          : true,
-                    //     Phone             : true,
-                    //     Email             : true,
-                    //     Gender            : true,
-                    //     BirthDate         : true,
-                    //     PreferredLanguage : true,
-                    // },
+                    CreatedAt       : true,
                 },
-                // relations : {
-                //     User : true,
-                // },
             });
-            return SessionMapper.toResponseDto(session);
+            if (!session) {
+                ErrorHandler.throwNotFoundError('Session not found!');
+            }
+            const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
+            const user = await userRepo.findOne({
+                where : {
+                    id : session.UserId,
+                },
+            });
+            if (!user) {
+                ErrorHandler.throwNotFoundError('User not found!');
+            }
+            return SessionMapper.toResponseDto(session, user);
         } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getByChannelUserId = async (channelUserId: string): Promise<SessionResponseDto> => {
+        try {
+            const sessionRepo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+            var session = await sessionRepo.findOne({
+                where : {
+                    ChannelUserId : channelUserId,
+                }
+            });
+            if (!session) {
+                ErrorHandler.throwNotFoundError('User not found!');
+            }
+            const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
+            const user = await userRepo.findOne({
+                where : {
+                    id : session.UserId,
+                },
+            });
+            if (!user) {
+                ErrorHandler.throwNotFoundError('User not found!');
+            }
+            return SessionMapper.toResponseDto(session, user);
+        }
+        catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
         }
@@ -107,19 +134,8 @@ export class SessionService extends BaseService {
             if (!session) {
                 ErrorHandler.throwNotFoundError('Session not found!');
             }
-
-            if (model.UserId !== undefined && model.UserId != null) {
-                session.UserId = model.UserId;
-            }
-
-            if (model.Platform !== undefined && model.Platform != null) {
-                session.Platform = model.Platform;
-            }
-
-            if (model.UserId != null) {
-                session.UserId = model.UserId;
-                // const user = await this.getUser(model.UserId);
-                // session.User = user;
+            if (model.LastMessageDate !== undefined && model.LastMessageDate != null) {
+                session.LastMessageDate = model.LastMessageDate;
             }
             var record = await repo.save(session);
             return SessionMapper.toResponseDto(record);
@@ -149,27 +165,15 @@ export class SessionService extends BaseService {
 
     private getSearchObject = (filters: SessionSearchFilters) => {
         var search: FindManyOptions<Session> = {
-            // relations : {
-            //     User : true,
-            // },
             where  : {},
             select : {
                 id              : true,
                 UserId          : true,
-                Platform        : true,
+                Channel         : true,
+                ChannelUserId   : true,
                 LastMessageDate : true,
                 CreatedAt       : true,
                 UpdatedAt       : true,
-                // User            : {
-                //     id                : true,
-                //     TenantId          : true,
-                //     Prefix            : true,
-                //     FirstName         : true,
-                //     LastName          : true,
-                //     Phone             : true,
-                //     Email             : true,
-                //     PreferredLanguage : true,
-                // },
             },
         };
 
@@ -177,12 +181,12 @@ export class SessionService extends BaseService {
             search.where['UserId'] = filters.UserId;
         }
 
-        if (filters.Platform) {
-            search.where['Platform'] = Like(`%${filters.Platform}%`);
+        if (filters.Channel) {
+            search.where['Channel'] = Like(`%${filters.Channel}%`);
         }
 
-        if (filters.LastMessageDate) {
-            search.where['LastMessageDate'] = filters.LastMessageDate;
+        if (filters.LastMessageDateAfter) {
+            search.where['LastMessageDate'] = MoreThanOrEqual(filters.LastMessageDateAfter);
         }
 
         return search;
