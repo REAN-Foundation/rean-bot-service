@@ -207,3 +207,22 @@ export interface Language {
     Direction : LanguageDir,
     Code      : LanguageCode;
 }
+
+export const getLanguage = (code): Language | null => {
+    if (!code) {
+        return null;
+    }
+    const langCode = code.toLowerCase();
+    const exists = Object.hasOwn(Languages, langCode);
+    if (!exists) {
+        return null;
+    }
+    const lang = Languages[langCode];
+    const language: Language = {
+        Name       : lang.name,
+        NativeName : lang.nativeName,
+        Direction  : lang.dir,
+        Code       : lang.Code,
+    };
+    return language;
+};

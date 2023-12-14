@@ -3,7 +3,6 @@ import { JsonString, LangCode, uuid } from './miscellaneous/system.types';
 import {
     MessageDirection,
     MessageContentType,
-    UserFeedbackType,
     MessageHandlerType,
     ChannelType
 } from './enums';
@@ -68,6 +67,7 @@ export interface ChatMessageBaseDto {
     TenantName            : string;
     UserId                : uuid;
     Channel               : ChannelType;
+    ChannelUserId         : string;
     MessageType           : MessageContentType;
     SessionId            ?: uuid;
     Language             ?: Language;
@@ -78,7 +78,7 @@ export interface ChatMessageBaseDto {
 }
 
 export interface ChatMessageResponseDto extends ChatMessageBaseDto {
-    GeoLocation       ?: GeoLocation;
+    GeoLocation          ?: GeoLocation;
     ChannelSpecifics     ?: MessageChannelDetails;
     Metadata             ?: Record<string, unknown> | unknown;
     PrimaryMessageHandler : MessageHandlerType;
@@ -89,35 +89,19 @@ export interface ChatMessageResponseDto extends ChatMessageBaseDto {
     QnA                  ?: QnADetails;
 }
 
-export interface ChatMessageSearchDto extends ChatMessageBaseDto {
-    Metadata             ?: Record<string, unknown> | unknown;
-    PrimaryMessageHandler : MessageHandlerType;
-    IntentName           ?: string;
-    AssessmentId         ?: uuid;
-    AssessmentNodeId     ?: uuid;
-    FeedbackType         ?: UserFeedbackType;
-    HumanHandoff         ?: boolean;
-    IsQnA                ?: boolean;
-}
-
 export interface ChatMessageSearchFilters extends BaseSearchFilters {
-    TenantId          ?: uuid;
-    UserId            ?: uuid;
-    SessionId         ?: uuid;
-    Channel           ?: ChannelType;
-    LanguageCode      ?: LangCode;
-    SentTimestamp     ?: Date;
-    DeliveredTimestamp?: Date;
-    ReadTimestamp     ?: Date;
-    Direction         ?: MessageDirection;
-    ContentType       ?: MessageContentType;
-    AssessmentId      ?: uuid;
-    AssessmentNodeId  ?: uuid;
-    FeedbackType      ?: UserFeedbackType;
-    IntentName        ?: string;
-    HumanHandoff      ?: boolean;
+    TenantId      ?: uuid;
+    UserId        ?: uuid;
+    ChannelUserId ?: string;
+    SessionId     ?: uuid;
+    Channel       ?: string;
+    LanguageCode  ?: string;
+    TimestampAfter?: Date;
+    Direction     ?: MessageDirection;
+    ContentType   ?: MessageContentType;
+    PrimaryHandler?: MessageHandlerType;
 }
 
 export interface ChatMessageSearchResults extends BaseSearchResults {
-    Items: ChatMessageSearchDto[];
+    Items: ChatMessageResponseDto[];
 }

@@ -1,4 +1,4 @@
-import { FindManyOptions, Like, Repository } from 'typeorm';
+import { FindManyOptions, Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
 import { uuid } from '../../../domain.types/miscellaneous/system.types';
@@ -32,28 +32,8 @@ export class ChatMessageService extends BaseService {
         const chatMessageRepo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
         // const sessionRepo: Repository<Session> = await this.getRepository(this._envProvider, Session);
         // const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
-
-        const chatMessage = chatMessageRepo.create({
-            TenantId                  : createModel.TenantId,
-            TenantName                : createModel.TenantName,
-            UserId                    : createModel.UserId,
-            SessionId                 : createModel.SessionId,
-            Channel                   : createModel.Channel,
-            LanguageCode              : createModel.LanguageCode,
-            Name                      : createModel.Name,
-            MessageContent            : createModel.MessageContent,
-            ImageContent              : createModel.ImageContent,
-            ImageUrl                  : createModel.ImageUrl,
-            PlatformUserId            : createModel.PlatformUserId,
-            PlatformMessageId         : createModel.PlatformMessageId,
-            PlatformResponseMessageId : createModel.PlatformResponseMessageId,
-            Direction                 : createModel.Direction,
-            ContentType               : createModel.ContentType,
-            AssessmentId              : createModel.AssessmentId,
-            AssessmentNodeId          : createModel.AssessmentNodeId,
-            FeedbackType              : createModel.FeedbackType,
-            IdentifiedIntent          : createModel.IdentifiedIntent,
-        });
+        const entity: ChatMessage = ChatMessageMapper.toEntity(createModel);
+        const chatMessage = chatMessageRepo.create(entity);
         var record = await chatMessageRepo.save(chatMessage);
         return ChatMessageMapper.toResponseDto(record);
     };
@@ -61,58 +41,10 @@ export class ChatMessageService extends BaseService {
     public getById = async (id: uuid): Promise<ChatMessageResponseDto> => {
         try {
             const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
-
             var chatMessage = await repo.findOne({
                 where : {
                     id : id,
-                },
-                select : {
-                    TenantId                  : true,
-                    UserId                    : true,
-                    SessionId                 : true,
-                    Platform                  : true,
-                    LanguageCode              : true,
-                    Name                      : true,
-                    MessageContent            : true,
-                    ImageContent              : true,
-                    ImageUrl                  : true,
-                    PlatformUserId            : true,
-                    PlatformMessageId         : true,
-                    PlatformResponseMessageId : true,
-                    SentTimestamp             : true,
-                    DeliveredTimestamp        : true,
-                    ReadTimestamp             : true,
-                    Direction                 : true,
-                    ContentType               : true,
-                    AssessmentId              : true,
-                    AssessmentNodeId          : true,
-                    FeedbackType              : true,
-                    IdentifiedIntent          : true,
-                    HumanHandoff              : true,
-                    // Session                   : {
-                    //     id              : true,
-                    //     UserId          : true,
-                    //     Channel         : true,
-                    //     ChannelUserId   : true,
-                    //     LastMessageDate : true,
-                    // },
-                    // User : {
-                    //     id                : true,
-                    //     TenantId          : true,
-                    //     Prefix            : true,
-                    //     FirstName         : true,
-                    //     LastName          : true,
-                    //     Phone             : true,
-                    //     Email             : true,
-                    //     Gender            : true,
-                    //     BirthDate         : true,
-                    //     PreferredLanguage : true,
-                    // },
-                },
-                // relations : {
-                //     Session : true,
-                //     User    : true,
-                // },
+                }
             });
             return ChatMessageMapper.toResponseDto(chatMessage);
         } catch (error) {
@@ -132,7 +64,7 @@ export class ChatMessageService extends BaseService {
                 RetrievedCount : list.length,
                 PageIndex      : pageIndex,
                 ItemsPerPage   : limit,
-                Order          : order === 'DESC' ? 'descending'                    : 'ascending',
+                Order          : order === 'DESC' ? 'descending' : 'ascending',
                 OrderedBy      : orderByColumn,
                 Items          : list.map((x) => ChatMessageMapper.toResponseDto(x)),
             };
@@ -155,88 +87,60 @@ export class ChatMessageService extends BaseService {
                 ErrorHandler.throwNotFoundError('Chat message not found!');
             }
 
-            if (model.TenantId !== undefined && model.TenantId != null) {
-                chatMessage.TenantId = model.TenantId;
+            if (model.LanguageCode !== undefined && model.LanguageCode != null) {
+                chatMessage.LanguageCode = model.LanguageCode;
             }
 
-            if (model.UserId !== undefined && model.UserId != null) {
-                chatMessage.UserId = model.UserId;
+            if (model.MessageType !== undefined && model.MessageType != null) {
+                chatMessage.MessageType = model.MessageType;
             }
 
-            if (model.SessionId !== undefined && model.SessionId != null) {
-                chatMessage.SessionId = model.SessionId;
+            if (model.Content !== undefined && model.Content != null) {
+                chatMessage.Content = model.Content;
             }
 
-            if (model.Platform !== undefined && model.Platform != null) {
-                chatMessage.Platform = model.Platform;
+            if (model.TranslatedContent !== undefined && model.TranslatedContent != null) {
+                chatMessage.TranslatedContent = model.TranslatedContent;
             }
 
             if (model.LanguageCode !== undefined && model.LanguageCode != null) {
                 chatMessage.LanguageCode = model.LanguageCode;
             }
 
-            if (model.Name !== undefined && model.Name != null) {
-                chatMessage.Name = model.Name;
+            if (model.GeoLocation !== undefined && model.GeoLocation != null) {
+                chatMessage.GeoLocation = model.GeoLocation;
             }
 
-            if (model.MessageContent !== undefined && model.MessageContent != null) {
-                chatMessage.MessageContent = model.MessageContent;
+            if (model.ChannelSpecifics !== undefined && model.ChannelSpecifics != null) {
+                chatMessage.ChannelSpecifics = model.ChannelSpecifics;
             }
 
-            if (model.ImageContent !== undefined && model.ImageContent != null) {
-                chatMessage.ImageContent = model.ImageContent;
+            if (model.PrimaryMessageHandler !== undefined && model.PrimaryMessageHandler != null) {
+                chatMessage.PrimaryMessageHandler = model.PrimaryMessageHandler;
             }
 
-            if (model.ImageUrl !== undefined && model.ImageUrl != null) {
-                chatMessage.ImageUrl = model.ImageUrl;
+            if (model.Metadata !== undefined && model.Metadata != null) {
+                chatMessage.Metadata = model.Metadata;
             }
 
-            if (model.PlatformUserId !== undefined && model.PlatformUserId != null) {
-                chatMessage.PlatformUserId = model.PlatformUserId;
+            if (model.Intent !== undefined && model.Intent != null) {
+                chatMessage.Intent = model.Intent;
             }
 
-            if (model.PlatformMessageId !== undefined && model.PlatformMessageId != null) {
-                chatMessage.PlatformMessageId = model.PlatformMessageId;
+            if (model.Assessment !== undefined && model.Assessment != null) {
+                chatMessage.Assessment = model.Assessment;
             }
 
-            if (model.PlatformResponseMessageId !== undefined && model.PlatformResponseMessageId != null) {
-                chatMessage.PlatformResponseMessageId = model.PlatformResponseMessageId;
+            if (model.Feedback !== undefined && model.Feedback != null) {
+                chatMessage.Feedback = model.Feedback;
             }
 
-            if (model.Direction !== undefined && model.Direction != null) {
-                chatMessage.Direction = model.Direction;
+            if (model.HumanHandoff !== undefined && model.HumanHandoff != null) {
+                chatMessage.HumanHandoff = model.HumanHandoff;
             }
 
-            if (model.ContentType !== undefined && model.ContentType != null) {
-                chatMessage.ContentType = model.ContentType;
-            }
-
-            if (model.AssessmentId !== undefined && model.AssessmentId != null) {
-                chatMessage.AssessmentId = model.AssessmentId;
-            }
-
-            if (model.AssessmentNodeId !== undefined && model.AssessmentNodeId != null) {
-                chatMessage.AssessmentNodeId = model.AssessmentNodeId;
-            }
-
-            if (model.FeedbackType !== undefined && model.FeedbackType != null) {
-                chatMessage.FeedbackType = model.FeedbackType;
-            }
-
-            if (model.IdentifiedIntent !== undefined && model.IdentifiedIntent != null) {
-                chatMessage.IdentifiedIntent = model.IdentifiedIntent;
-            }
-
-            if (model.SessionId != null) {
-                chatMessage.SessionId = model.SessionId;
-                // const session = await this.getSession(model.SessionId);
-                // chatMessage.Session = session;
-            }
-
-            if (model.UserId != null) {
-                chatMessage.UserId = model.UserId;
-                // const user = await this.getUser(model.UserId);
-                // chatMessage.User = user;
+            if (model.QnA !== undefined && model.QnA != null) {
+                chatMessage.QnA = model.QnA;
             }
 
             var record = await repo.save(chatMessage);
@@ -267,50 +171,7 @@ export class ChatMessageService extends BaseService {
 
     private getSearchObject = (filters: ChatMessageSearchFilters) => {
         var search: FindManyOptions<ChatMessage> = {
-            // relations : {
-            //     Session : true,
-            //     User    : true,
-            // },
-            where  : {},
-            select : {
-                id                 : true,
-                TenantId           : true,
-                UserId             : true,
-                SessionId          : true,
-                Platform           : true,
-                Name               : true,
-                MessageContent     : true,
-                ImageContent       : true,
-                ImageUrl           : true,
-                SentTimestamp      : true,
-                DeliveredTimestamp : true,
-                ReadTimestamp      : true,
-                Direction          : true,
-                ContentType        : true,
-                AssessmentId       : true,
-                AssessmentNodeId   : true,
-                FeedbackType       : true,
-                IdentifiedIntent   : true,
-                HumanHandoff       : true,
-                CreatedAt          : true,
-                UpdatedAt          : true,
-                // Session            : {
-                //     id              : true,
-                //     UserId          : true,
-                //     Platform        : true,
-                //     LastMessageDate : true,
-                // },
-                // User : {
-                //     id                : true,
-                //     TenantId          : true,
-                //     Prefix            : true,
-                //     FirstName         : true,
-                //     LastName          : true,
-                //     Phone             : true,
-                //     Email             : true,
-                //     PreferredLanguage : true,
-                // },
-            },
+            where : {},
         };
 
         if (filters.TenantId) {
@@ -325,52 +186,12 @@ export class ChatMessageService extends BaseService {
             search.where['SessionId'] = filters.SessionId;
         }
 
-        if (filters.Platform) {
-            search.where['Platform'] = Like(`%${filters.Platform}%`);
+        if (filters.Channel) {
+            search.where['Channel'] = Like(`%${filters.Channel}%`);
         }
 
         if (filters.LanguageCode) {
             search.where['LanguageCode'] = Like(`%${filters.LanguageCode}%`);
-        }
-
-        if (filters.Name) {
-            search.where['Name'] = Like(`%${filters.Name}%`);
-        }
-
-        if (filters.MessageContent) {
-            search.where['MessageContent'] = Like(`%${filters.MessageContent}%`);
-        }
-
-        if (filters.ImageContent) {
-            search.where['ImageContent'] = Like(`%${filters.ImageContent}%`);
-        }
-
-        if (filters.ImageUrl) {
-            search.where['ImageUrl'] = Like(`%${filters.ImageUrl}%`);
-        }
-
-        if (filters.PlatformUserId) {
-            search.where['PlatformUserId'] = Like(`%${filters.PlatformUserId}%`);
-        }
-
-        if (filters.PlatformMessageId) {
-            search.where['PlatformMessageId'] = Like(`%${filters.PlatformMessageId}%`);
-        }
-
-        if (filters.PlatformResponseMessageId) {
-            search.where['PlatformResponseMessageId'] = Like(`%${filters.PlatformResponseMessageId}%`);
-        }
-
-        if (filters.SentTimestamp) {
-            search.where['SentTimestamp'] = filters.SentTimestamp;
-        }
-
-        if (filters.DeliveredTimestamp) {
-            search.where['DeliveredTimestamp'] = filters.DeliveredTimestamp;
-        }
-
-        if (filters.ReadTimestamp) {
-            search.where['ReadTimestamp'] = filters.ReadTimestamp;
         }
 
         if (filters.Direction) {
@@ -381,24 +202,12 @@ export class ChatMessageService extends BaseService {
             search.where['ContentType'] = filters.ContentType;
         }
 
-        if (filters.AssessmentId) {
-            search.where['AssessmentId'] = filters.AssessmentId;
+        if (filters.PrimaryHandler) {
+            search.where['PrimaryHandler'] = filters.PrimaryHandler;
         }
 
-        if (filters.AssessmentNodeId) {
-            search.where['AssessmentNodeId'] = filters.AssessmentNodeId;
-        }
-
-        if (filters.FeedbackType) {
-            search.where['FeedbackType'] = filters.FeedbackType;
-        }
-
-        if (filters.IdentifiedIntent) {
-            search.where['IdentifiedIntent'] = Like(`%${filters.IdentifiedIntent}%`);
-        }
-
-        if (filters.HumanHandoff) {
-            search.where['HumanHandoff'] = filters.HumanHandoff;
+        if (filters.TimestampAfter) {
+            search.where['Timestamp'] = MoreThanOrEqual(filters.TimestampAfter);
         }
 
         return search;

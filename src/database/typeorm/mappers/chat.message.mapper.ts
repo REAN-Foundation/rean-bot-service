@@ -1,59 +1,77 @@
 import { ChatMessage } from '../models/chat.message.entity';
-import { ChatMessageResponseDto } from '../../../domain.types/chat.message.types';
+import { ChatMessageCreateModel, ChatMessageResponseDto } from '../../../domain.types/chat.message.types';
+import { getLanguage } from '../../../domain.types/language';
+import {
+    QnADetails,
+    HumanHandoff,
+    Feedback,
+    AssessmentDetails,
+    IntentDetails,
+    MessageChannelDetails,
+} from '../../../domain.types/message';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class ChatMessageMapper {
 
-    static toResponseDto = (chatMessage: ChatMessage): ChatMessageResponseDto => {
-        if (chatMessage == null) {
+    static toEntity = (model: ChatMessageCreateModel): any => {
+        if (model == null) {
+            return null;
+        }
+        const entity: any = {
+            TenantId              : model.TenantId,
+            TenantName            : model.TenantName ?? null,
+            UserId                : model.UserId,
+            SessionId             : model.SessionId,
+            Channel               : model.Channel,
+            ChannelUserId         : model.ChannelUserId,
+            MessageType           : model.MessageType,
+            LanguageCode          : model.LanguageCode,
+            Direction             : model.Direction,
+            Content               : model.Content,
+            TranslatedContent     : model.TranslatedContent ?? null,
+            Timestamp             : model.Timestamp,
+            PrevMessageId         : model.PrevMessageId,
+            PrimaryMessageHandler : model.PrimaryMessageHandler ?? null,
+            GeoLocation           : model.GeoLocation ?? null,
+            ChannelSpecifics      : model.ChannelSpecifics ?? null,
+            Metadata              : model.Metadata ?? null,
+            Intent                : model.Intent ?? null,
+            Assessment            : model.Assessment ?? null,
+            Feedback              : model.Feedback ?? null,
+            HumanHandoff          : model.HumanHandoff ?? null,
+            QnA                   : model.QnA ?? null,
+        };
+        return entity;
+    };
+
+    static toResponseDto = (m: ChatMessage): ChatMessageResponseDto => {
+        if (m == null) {
             return null;
         }
         const dto: ChatMessageResponseDto = {
-            id                        : chatMessage.id,
-            TenantId                  : chatMessage.TenantId,
-            UserId                    : chatMessage.UserId,
-            SessionId                 : chatMessage.SessionId,
-            Platform                  : chatMessage.Platform,
-            LanguageCode              : chatMessage.LanguageCode,
-            Name                      : chatMessage.Name,
-            MessageContent            : chatMessage.MessageContent,
-            ImageContent              : chatMessage.ImageContent,
-            ImageUrl                  : chatMessage.ImageUrl,
-            PlatformUserId            : chatMessage.PlatformUserId,
-            PlatformMessageId         : chatMessage.PlatformMessageId,
-            PlatformResponseMessageId : chatMessage.PlatformResponseMessageId,
-            SentTimestamp             : chatMessage.SentTimestamp,
-            DeliveredTimestamp        : chatMessage.DeliveredTimestamp,
-            ReadTimestamp             : chatMessage.ReadTimestamp,
-            Direction                 : chatMessage.Direction,
-            ContentType               : chatMessage.ContentType,
-            AssessmentId              : chatMessage.AssessmentId,
-            AssessmentNodeId          : chatMessage.AssessmentNodeId,
-            FeedbackType              : chatMessage.FeedbackType,
-            IdentifiedIntent          : chatMessage.IdentifiedIntent,
-            HumanHandoff              : chatMessage.HumanHandoff,
-
-            /*
-            Session: chatMessage.Session ? {
-                id: chatMessage.Session.id,
-                UserId: chatMessage.Session.UserId,
-                Platform: chatMessage.Session.Platform,
-                LastMessageDate: chatMessage.Session.LastMessageDate,
-            } : null,
-            User: chatMessage.User? {
-                id: chatMessage.User.id,
-                TenantId: chatMessage.User.TenantId,
-                Prefix: chatMessage.User.Prefix,
-                FirstName: chatMessage.User.FirstName,
-                LastName: chatMessage.User.LastName,
-                Phone: chatMessage.User.Phone,
-                Email: chatMessage.User.Email,
-                Gender: chatMessage.User.Gender,
-                BirthDate: chatMessage.User.BirthDate,
-                PreferredLanguage: chatMessage.User.PreferredLanguage
-            } : null
-            */
+            id                    : m.id,
+            TenantId              : m.TenantId,
+            TenantName            : m.TenantName,
+            UserId                : m.UserId,
+            SessionId             : m.SessionId,
+            Channel               : m.Channel,
+            ChannelUserId         : m.ChannelUserId,
+            MessageType           : m.MessageType,
+            Language              : m.LanguageCode ? getLanguage(m.LanguageCode) : null,
+            Content               : m.Content,
+            TranslatedContent     : m.TranslatedContent ?? null,
+            Timestamp             : m.Timestamp,
+            PrevMessageId         : m.PrevMessageId,
+            PrimaryMessageHandler : m.PrimaryMessageHandler ?? null,
+            GeoLocation           : m.GeoLocation ? JSON.parse(m.GeoLocation) : null,
+            ChannelSpecifics      : m.ChannelSpecifics ? JSON.parse(m.ChannelSpecifics) as MessageChannelDetails : null,
+            Metadata              : m.Metadata ? JSON.parse(m.Metadata) : null,
+            Intent                : m.Intent ? JSON.parse(m.Intent) as IntentDetails : null,
+            Assessment            : m.Assessment ? JSON.parse(m.Assessment) as AssessmentDetails : null,
+            Feedback              : m.Feedback ? JSON.parse(m.Feedback) as Feedback : null,
+            HumanHandoff          : m.HumanHandoff ? JSON.parse(m.HumanHandoff) as HumanHandoff : null,
+            QnA                   : m.QnA ? JSON.parse(m.QnA) as QnADetails : null,
         };
         return dto;
     };

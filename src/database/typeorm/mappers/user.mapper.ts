@@ -20,14 +20,6 @@ export class UserMapper {
             Gender            : user.Gender,
             BirthDate         : user.BirthDate,
             PreferredLanguage : user.PreferredLanguage,
-            Sessions          : user.Sessions ? user.Sessions.map(x => {
-                return {
-                    id              : x.id,
-                    UserId          : x.UserId,
-                    Channel         : x.Channel,
-                    LastMessageDate : x.LastMessageDate
-                };
-            }) : null
         };
         return dto;
     };
