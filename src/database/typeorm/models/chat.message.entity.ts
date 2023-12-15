@@ -50,6 +50,11 @@ export class ChatMessage {
     @Min(1)
     ChannelUserId: string;
 
+    @Column({ type: 'varchar', nullable: true })
+    @Max(512)
+    @Min(1)
+    ChannelMessageId: string;
+
     @Column({ type: 'varchar', nullable: true, default: 'en-US' })
     @Max(8)
     @Min(1)

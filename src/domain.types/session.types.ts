@@ -1,7 +1,10 @@
 import { ChannelType } from './enums';
+import { ChatSession } from './message';
 import { BaseSearchFilters, BaseSearchResults } from './miscellaneous/base.search.types';
 import { uuid } from './miscellaneous/system.types';
 import { UserResponseDto } from './user.types';
+
+//////////////////////////////////////////////////////////////////////////////
 
 export interface SessionCreateModel {
     UserId        : uuid;
@@ -40,3 +43,15 @@ export interface SessionSearchFilters extends BaseSearchFilters {
 export interface SessionSearchResults extends BaseSearchResults {
     Items: SessionSearchDto[];
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+export const sessionDtoToChatSession = (session: SessionResponseDto): ChatSession => {
+    return {
+        id              : session.id,
+        UserId          : session.UserId,
+        Channel         : session.Channel,
+        ChannelUserId   : session.ChannelUserId,
+        LastMessageDate : session.LastMessageDate,
+    };
+};

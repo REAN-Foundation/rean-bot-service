@@ -2,13 +2,14 @@
 import express from "express";
 import http from 'https';
 import { scoped, Lifecycle, inject } from "tsyringe";
-import { Message, OutgoingMessage } from "../../../domain.types/message";
+import { Acknowledgement, Message, OutgoingMessage } from "../../../domain.types/message";
 import { ChannelType } from "../../../domain.types/enums";
 import { ChannelBase } from "../../channel.base";
 import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";
 import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";
 import { logger } from "../../../logger/logger";
 import { IChannelMessageConverter } from "../../channel.message.converter.interface";
+import { updateAcknowledgement } from "../whatsapp/whatsapp.channel.common";
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -35,6 +36,19 @@ export class WhatsAppD360Channel extends ChannelBase {
 
     public messageConverter = (): IChannelMessageConverter => {
         return this._messageConverter;
+    };
+
+    public shouldAcknowledge = async (request: express.Request): Promise<Acknowledgement> => {
+        var ack: Acknowledgement = {
+            ShouldAcknowledge : false,
+            Message           : null,
+            StatusCode        : null,
+        };
+        const statuses = request.body.statuses;
+        if (statuses) {
+            ack = await updateAcknowledgement(statuses, ack, request);
+        }
+        return ack;
     };
 
     public setupWebhook = async (): Promise<boolean> => {

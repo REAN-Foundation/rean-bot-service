@@ -11,6 +11,8 @@ import {
     Feedback,
     GeoLocation,
     HumanHandoff,
+    IncomingMessage,
+    OutgoingMessage,
     IntentDetails,
     MessageChannelDetails,
     QnADetails
@@ -26,6 +28,7 @@ export interface ChatMessageCreateModel {
     SessionId             : uuid;
     Channel              ?: ChannelType;
     ChannelUserId        ?: string;
+    ChannelMessageId     ?: string;
     LanguageCode         ?: LangCode;
     Direction            ?: MessageDirection;
     MessageType          ?: MessageContentType;
@@ -45,7 +48,7 @@ export interface ChatMessageCreateModel {
 }
 
 export interface ChatMessageUpdateModel {
-    id                   ?: uuid;
+    ChannelMessageId     ?: string;
     LanguageCode         ?: LangCode;
     MessageType          ?: MessageContentType;
     Content              ?: string;
@@ -68,6 +71,7 @@ export interface ChatMessageBaseDto {
     UserId                : uuid;
     Channel               : ChannelType;
     ChannelUserId         : string;
+    ChannelMessageId     ?: string;
     MessageType           : MessageContentType;
     SessionId            ?: uuid;
     Language             ?: Language;
@@ -105,3 +109,70 @@ export interface ChatMessageSearchFilters extends BaseSearchFilters {
 export interface ChatMessageSearchResults extends BaseSearchResults {
     Items: ChatMessageResponseDto[];
 }
+
+//////////////////////////////////////////////////////////////////////////////
+
+export const incomingMessageToCreateModel = (m: IncomingMessage): ChatMessageCreateModel => {
+    if (m == null) {
+        return null;
+    }
+    const model: ChatMessageCreateModel = {
+        TenantId              : m.TenantId,
+        TenantName            : m.TenantName,
+        UserId                : m.UserId,
+        SessionId             : m.SessionId,
+        Channel               : m.Channel,
+        ChannelUserId         : m.ChannelUserId,
+        ChannelMessageId      : m.ChannelMessageId,
+        MessageType           : m.MessageType,
+        LanguageCode          : m.Language?.Code,
+        Direction             : MessageDirection.In,
+        Content               : m.Content,
+        TranslatedContent     : m.TranslatedContent,
+        Timestamp             : m.Timestamp,
+        PrevMessageId         : m.PrevOutgoingMessageId,
+        GeoLocation           : m.GeoLocation ? JSON.stringify(m.GeoLocation) : null,
+        ChannelSpecifics      : m.ChannelSpecifics ? JSON.stringify(m.ChannelSpecifics) : null,
+        PrimaryMessageHandler : null,
+        Metadata              : m.Metadata ? JSON.stringify(m.Metadata) : null,
+        Intent                : null,
+        Assessment            : null,
+        Feedback              : null,
+        HumanHandoff          : null,
+        QnA                   : null,
+    };
+    return model;
+};
+
+export const outgoingMessageToCreateModel = (m: OutgoingMessage): ChatMessageCreateModel => {
+    if (m == null) {
+        return null;
+    }
+    const model: ChatMessageCreateModel = {
+        TenantId              : m.TenantId,
+        TenantName            : m.TenantName,
+        UserId                : m.UserId,
+        SessionId             : m.SessionId,
+        Channel               : m.Channel,
+        ChannelUserId         : m.ChannelUserId,
+        ChannelMessageId      : m.ChannelMessageId,
+        MessageType           : m.MessageType,
+        LanguageCode          : m.Language?.Code,
+        Direction             : MessageDirection.Out,
+        Content               : m.Content,
+        TranslatedContent     : m.TranslatedContent,
+        Timestamp             : m.Timestamp,
+        PrevMessageId         : m.PrevIncomingMessageId,
+        GeoLocation           : m.GeoLocation ? JSON.stringify(m.GeoLocation) : null,
+        ChannelSpecifics      : m.ChannelSpecifics ? JSON.stringify(m.ChannelSpecifics) : null,
+        PrimaryMessageHandler : m.PrimaryMessageHandler,
+        Metadata              : m.Metadata ? JSON.stringify(m.Metadata) : null,
+        Intent                : m.Intent ? JSON.stringify(m.Intent) : null,
+        Assessment            : m.Assessment ? JSON.stringify(m.Assessment) : null,
+        Feedback              : m.Feedback ? JSON.stringify(m.Feedback) : null,
+        HumanHandoff          : m.HumanHandoff ? JSON.stringify(m.HumanHandoff) : null,
+        QnA                   : m.QnA ? JSON.stringify(m.QnA) : null,
+    };
+    return model;
+};
+

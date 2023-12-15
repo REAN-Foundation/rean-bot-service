@@ -11,11 +11,19 @@ import { Language } from "./language";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export interface Acknowledgement {
+    ShouldAcknowledge : boolean;
+    Message          ?: string;
+    StatusCode       ?: number;
+}
+
 export interface MessageChannelDetails {
     Channel                  : ChannelType;
     ChannelUserId           ?: string;
-    ChannelMessageId        ?: string;
-    ChannelResponseMessageId?: string;
+    // ChannelResponseMessageId?: string;
+    SentTimestamp           ?: Date;
+    DeliveredTimestamp      ?: Date;
+    ReadTimestamp           ?: Date;
 }
 
 export interface SupportChannel extends MessageChannelDetails {
@@ -83,14 +91,16 @@ export interface Message {
     TenantName        : string;
     UserId            : uuid;
     Channel           : ChannelType;
+    ChannelUserId    ?: string;
+    ChannelMessageId ?: string;
     MessageType       : MessageContentType;
     SessionId        ?: uuid;
     Language         ?: Language;
-    Content          ?: string | unknown;
-    TranslatedContent?: string | unknown;
+    Content          ?: string;
+    TranslatedContent?: string;
     Timestamp         : Date;
     Metadata         ?: Record<string, unknown> | unknown;
-    GeoLocation   ?: GeoLocation;
+    GeoLocation      ?: GeoLocation;
     ChannelSpecifics ?: MessageChannelDetails;
     PrevHistory      ?: Message[];
 }
@@ -107,4 +117,16 @@ export interface OutgoingMessage extends Message {
     Feedback              ?: Feedback;
     HumanHandoff          ?: HumanHandoff;
     QnA                   ?: QnADetails;
+}
+
+export interface ChatSession {
+    id              ?: uuid;
+    TenantId        ?: uuid;
+    TenantName      ?: string;
+    UserId           : uuid;
+    UserFirstName   ?: string;
+    UserLastName    ?: string;
+    Channel          : ChannelType;
+    ChannelUserId   ?: string;
+    LastMessageDate ?: Date;
 }

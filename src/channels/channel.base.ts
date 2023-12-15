@@ -1,5 +1,5 @@
 import express from 'express';
-import { IncomingMessage, Message, OutgoingMessage } from '../domain.types/message';
+import { Acknowledgement, IncomingMessage, Message, OutgoingMessage } from '../domain.types/message';
 import { IChannel } from './channel.interface';
 import { IWebhookAuthenticator } from '../auth/webhook.authenticator/webhook.authenticator.interface';
 import { IChannelMessageConverter } from './channel.message.converter.interface';
@@ -22,6 +22,8 @@ export abstract class ChannelBase implements IChannel {
     abstract messageConverter(): IChannelMessageConverter;
 
     abstract setupWebhook(): Promise<boolean>;
+
+    abstract shouldAcknowledge(request: express.Request): Promise<Acknowledgement>;
 
     abstract processIncoming (message: IncomingMessage): Promise<IncomingMessage>;
 

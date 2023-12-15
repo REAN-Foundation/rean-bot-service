@@ -14,7 +14,7 @@ import { ClickUpAuthenticator } from '../auth/webhook.authenticator/providers/cl
 import { SlackAuthenticator } from '../auth/webhook.authenticator/providers/slack.authenticator';
 
 import { WhatsAppChannel } from '../channels/providers/whatsapp/whatsapp.channel';
-import { WhatsAppD360Channel } from '../channels/providers/whatsapp/whatsapp.d360.channel';
+import { WhatsAppD360Channel } from '../channels/providers/whatsapp.d360/whatsapp.d360.channel';
 
 // import { TelegramChannel } from '../channels/providers/telegram/telegram.channel';
 // import { WebChannel } from '../channels/providers/web/web.channel';

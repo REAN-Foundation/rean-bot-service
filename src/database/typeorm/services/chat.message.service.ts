@@ -53,6 +53,39 @@ export class ChatMessageService extends BaseService {
         }
     };
 
+    public getLatestMessageForSession = async (sessionId: uuid): Promise<ChatMessageResponseDto> => {
+        try {
+            const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+            var chatMessage = await repo.findOne({
+                where : {
+                    SessionId : sessionId,
+                },
+                order : {
+                    Timestamp : 'DESC',
+                },
+            });
+            return ChatMessageMapper.toResponseDto(chatMessage);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getByChannelMessageId = async (channelMessageId: string): Promise<ChatMessageResponseDto> => {
+        try {
+            const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+            var chatMessage = await repo.findOne({
+                where : {
+                    ChannelMessageId : channelMessageId,
+                },
+            });
+            return ChatMessageMapper.toResponseDto(chatMessage);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public search = async (filters: ChatMessageSearchFilters): Promise<ChatMessageSearchResults> => {
         try {
             var search = this.getSearchObject(filters);
@@ -85,6 +118,10 @@ export class ChatMessageService extends BaseService {
             });
             if (!chatMessage) {
                 ErrorHandler.throwNotFoundError('Chat message not found!');
+            }
+
+            if (model.ChannelMessageId !== undefined && model.ChannelMessageId != null) {
+                chatMessage.ChannelMessageId = model.ChannelMessageId;
             }
 
             if (model.LanguageCode !== undefined && model.LanguageCode != null) {
