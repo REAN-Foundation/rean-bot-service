@@ -19,11 +19,18 @@ export interface Acknowledgement {
 
 export interface MessageChannelDetails {
     Channel                  : ChannelType;
-    ChannelUserId           ?: string;
-    // ChannelResponseMessageId?: string;
+    ReferenceMessageId?: string;
     SentTimestamp           ?: Date;
     DeliveredTimestamp      ?: Date;
     ReadTimestamp           ?: Date;
+}
+
+export interface ChannelUser {
+    ChannelUserId?: string;
+    FirstName    ?: string;
+    LastName     ?: string;
+    Email        ?: string;
+    Phone        ?: string;
 }
 
 export interface SupportChannel extends MessageChannelDetails {
@@ -90,8 +97,8 @@ export interface Message {
     TenantId         ?: uuid;
     TenantName        : string;
     UserId            : uuid;
+    ChannelUser      ?: ChannelUser;
     Channel           : ChannelType;
-    ChannelUserId    ?: string;
     ChannelMessageId ?: string;
     MessageType       : MessageContentType;
     SessionId        ?: uuid;

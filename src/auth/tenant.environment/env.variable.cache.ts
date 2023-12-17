@@ -22,4 +22,8 @@ export class EnvVariableCache {
         this._cache = {};
     }
 
+    public static getTenantKeys(): string[] {
+        return Object.keys(this._cache);
+    }
+
 }

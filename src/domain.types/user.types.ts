@@ -3,6 +3,13 @@ import { uuid } from './miscellaneous/system.types';
 import { Gender } from './enums';
 import { SessionResponseDto } from './session.types';
 
+////////////////////////////////////////////////////////////////////////////////
+
+export interface PersonRole {
+    id          : number,
+    RoleName    : string;
+}
+
 export interface UserCreateModel {
     TenantId         ?: uuid;
     Prefix           ?: string;

@@ -12,6 +12,8 @@ import { UserService } from '../../database/typeorm/services/user.service';
 import { ChatMessageCreateModel, incomingMessageToCreateModel, outgoingMessageToCreateModel } from '../../domain.types/chat.message.types';
 import { IncomingMessage, OutgoingMessage } from '../../domain.types/message';
 import { sessionDtoToChatSession } from '../../domain.types/session.types';
+import { logger } from '../../logger/logger';
+import { UserCreateModel } from '../../domain.types/user.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +32,6 @@ export class ChannelWebhookController {
 
             const channel = container.resolve(`IChannel`) as IChannel;
             const envProvider = container.resolve(TenantEnvironmentProvider);
-            const messageConverter = channel.messageConverter();
             const dbChatMessageService = container.resolve(ChatMessageService);
             const dbSessionService = container.resolve(SessionService);
             const dbUserService = container.resolve(UserService);
@@ -45,14 +46,29 @@ export class ChannelWebhookController {
             }
 
             //3. Convert incoming message to a standard format
-            const incomingMessage: IncomingMessage = await messageConverter.fromChannel(request.body);
+            const messageConverter = channel.messageConverter();
+            const incomingMessage: IncomingMessage = await messageConverter.fromChannel(request);
 
             //4. Get User and Session details from the database
-            const session = await dbSessionService.getByChannelUserId(incomingMessage.ChannelUserId);
+            const channelUser = incomingMessage.ChannelUser;
+            const channelUserId = incomingMessage.ChannelUser.ChannelUserId;
+            const session = await dbSessionService.getByChannelUserId(channelUserId);
+            var user = null;
             if (session === null) {
-                ErrorHandler.throwNotFoundError(`Session not found for user ${incomingMessage.ChannelSpecifics.ChannelUserId}`);
+                user = await dbUserService.getByChannelUserId(channelUserId);
+                if (user === null) {
+                    logger.info(`User not found for channel user id ${channelUserId}`);
+
+                    const userCreateModel: UserCreateModel = {
+                        FirstName : channelUser.FirstName,
+                        LastName  : channelUser.LastName,
+                        Email     : channelUser.Email,
+                        Phone     : channelUser.Phone,
+                    };
+                    user = await dbUserService.create(userCreateModel);
+                    logger.info(`Session not found for user ${channelUserId}`);
+                }
             }
-            const user = session.UserId;
 
             //4. Process the message along the pre-processing pipeline
             const chatSession = sessionDtoToChatSession(session);
@@ -79,20 +95,25 @@ export class ChannelWebhookController {
                 HumanHandoffHandler.handle(outgoingMessage);
             }
 
-            //10. Process outgoing message
+            //10. Intent handling if an intent is detected
+            if (outgoingMessage.Intent) {
+                outgoingMessage = IntentHandler.handle(outgoingMessage);
+            }
+
+            //11. Process outgoing message
             outgoingMessage = await channel.processOutgoing(outgoingMessage);
 
-            //11. Store the outgoing message in the database
+            //12. Store the outgoing message in the database
             const outCreateModel: ChatMessageCreateModel = outgoingMessageToCreateModel(outgoingMessage);
             const storedOutgoingMessage = await dbChatMessageService.create(outCreateModel);
 
-            //12. Update the message cache with the outgoing message from user
+            //13. Update the message cache with the outgoing message from user
             await MessageCache.update(outgoingMessage);
 
-            //13. Convert outgoing message to channel specific format
+            //14. Convert outgoing message to channel specific format
             const outgoingMessageToChannel = await messageConverter.toChannel(outgoingMessage);
 
-            //14. Send the message to the channel
+            //15. Send the message to the channel
             const channelSendResponse = await channel.send(outgoingMessageToChannel);
             const respMessage = 'Chat message handled successfully!';
 
