@@ -15,10 +15,8 @@ import { WhatsAppOutboundMessageConverter } from './whatsapp.outbound.message.co
 @scoped(Lifecycle.ContainerScoped)
 export default class WhatsAppMessageConverter implements IChannelMessageConverter {
 
-    public fromChannel = async (request: express.Request): Promise<IncomingMessage> => {
-        const container = request.container;
-        const requestBody = request.body;
-        const temp = requestBody.entry[0]?.changes[0]?.value;
+    public fromChannel = async (body: any): Promise<IncomingMessage> => {
+        const temp = body.entry[0]?.changes[0]?.value;
         if (!temp) {
             return null;
         }
