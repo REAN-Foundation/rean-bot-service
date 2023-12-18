@@ -1,11 +1,12 @@
-export interface StoredMessage {
-    id: string;
-    content: string;
-    timestamp: number;
-}
+import { SerializableMessage } from "../../domain.types/message";
+
+///////////////////////////////////////////////////////////////////////
 
 export interface IMessageCache {
-    addMessage(sessionId: string, message: StoredMessage): void;
-    getMessages(sessionId: string): StoredMessage[] | undefined;
+
+    addMessage(sessionId: string, message: SerializableMessage): void;
+
+    getMessages(sessionId: string): SerializableMessage[] | undefined;
+
     clearCache(): void;
 }

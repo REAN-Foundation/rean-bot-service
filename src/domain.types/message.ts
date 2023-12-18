@@ -109,22 +109,28 @@ export interface Message {
     Metadata         ?: Record<string, unknown> | unknown;
     GeoLocation      ?: GeoLocation;
     ChannelSpecifics ?: MessageChannelDetails;
-    PrevHistory      ?: Message[];
+    PrevContextMessageId ?: uuid;
+    // PrevHistory      ?: Message[];
 }
 
 export interface IncomingMessage extends Message {
-    PrevOutgoingMessageId ?: uuid;
+    // This interface is used to deserialize the message object
 }
 
 export interface OutgoingMessage extends Message {
-    PrevIncomingMessageId ?: uuid;
-    PrimaryMessageHandler  : MessageHandlerType;
+    PrimaryMessageHandler ?: MessageHandlerType;
     Intent                ?: IntentDetails;
     Assessment            ?: AssessmentDetails;
     Feedback              ?: Feedback;
     HumanHandoff          ?: HumanHandoff;
     QnA                   ?: QnADetails;
 }
+
+export interface SerializableMessage extends IncomingMessage, OutgoingMessage {
+    // This interface is used to serialize the message object
+}
+
+export type ProcessibleMessage = SerializableMessage;
 
 export interface ChatSession {
     id              ?: uuid;

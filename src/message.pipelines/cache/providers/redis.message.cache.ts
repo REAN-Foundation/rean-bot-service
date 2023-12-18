@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { IMessageCache, StoredMessage } from "../message.cache.interface";
+import { IMessageCache } from "../message.cache.interface";
+import { SerializableMessage } from "../../../domain.types/message";
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -7,11 +8,11 @@ export default class RedisMessageCache implements IMessageCache {
 
     // Implement Redis-based cache logic here
     // ...
-    public addMessage(sessionId: string, message: StoredMessage): void {
+    public addMessage(sessionId: string, message: SerializableMessage): void {
         // Implement Redis-based addMessage logic here
     }
 
-    public getMessages(sessionId: string): StoredMessage[] | undefined {
+    public getMessages(sessionId: string): SerializableMessage[] | undefined {
         // Implement Redis-based getMessages logic here
         return undefined;
     }

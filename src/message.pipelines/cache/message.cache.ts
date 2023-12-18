@@ -1,6 +1,7 @@
 import LocalMemoryMessageCache from "./providers/local.memory.message.cache";
 import RedisMessageCache  from "./providers/redis.message.cache";
-import { IMessageCache, StoredMessage } from "./message.cache.interface";
+import { IMessageCache } from "./message.cache.interface";
+import { SerializableMessage } from "../../domain.types/message";
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -20,11 +21,11 @@ export default class MessageCache {
         }
     }
 
-    public static addMessage(sessionId: string, message: StoredMessage): void {
+    public static addMessage(sessionId: string, message: SerializableMessage): void {
         this._cache.addMessage(sessionId, message);
     }
 
-    public static getMessages(sessionId: string): StoredMessage[] | undefined {
+    public static getMessages(sessionId: string): SerializableMessage[] | undefined {
         return this._cache.getMessages(sessionId);
     }
 
