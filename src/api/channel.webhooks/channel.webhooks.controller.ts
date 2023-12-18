@@ -20,6 +20,7 @@ import { Tenant } from '../../domain.types/tenant.types';
 import { ChannelType } from '../../domain.types/enums';
 import MessageHandlerRouter from '../../message.handlers/message.handler.router';
 import MessageCache from '../../message.pipelines/cache/message.cache';
+import { StoredMessage } from '../../message.pipelines/cache/message.cache.interface';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -81,10 +82,12 @@ export class ChannelWebhookController {
             incomingMessage.id = storedIncomingMessage.id;
 
             //6. Update the message cache with the incoming message from user
-            await MessageCache.addMessage(session.id, incomingMessage);
+            const cachableMessage: any = incomingMessage; // TODO: Need to create a converter.
+            await MessageCache.addMessage(session.id, cachableMessage);
 
             //7. Send the message to the message handlers
-            var outgoingMessage: OutgoingMessage = await MessageHandlerRouter.getPrimaryHandler(incomingMessage);
+            const primaryHandler = await MessageHandlerRouter.getPrimaryHandler(incomingMessage);
+            const outgoingMessage: OutgoingMessage = await primaryHandler.handle(incomingMessage);
 
             //8. Handle feedback if needed
             if (outgoingMessage.Feedback) {

@@ -1,5 +1,5 @@
-import { Message } from "../domain.types/message";
+import { IncomingMessage, OutgoingMessage } from "../domain.types/message";
 
 export interface IMessageHandler {
-    handle(message: Message): Promise<Message>;
+    handle(message: IncomingMessage): Promise<OutgoingMessage>;
 }

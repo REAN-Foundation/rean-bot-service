@@ -6,7 +6,7 @@ import { IMessageHandler } from "./message.handler.interface";
 
 export default class MessageHandlerRouter {
 
-    public getPrimaryHandler = async (message: IncomingMessage): Promise<IMessageHandler> => {
+    public static getPrimaryHandler = async (message: IncomingMessage): Promise<IMessageHandler> => {
         logger.info('MessageHandlerRouter.getPrimaryHandler');
         logger.info(JSON.stringify(message, null, 2));
         return null;
