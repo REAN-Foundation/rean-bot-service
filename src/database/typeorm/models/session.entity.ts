@@ -25,6 +25,14 @@ export class Session {
     @Column({ type: 'uuid', nullable: false })
     UserId: string;
 
+    @Column({ type: 'uuid', nullable: true })
+    TenantId: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    @Max(256)
+    @Min(2)
+    TenantName: string;
+
     @Column({ type: 'varchar', nullable: true, default: 'WhatsApp' })
     @IsEmail()
     @Max(128)

@@ -14,6 +14,10 @@ export class EnvVariableCache {
         return this._cache[tenantKey]?.[envKey];
     }
 
+    public static getAllForTenant(tenantKey: string): any {
+        return this._cache[tenantKey];
+    }
+
     public static delete(tenantKey: string, envKey: string): void {
         delete this._cache[tenantKey]?.[envKey];
     }

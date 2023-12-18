@@ -1,6 +1,6 @@
-import type { PersonRole } from "../../domain.types/user.types";
-import { ApiError } from "../../common/handlers/error.handler";
-import { logger } from "../../logger/logger";
+import type { PersonRole } from "../../../domain.types/user.types";
+import { ApiError } from "../../../common/handlers/error.handler";
+import { logger } from "../../../logger/logger";
 
 /////////////////////////////////////////////////////////////////////
 

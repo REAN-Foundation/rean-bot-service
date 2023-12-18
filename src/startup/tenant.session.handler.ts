@@ -23,23 +23,16 @@ export class TenantSessionHandler {
 
     public init = async () => {
         try {
-            await this.start();
-        } catch (error) {
-            logger.error('An error occurred while initializing tenant login session handler.' + error.message);
-        }
-    };
-
-    private start = async () => {
-        try {
             const envCache = EnvVariableCache.getTenantKeys();
-            for (const tenantName of envCache) {
-                const session = await LoginSessionCache.getSession(tenantName);
+            for await (const tenantName of envCache) {
+                const session = await LoginSessionCache.get(tenantName);
                 if (!session) {
                     logger.error(`Some problem encountered while fetching session for tenant ${tenantName}`);
                 }
+                logger.info(`Session for tenant ${tenantName} -> ${JSON.stringify(session, null, 2)}.`);
             }
         } catch (error) {
-            logger.error('An error occurred while starting tenant login session handler.' + error.message);
+            logger.error('An error occurred while initializing tenant login session handler.' + error.message);
         }
     };
 

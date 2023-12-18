@@ -10,6 +10,8 @@ export interface SessionCreateModel {
     UserId        : uuid;
     Channel       : ChannelType;
     ChannelUserId?: string;
+    TenantId     ?: uuid;
+    TenantName   ?: string;
 }
 
 export interface SessionUpdateModel {

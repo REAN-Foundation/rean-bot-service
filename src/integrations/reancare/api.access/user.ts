@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import { delete_, get_, post_, put_ } from "./common";
-import { logger } from "../../logger/logger";
-import { ApiError } from "../../common/handlers/error.handler";
-import { uuid } from "../../domain.types/miscellaneous/system.types";
+import { logger } from "../../../logger/logger";
+import { ApiError } from "../../../common/handlers/error.handler";
+import { uuid } from "../../../domain.types/miscellaneous/system.types";
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -97,6 +97,7 @@ export const registerUser = async (
     phone         ?: string,
     firstName     ?: string,
     lastName      ?: string,
+    // email         ?: string,
 ) => {
 
     const registrationModel: UserRegistrationModel = getRegistrationModel(
@@ -125,14 +126,18 @@ export const registerUser = async (
             logger.error(chalk.red(`User registration response message: 404 - ${response.Message}`));
             return null;
         }
-        else if (response.HttpCode !== 200) {
-            logger.error(chalk.red(`User registration response message: ${response.Message}`));
+        else if (response.HttpCode !== 201 && response.HttpCode !== 200) {
+            logger.error(chalk.red(`User registration failed: ${response.Message}`));
             throw new ApiError(response.HttpCode, response.Message);
         }
     }
+    else if (!response.Data) {
+        logger.error(chalk.red(`User registration failed: ${response.Message}`));
+        throw new ApiError(response.HttpCode, response.Message);
+    }
     logger.info(chalk.green(`User registration response message: ${response.Message}`));
 
-    return response;
+    return response.Data;
 };
 
 export const getRegistrationModel = (

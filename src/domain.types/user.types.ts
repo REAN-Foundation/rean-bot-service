@@ -11,6 +11,7 @@ export interface PersonRole {
 }
 
 export interface UserCreateModel {
+    id                : uuid;
     TenantId         ?: uuid;
     Prefix           ?: string;
     FirstName        ?: string;

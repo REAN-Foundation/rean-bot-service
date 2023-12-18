@@ -1,15 +1,15 @@
 import chalk from 'chalk';
-import { logger } from "../../logger/logger";
-import { ApiError } from "../../common/handlers/error.handler";
-import { uuid } from '../../domain.types/miscellaneous/system.types';
-import { LoginSessionCache } from "./login.session.cache";
+import { logger } from "../../../logger/logger";
+import { ApiError } from "../../../common/handlers/error.handler";
+import { uuid } from '../../../domain.types/miscellaneous/system.types';
+import { LoginSessionCache } from "../login.session.cache";
 
 /////////////////////////////////////////////////////////////////////////
 const REAN_BACKEND_API_KEY = process.env.REAN_BACKEND_API_KEY;
 /////////////////////////////////////////////////////////////////////////
 
 export const get_ = async (tenantId: string, url: string) => {
-    const session = await LoginSessionCache.getSession(tenantId);
+    const session = await LoginSessionCache.get(tenantId);
     const AccessToken = session?.AccessToken;
     //logger.info(`AccessToken = ${AccessToken}`);
     const headers = {};
@@ -36,7 +36,7 @@ export const get_ = async (tenantId: string, url: string) => {
 };
 
 export const post_ = async (tenantId: string, url: string, bodyObj: unknown) => {
-    const session = await LoginSessionCache.getSession(tenantId);
+    const session = await LoginSessionCache.get(tenantId);
     const AccessToken = session?.AccessToken;
     const headers = {};
     headers['Content-Type'] = 'application/json';
@@ -59,7 +59,7 @@ export const post_ = async (tenantId: string, url: string, bodyObj: unknown) => 
 };
 
 export const put_ = async (tenantId: string, url: string, bodyObj: unknown) => {
-    const session = await LoginSessionCache.getSession(tenantId);
+    const session = await LoginSessionCache.get(tenantId);
     const AccessToken = session?.AccessToken;
     const headers = {};
     headers['Content-Type'] = 'application/json';
@@ -82,7 +82,7 @@ export const put_ = async (tenantId: string, url: string, bodyObj: unknown) => {
 };
 
 export const delete_ = async (tenantId: uuid, url: string) => {
-    const session = await LoginSessionCache.getSession(tenantId);
+    const session = await LoginSessionCache.get(tenantId);
     const AccessToken = session?.AccessToken;
     const headers = {};
     headers['Content-Type'] = 'application/json';
