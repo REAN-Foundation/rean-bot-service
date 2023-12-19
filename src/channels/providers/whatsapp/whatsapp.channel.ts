@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import express from "express";
 import http from 'https';
+import needle from "needle";
 import { scoped, Lifecycle, inject, injectable } from "tsyringe";
 import { Acknowledgement, Message, OutgoingMessage } from "../../../domain.types/message";
 import { ChannelType } from "../../../domain.types/enums";
@@ -9,7 +10,6 @@ import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tena
 import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";
 import { logger } from "../../../logger/logger";
 import { IChannelMessageConverter } from "../../channel.message.converter.interface";
-
 import { updateAcknowledgement } from "./whatsapp.channel.common";
 
 //////////////////////////////////////////////////////////////////////////////
@@ -99,15 +99,38 @@ export class WhatsAppChannel extends ChannelBase {
 
     };
 
+    public send = async (channelUserId: string, message: any): Promise<any> => {
+        try {
+            const apiVersion = this._tenantEnvProvider.getTenantEnvironmentVariable("META_API_VERSION");
+            const apiToken = this._tenantEnvProvider.getTenantEnvironmentVariable("META_API_TOKEN");
+            const host = this._tenantEnvProvider.getTenantEnvironmentVariable("META_WHATSAPP_HOST");
+            const url = host + '/' + apiVersion + '/' + channelUserId + '/messages';
+            const postData = JSON.stringify(message);
+            const options = {
+                headers : {
+                    'Content-Type'  : 'application/json',
+                    'Authorization' : `Bearer ${apiToken}`,
+                },
+                compressed : true,
+            };
+
+            const response = await needle('post', url, postData, options);
+            if (response.statusCode !== 201 && response.statusCode !== 200) {
+                logger.error(`Error occurred while sending message to Whatsapp: ${response.body}`);
+            }
+            logger.info(`Message sent to Whatsapp: ${response.body}`);
+            return response.body;
+        }
+        catch (error) {
+            logger.error(`Error occurred while sending message to Whatsapp: ${error}`);
+        }
+    };
+
     public processIncoming = async (message: Message): Promise<Message> => {
         throw new Error("Method not implemented.");
     };
 
     public processOutgoing = async (message: Message): Promise<OutgoingMessage> => {
-        throw new Error("Method not implemented.");
-    };
-
-    public send = async (message: Message): Promise<boolean> => {
         throw new Error("Method not implemented.");
     };
 

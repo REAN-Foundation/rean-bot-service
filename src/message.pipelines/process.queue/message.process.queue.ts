@@ -109,7 +109,7 @@ export default class MessageProcessQueue {
         const outgoingMessageToChannel = await messageConverter.toChannel(processible);
 
         //12. Send the message to the channel
-        const channelSendResponse = await channel.send(outgoingMessageToChannel);
+        const channelSendResponse = await channel.send(channelUserId, outgoingMessageToChannel);
         const outMessageCahnnelId = channelSendResponse.ChannelMessageId;
         processible.ChannelMessageId = outMessageCahnnelId;
 

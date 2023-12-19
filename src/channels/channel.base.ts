@@ -29,7 +29,7 @@ export abstract class ChannelBase implements IChannel {
 
     abstract processOutgoing (message: OutgoingMessage): Promise<OutgoingMessage>;
 
-    abstract send (message: Message): Promise<boolean>;
+    abstract send (channelUserId: string, message: any): Promise<boolean>;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async acknowledge (response: express.Response, message: Message): Promise<boolean> {
