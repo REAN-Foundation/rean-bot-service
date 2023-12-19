@@ -103,7 +103,7 @@ export interface Message {
     ChannelUser      ?: ChannelUser;
     Channel           : ChannelType;
     ChannelMessageId ?: string;
-    MessageType       : MessageContentType;
+    MessageType      ?: MessageContentType;
     Direction         : MessageDirection;
     SessionId        ?: uuid;
     Language         ?: Language;
