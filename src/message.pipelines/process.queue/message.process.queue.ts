@@ -3,7 +3,6 @@ import PQueue from 'p-queue';
 import { logger } from '../../logger/logger';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { Lifecycle, inject, scoped } from 'tsyringe';
-import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 import { IChannel } from '../../channels/channel.interface';
 import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
 import { SessionService } from '../../database/typeorm/services/session.service';
@@ -81,46 +80,49 @@ export default class MessageProcessQueue {
 
         //6. Send the message to the message handlers
         const primaryHandler = await MessageHandlerRouter.getPrimaryHandler(incomingMessage);
-        const processible: ProcessibleMessage = await primaryHandler.handle(incomingMessage);
+        var processible: ProcessibleMessage = await primaryHandler.handle(incomingMessage);
 
         //7. Handle feedback if needed
         if (processible.Feedback) {
-            FeedbackHandler.handle(processible);
+            const feedbackHandler = container.resolve('FeedbackHandler');
+            return feedbackHandler.handle(processible);
         }
 
         //8. Handle Human-Handoff if needed
         if (processible.HumanHandoff) {
-            HumanHandoffHandler.handle(processible);
+            const humanHandoffHandler = container.resolve('HumanHandoffHandler');
+            return humanHandoffHandler.handle(processible);
         }
 
         //9. Intent handling if an intent is detected
         if (processible.Intent) {
-            processible = IntentHandler.handle(processible);
+            const intentHandler = container.resolve('IntentHandler');
+            processible = intentHandler.handle(processible);
         }
 
         //10. Process outgoing message
         processible = await channel.processOutgoing(processible);
 
-        //11. Store the outgoing message in the database
+        //11. Convert outgoing message to channel specific format
+        const outgoingMessageToChannel = await messageConverter.toChannel(processible);
+
+        //12. Send the message to the channel
+        const channelSendResponse = await channel.send(outgoingMessageToChannel);
+        const outMessageCahnnelId = channelSendResponse.ChannelMessageId;
+        processible.ChannelMessageId = outMessageCahnnelId;
+
+        //13. Store the outgoing message in the database
         const outCreateModel: ChatMessageCreateModel = outgoingMessageToCreateModel(processible);
         const storedOutgoingMessage = await dbChatMessageService.create(outCreateModel);
 
-        //12. Update the message cache with the outgoing message from user
-        await MessageCache.update(processible);
+        //14. Update the message cache with the outgoing message from user
+        await MessageCache.addMessage(session.id, processible);
 
-        //13. Convert outgoing message to channel specific format
-        const outgoingMessageToChannel = await messageConverter.toChannel(processible);
-
-        //14. Send the message to the channel
-        const channelSendResponse = await channel.send(outgoingMessageToChannel);
-        const respMessage = 'Chat message handled successfully!';
-
-        // const msg = request.body;
-        // const channelSendResponse = await channel.send(msg);
+        logger.info('MessageProcessQueue.processMessage: Message sent to channel');
+        logger.info(JSON.stringify(channelSendResponse, null, 2));
 
     };
 
-    
     private static getUserDetails = async (
         container,
         channelUserId: string,
@@ -189,6 +191,5 @@ export default class MessageProcessQueue {
         }
         return { session, botUser };
     };
-
 
 }

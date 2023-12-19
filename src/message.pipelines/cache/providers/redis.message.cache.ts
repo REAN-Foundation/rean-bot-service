@@ -21,4 +21,12 @@ export default class RedisMessageCache implements IMessageCache {
         // Implement Redis-based clearCache logic here
     }
 
+    removeMessages(sessionId: string): void {
+        throw new Error("Method not implemented.");
+    }
+
+    updateMessage(sessionId: string, message: SerializableMessage): void {
+        throw new Error("Method not implemented.");
+    }
+
 }

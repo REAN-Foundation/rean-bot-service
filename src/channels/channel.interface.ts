@@ -24,7 +24,7 @@ export interface IChannel {
 
     processOutgoing: (message: OutgoingMessage) => Promise<OutgoingMessage>;
 
-    send: (message: Message) => Promise<boolean>;
+    send: (message: Message) => Promise<any>;
 
     acknowledge: (response: express.Response, message: Message) => Promise<boolean>;
 

@@ -22,6 +22,20 @@ export default class LocalMemoryMessageCache implements IMessageCache {
         return this.cache.get(sessionId);
     }
 
+    public removeMessages(sessionId: string): void {
+        this.cache.delete(sessionId);
+    }
+
+    public updateMessage(sessionId: string, message: SerializableMessage): void {
+        const messages = this.cache.get(sessionId);
+        if (messages) {
+            const index = messages.findIndex(m => m.id === message.id);
+            if (index > -1) {
+                messages[index] = message;
+            }
+        }
+    }
+
     public clearCache(): void {
         this.cache.clear();
     }

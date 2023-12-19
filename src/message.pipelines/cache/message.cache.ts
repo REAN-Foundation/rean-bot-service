@@ -29,6 +29,14 @@ export default class MessageCache {
         return this._cache.getMessages(sessionId);
     }
 
+    public static removeMessages(sessionId: string): void {
+        this._cache.removeMessages(sessionId);
+    }
+
+    public static updateMessage(sessionId: string, message: SerializableMessage): void {
+        this._cache.updateMessage(sessionId, message);
+    }
+
     public static clearCache(): void {
         this._cache.clearCache();
     }

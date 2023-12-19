@@ -8,5 +8,9 @@ export interface IMessageCache {
 
     getMessages(sessionId: string): SerializableMessage[] | undefined;
 
+    removeMessages(sessionId: string): void;
+
+    updateMessage(sessionId: string, message: SerializableMessage): void;
+
     clearCache(): void;
 }
