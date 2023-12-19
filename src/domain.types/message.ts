@@ -8,7 +8,7 @@ import {
     MessageDirection
 } from "./enums";
 import { uuid } from "./miscellaneous/system.types";
-import { Language } from "./language";
+import { Language, LanguageCode } from "./language";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -95,6 +95,26 @@ export interface QnADetails {
     Confidence       ?: number;
 }
 
+export interface OptionButton {
+    id       : string;
+    Title    : string;
+    ImageUrl?: string;
+}
+
+export enum OptionButtonType {
+    Template    = 'Template',
+    Interactive = 'Interactive',
+    Other       = 'Other',
+}
+
+export interface OptionsUI {
+    Title      ?: string;
+    Template   ?: string;
+    ButtonType ?: OptionButtonType;
+    Language   ?: LanguageCode;
+    Options     : OptionButton[];
+}
+
 export interface Message {
     id               ?: uuid;
     TenantId         ?: uuid;
@@ -114,7 +134,6 @@ export interface Message {
     GeoLocation      ?: GeoLocation;
     ChannelSpecifics ?: MessageChannelDetails;
     PrevContextMessageId ?: uuid;
-    // PrevHistory      ?: Message[];
 }
 
 export interface IncomingMessage extends Message {
@@ -128,6 +147,7 @@ export interface OutgoingMessage extends Message {
     Feedback              ?: Feedback;
     HumanHandoff          ?: HumanHandoff;
     QnA                   ?: QnADetails;
+    OptionsUI             ?: OptionsUI;
 }
 
 export interface SerializableMessage extends IncomingMessage, OutgoingMessage {

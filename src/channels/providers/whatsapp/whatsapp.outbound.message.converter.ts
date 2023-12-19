@@ -4,7 +4,7 @@ import {
     MessageContentType,
     MessageDirection
 } from "../../../domain.types/enums";
-import { IncomingMessage, OutgoingMessage } from "../../../domain.types/message";
+import { IncomingMessage, OptionButtonType, OutgoingMessage } from "../../../domain.types/message";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -38,9 +38,6 @@ export class WhatsAppOutboundMessageConverter  {
         }
         else if (this._contentType === MessageContentType.OptionsUI) {
             return await this.toOptionUI(message as OutgoingMessage);
-        }
-        else if (this._contentType === MessageContentType.Feedback) {
-            return await this.toEmojis(message as OutgoingMessage);
         }
         else if (this._contentType === MessageContentType.Location) {
             return await this.toLocation(message as OutgoingMessage);
@@ -142,7 +139,115 @@ export class WhatsAppOutboundMessageConverter  {
     };
 
     private toOptionUI = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
+        if (!outMessage.OptionsUI) {
+            return null;
+        }
+        var message = {
+            "messaging_product" : "whatsapp",
+            "recipient_type"    : "individual",
+            "to"                : outMessage.ChannelUser.Phone,
+            "type"              : "",
+        };
+
+        const optionsUI = outMessage.OptionsUI;
+
+        if (optionsUI.ButtonType === OptionButtonType.Template) {
+            message["type"] = "template";
+            message["template"] = {
+                "name"       : outMessage.OptionsUI.Template,
+                "language"   : outMessage.OptionsUI.Language,
+                "components" : []
+            };
+            const options = outMessage.OptionsUI.Options;
+            options.forEach((option) => {
+                const component = {
+                    "type"       : "button",
+                    "sub_type"   : "quick_reply",
+                    "index"      : "0",
+                    "parameters" : [
+                        {
+                            "type"    : "payload",
+                            "payload" : option.id,
+                        }
+                    ]
+                };
+                message["template"]["components"].push(component);
+            });
+            return message;
+        }
+        else /*if (optionsUI.ButtonType === OptionButtonType.Interactive)*/ {
+            const options = outMessage.OptionsUI.Options;
+            const buttons = [];
+            options.forEach((option) => {
+                const button = {
+                    "type"  : "reply",
+                    "reply" : {
+                        "id"    : option.id,
+                        "title" : option.Title,
+                    }
+                };
+                buttons.push(button);
+            });
+            message["type"] = "interactive";
+            message["interactive"] = {
+                "type" : "button",
+                "body" : {
+                    "text" : outMessage.OptionsUI.Title
+                },
+                "action" : {
+                    "buttons" : buttons
+                },
+            };
+            return message;
+        }
+        // else {
+        //     const options = outMessage.OptionsUI.Options;
+        //     const buttons = [];
+        //     options.forEach((option) => {
+        //         const button = {
+        //             "structValue" : {
+        //                 "fields" : {
+        //                     "type" : {
+        //                         "stringValue" : "reply",
+        //                         "kind"        : "stringValue"
+        //                     },
+        //                     "reply" : {
+        //                         "structValue" : {
+        //                             "fields" : {
+        //                                 "id" : {
+        //                                     "stringValue" : option.id,
+        //                                     "kind"        : "stringValue"
+        //                                 },
+        //                                 "title" : {
+        //                                     "stringValue" : option.Title,
+        //                                     "kind"        : "stringValue"
+        //                                 }
+        //                             }
+        //                         },
+        //                         "kind" : "structValue"
+        //                     }
+        //                 }
+        //             },
+        //             "kind" : "structValue"
+        //         };
+        //         buttons.push(button);
+        //     });
+        //     const payload = {
+        //         "fields" : {
+        //             "buttons" : {
+        //                 "listValue" : {
+        //                     "values" : buttons
+        //                 },
+        //                 "kind" : "listValue"
+        //             },
+        //             "messagetype" : {
+        //                 "stringValue" : "interactive-buttons",
+        //                 "kind"        : "stringValue"
+        //             }
+        //         }
+        //     };
+        //     return payload;
+        // }
     };
 
     private toLocation = async (outMessage: OutgoingMessage): Promise<any> => {
@@ -191,4 +296,5 @@ export class WhatsAppOutboundMessageConverter  {
         }
         return { url, id };
     }
+
 }
