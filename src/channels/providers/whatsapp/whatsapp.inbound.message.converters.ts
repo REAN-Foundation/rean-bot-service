@@ -45,7 +45,11 @@ export class WhatsAppInboundMessageConverter  {
 
     };
 
-    private getCommonData = (message, contact, metadata): IncomingMessage => {
+    private getCommonData = (inMessage): IncomingMessage => {
+
+        const message = inMessage?.message;
+        const contact = inMessage?.contact;
+        const metadata = inMessage?.metadata;
 
         const channelUserId = contact?.wa_id;
         const userPhone = channelUserId; // For WhatsApp, the channel user id is the phone number
@@ -82,11 +86,7 @@ export class WhatsAppInboundMessageConverter  {
     private fromText = async (inMessage: any): Promise<IncomingMessage> => {
 
         const message = inMessage?.message;
-        const contact = inMessage?.contact;
-        const metadata = inMessage?.metadata;
-
-        const incomingMessage = this.getCommonData(message, contact, metadata);
-
+        const incomingMessage = this.getCommonData(inMessage);
         incomingMessage.Content = message?.text?.body;
         incomingMessage.MessageType = MessageContentType.Text;
 
@@ -96,11 +96,7 @@ export class WhatsAppInboundMessageConverter  {
     private fromImage = async (inMessage: any): Promise<IncomingMessage> => {
 
         const message = inMessage?.message;
-        const contact = inMessage?.contact;
-        const metadata = inMessage?.metadata;
-
-        const incomingMessage = this.getCommonData(message, contact, metadata);
-
+        const incomingMessage = this.getCommonData(inMessage);
         const metadata_ = {
             mimetype : message?.image?.mime_type,
             sha256   : message?.image?.sha256,
@@ -116,11 +112,7 @@ export class WhatsAppInboundMessageConverter  {
     private fromVideo = async (inMessage: any): Promise<IncomingMessage> => {
 
         const message = inMessage?.message;
-        const contact = inMessage?.contact;
-        const metadata = inMessage?.metadata;
-
-        const incomingMessage = this.getCommonData(message, contact, metadata);
-
+        const incomingMessage = this.getCommonData(inMessage);
         const metadata_ = {
             mimetype : message?.video?.mime_type,
             sha256   : message?.video?.sha256,
@@ -136,11 +128,7 @@ export class WhatsAppInboundMessageConverter  {
     private fromAudio = async (inMessage: any): Promise<IncomingMessage> => {
 
         const message = inMessage?.message;
-        const contact = inMessage?.contact;
-        const metadata = inMessage?.metadata;
-
-        const incomingMessage = this.getCommonData(message, contact, metadata);
-
+        const incomingMessage = this.getCommonData(inMessage);
         const data = message?.audio ?? message?.data;
         if (data) {
             const metadata_ = {
@@ -158,11 +146,7 @@ export class WhatsAppInboundMessageConverter  {
     private fromFile = async (inMessage: any): Promise<IncomingMessage> => {
 
         const message = inMessage?.message;
-        const contact = inMessage?.contact;
-        const metadata = inMessage?.metadata;
-
-        const incomingMessage = this.getCommonData(message, contact, metadata);
-
+        const incomingMessage = this.getCommonData(inMessage);
         const metadata_ = {
             mimetype : message?.document?.mime_type,
             sha256   : message?.document?.sha256,
@@ -178,17 +162,15 @@ export class WhatsAppInboundMessageConverter  {
     private fromOptionChoice = async (inMessage: any): Promise<IncomingMessage> => {
 
         const message = inMessage?.message;
-        const contact = inMessage?.contact;
-        const metadata = inMessage?.metadata;
-
-        const incomingMessage = this.getCommonData(message, contact, metadata);
-
+        const incomingMessage = this.getCommonData(inMessage);
+        const interactive = message?.interactive;
         const metadata_ = {
-            latitude  : message?.location?.latitude,
-            longitude : message?.location?.longitude,
+            type        : message?.interactive?.type,
+            reply_id    : interactive?.button_reply ? interactive?.button_reply?.id : interactive?.list_reply?.id,
+            reply_title : interactive?.button_reply ? interactive?.button_reply?.title : interactive?.list_reply?.title,
         };
         incomingMessage.Content = JSON.stringify(metadata_);
-        incomingMessage.MessageType = MessageContentType.Location;
+        incomingMessage.MessageType = MessageContentType.OptionChoice;
         incomingMessage.Metadata = metadata_;
 
         return incomingMessage;
@@ -197,11 +179,7 @@ export class WhatsAppInboundMessageConverter  {
     private fromLocation = async (inMessage: any): Promise<IncomingMessage> => {
 
         const message = inMessage?.message;
-        const contact = inMessage?.contact;
-        const metadata = inMessage?.metadata;
-
-        const incomingMessage = this.getCommonData(message, contact, metadata);
-
+        const incomingMessage = this.getCommonData(inMessage);
         const metadata_ = {
             latitude  : message?.location?.latitude,
             longitude : message?.location?.longitude,

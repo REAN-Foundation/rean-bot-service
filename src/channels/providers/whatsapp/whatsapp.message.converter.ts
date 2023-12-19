@@ -1,12 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import express from 'express';
 import { scoped, Lifecycle } from 'tsyringe';
 import { IChannelMessageConverter } from '../../channel.message.converter.interface';
 import { OutgoingMessage, IncomingMessage } from '../../../domain.types/message';
-import {
-    MessageContentType,
-    MessageDirection,
-} from '../../../domain.types/enums';
+import { MessageContentType } from '../../../domain.types/enums';
 import { WhatsAppInboundMessageConverter } from './whatsapp.inbound.message.converters';
 import { WhatsAppOutboundMessageConverter } from './whatsapp.outbound.message.converter';
 
@@ -77,16 +73,18 @@ export default class WhatsAppMessageConverter implements IChannelMessageConverte
         if (message && message.type === 'document') {
             return MessageContentType.File;
         }
-        if (message && message.type === 'sticker') {
-            return MessageContentType.Other;
-        }
         if (message && message.type === 'voice') {
             return MessageContentType.Audio;
         }
         if (message && message.type === 'contacts') {
             return MessageContentType.SharedContact;
         }
-
+        if (message && message.type === 'interactive') {
+            return MessageContentType.OptionChoice;
+        }
+        if (message && message.type === 'sticker') {
+            return MessageContentType.Other;
+        }
         return MessageContentType.Other;
     };
 
