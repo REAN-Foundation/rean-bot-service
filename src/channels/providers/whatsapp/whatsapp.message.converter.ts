@@ -16,21 +16,13 @@ import { WhatsAppOutboundMessageConverter } from './whatsapp.outbound.message.co
 export default class WhatsAppMessageConverter implements IChannelMessageConverter {
 
     public fromChannel = async (body: any): Promise<IncomingMessage> => {
-        const temp = body.entry[0]?.changes[0]?.value;
-        if (!temp) {
+        const { message, contact, metadata } = this.fromChannelMessage(body);
+        if (!message || !contact) {
             return null;
         }
-        const contacts = temp.contacts;
-        const messages = temp.messages;
-        // For time being, just consider first message and first contact
-        const message = messages[0];
-        const contact = contacts[0];
-
-        const inbound = { message, contact };
         const messageType = this.identifyMessageType(message);
-
         const contentConverter = new WhatsAppInboundMessageConverter(messageType);
-        const convertedMessage = await contentConverter.convert(inbound);
+        const convertedMessage = await contentConverter.convert({ message, contact });
         return convertedMessage;
     };
 
@@ -43,6 +35,23 @@ export default class WhatsAppMessageConverter implements IChannelMessageConverte
 
     public sendRequestBodyToChannel = async (body: any): Promise<any> => {
         return null;
+    };
+
+    private fromChannelMessage = (requestBody) => {
+        var message = null;
+        var contact = null;
+        var metadata = null;
+        const temp = requestBody.entry[0]?.changes[0]?.value;
+        if (!temp) {
+            return { message, contact, metadata };
+        }
+        const contacts = temp.contacts;
+        const messages = temp.messages;
+        // For time being, just consider first message and first contact
+        message = messages[0];
+        contact = contacts[0];
+        metadata = temp.metadata;
+        return { message, contact, metadata };
     };
 
     private identifyMessageType = (message: any): MessageContentType => {

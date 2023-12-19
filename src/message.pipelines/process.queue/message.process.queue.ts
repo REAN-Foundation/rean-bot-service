@@ -54,6 +54,8 @@ export default class MessageProcessQueue {
         //1. Convert incoming message to a standard format
         const messageConverter = channel.messageConverter();
         const incomingMessage: IncomingMessage = await messageConverter.fromChannel(body);
+        incomingMessage.TenantId = tenantId;
+        incomingMessage.TenantName = tenantName;
 
         //2. Get User and Session details from the database
         const channelUser = incomingMessage.ChannelUser;

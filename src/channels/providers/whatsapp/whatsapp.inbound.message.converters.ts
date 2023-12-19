@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+    ChannelType,
     MessageContentType,
     MessageDirection
 } from "../../../domain.types/enums";
@@ -48,10 +49,46 @@ export class WhatsAppInboundMessageConverter  {
     };
 
     private fromText = async (inMessage: any): Promise<IncomingMessage> => {
-        const message = inMessage.message;
-        const contact = inMessage.contact;
 
-        return null;
+        const message = inMessage?.message;
+        const contact = inMessage?.contact;
+        const metadata = inMessage?.metadata;
+
+        const channelUserId = contact?.wa_id;
+        const userPhone = channelUserId; // For WhatsApp, the channel user id is the phone number
+        const channelUserName = contact?.profile?.name;
+        const { firstName, lastName } = tryExtractUserName(channelUserName);
+
+        const botPhoneNumber = metadata?.display_phone_number;
+        const botPhoneId = metadata?.phone_number_id;
+
+        const messageId = message?.id;
+        const messageTimestamp = message?.timestamp;
+        const messageText = message?.text?.body;
+
+        const contextMessageId = message?.context?.id;
+
+        const incomingMessage: IncomingMessage = {
+            Channel     : ChannelType.WhatsApp,
+            ChannelUser : {
+                ChannelUserId : channelUserId,
+                FirstName     : firstName,
+                LastName      : lastName,
+                Phone         : userPhone,
+            },
+            ChannelMessageId : messageId,
+            ChannelSpecifics : {
+                Channel            : ChannelType.WhatsApp,
+                ReferenceMessageId : contextMessageId,
+                BotId              : botPhoneId,
+                BotPhoneNumber     : botPhoneNumber,
+            },
+            Direction   : MessageDirection.In,
+            MessageType : MessageContentType.Text,
+            Content     : messageText,
+            Timestamp   : messageTimestamp,
+        };
+        return incomingMessage;
     };
 
     private fromImage = async (inMessage: any): Promise<IncomingMessage> => {
@@ -83,3 +120,18 @@ export class WhatsAppInboundMessageConverter  {
     };
 
 }
+
+function tryExtractUserName(userName: string) {
+    var firstName = userName;
+    var lastName = null;
+    const tokens = userName?.split(' ');
+    if (tokens && tokens.length > 0) {
+        firstName = tokens[0];
+        if (tokens.length > 1) {
+            lastName = tokens[1];
+            firstName = tokens[0];
+        }
+    }
+    return { firstName, lastName };
+}
+

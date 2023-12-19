@@ -4,7 +4,8 @@ import {
     NlpProviderType,
     UserFeedbackType,
     MessageHandlerType,
-    QnADocumentType
+    QnADocumentType,
+    MessageDirection
 } from "./enums";
 import { uuid } from "./miscellaneous/system.types";
 import { Language } from "./language";
@@ -18,11 +19,13 @@ export interface Acknowledgement {
 }
 
 export interface MessageChannelDetails {
-    Channel                  : ChannelType;
-    ReferenceMessageId?: string;
-    SentTimestamp           ?: Date;
-    DeliveredTimestamp      ?: Date;
-    ReadTimestamp           ?: Date;
+    Channel             : ChannelType;
+    ReferenceMessageId ?: string;
+    SentTimestamp      ?: Date;
+    DeliveredTimestamp ?: Date;
+    ReadTimestamp      ?: Date;
+    BotId              ?: string;
+    BotPhoneNumber     ?: string;
 }
 
 export interface ChannelUser {
@@ -95,12 +98,13 @@ export interface QnADetails {
 export interface Message {
     id               ?: uuid;
     TenantId         ?: uuid;
-    TenantName        : string;
-    UserId            : uuid;
+    TenantName       ?: string;
+    UserId           ?: uuid;
     ChannelUser      ?: ChannelUser;
     Channel           : ChannelType;
     ChannelMessageId ?: string;
     MessageType       : MessageContentType;
+    Direction         : MessageDirection;
     SessionId        ?: uuid;
     Language         ?: Language;
     Content          ?: string;
