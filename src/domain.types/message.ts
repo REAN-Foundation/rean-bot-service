@@ -110,7 +110,7 @@ export interface Message {
     Content          ?: string;
     TranslatedContent?: string;
     Timestamp         : Date;
-    Metadata         ?: Record<string, unknown> | unknown;
+    Metadata         ?: Record<string, any>;
     GeoLocation      ?: GeoLocation;
     ChannelSpecifics ?: MessageChannelDetails;
     PrevContextMessageId ?: uuid;

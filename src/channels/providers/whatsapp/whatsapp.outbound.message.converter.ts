@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import obj from "uuid-apikey";
 import {
     MessageContentType,
     MessageDirection
@@ -49,39 +50,145 @@ export class WhatsAppOutboundMessageConverter  {
     };
 
     private toText = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
+        const message = {
+            "messaging_product" : "whatsapp",
+            "recipient_type"    : "individual",
+            "to"                : outMessage.ChannelUser.Phone,
+            "type"              : "text",
+            "text"              : {
+                "preview_url" : false,
+                "body"        : outMessage.Content?.toString()
+            }
+        };
+        return message;
     };
 
     private toImage = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
+        if (!outMessage.Content) {
+            return null;
+        }
+        const { url, id } = this.extractResourceUrlOrId(outMessage);
+        const message = {
+            "messaging_product" : "whatsapp",
+            "recipient_type"    : "individual",
+            "to"                : outMessage.ChannelUser.Phone,
+            "type"              : "image",
+            "image"             : url ? { link: url } : { id: id }
+        };
+        return message;
     };
 
     private toVideo = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
+        if (!outMessage.Content) {
+            return null;
+        }
+        const { url, id } = this.extractResourceUrlOrId(outMessage);
+        const message = {
+            "messaging_product" : "whatsapp",
+            "recipient_type"    : "individual",
+            "to"                : outMessage.ChannelUser.Phone,
+            "type"              : "video",
+            "video"             : url ? { link: url } : { id: id }
+        };
+        if (outMessage.Metadata) {
+            const metadata = outMessage.Metadata;
+            if (metadata["Caption"] !== undefined && metadata["Caption"] !== null
+                && metadata["Caption"].length > 0) {
+                message["video"]["caption"] = metadata["Caption"];
+            }
+        }
+        return message;
     };
 
     private toAudio = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
+        if (!outMessage.Content) {
+            return null;
+        }
+        const { url, id } = this.extractResourceUrlOrId(outMessage);
+        const message = {
+            "messaging_product" : "whatsapp",
+            "recipient_type"    : "individual",
+            "to"                : outMessage.ChannelUser.Phone,
+            "type"              : "audio",
+            "image"             : url ? { link: url } : { id: id }
+        };
+        return message;
     };
 
     private toFile = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
+        if (!outMessage.Content) {
+            return null;
+        }
+        const { url, id } = this.extractResourceUrlOrId(outMessage);
+        const message = {
+            "messaging_product" : "whatsapp",
+            "recipient_type"    : "individual",
+            "to"                : outMessage.ChannelUser.Phone,
+            "type"              : "document",
+            "document"          : url ? { link: url } : { id: id }
+        };
+        if (outMessage.Metadata) {
+            const metadata = outMessage.Metadata;
+            if (metadata["Filename"] !== undefined && metadata["Filename"] !== null
+                && metadata["Filename"].length > 0) {
+                message["document"]["filename"] = metadata["Filename"];
+            }
+            if (metadata["Caption"] !== undefined && metadata["Caption"] !== null
+                && metadata["Caption"].length > 0) {
+                message["document"]["caption"] = metadata["Caption"];
+            }
+        }
+        return message;
     };
 
     private toOptionUI = async (outMessage: OutgoingMessage): Promise<any> => {
         return null;
     };
 
-    private toEmojis = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
-    };
-
     private toLocation = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
+        if (!outMessage.Content) {
+            return null;
+        }
+        const loc = outMessage.Content ? JSON.parse(outMessage.Content.toString()) : null;
+        if (!loc) {
+            return null;
+        }
+        var location = {
+            "longitude" : loc.Longitude,
+            "latitude"  : loc.Latitude,
+        };
+        if (loc.Address) {
+            location["address"] = loc.Address;
+        }
+        if (loc.Name) {
+            location["name"] = loc.Name;
+        }
+        const message = {
+            "messaging_product" : "whatsapp",
+            "recipient_type"    : "individual",
+            "to"                : outMessage.ChannelUser.Phone,
+            "type"              : "location",
+            "location"          : location,
+        };
     };
 
-    private toUrl = async (outMessage: OutgoingMessage): Promise<any> => {
-        return null;
-    };
-
+    private extractResourceUrlOrId(outMessage: OutgoingMessage) {
+        let url = null;
+        let id = null;
+        if (outMessage.Metadata) {
+            const metadata = outMessage.Metadata;
+            if (metadata["ResourceUrl"] !== undefined && metadata["ResourceUrl"] !== null
+                && metadata["ResourceUrl"].length > 0) {
+                url = metadata["ResourceUrl"];
+            }
+            if (metadata["ResourceId"] !== undefined && metadata["ResourceId"] !== null
+                && metadata["ResourceId"].length > 0) {
+                id = metadata["ResourceId"];
+            }
+        }
+        if (!url && !id) {
+            url = outMessage.Content.toString();
+        }
+        return { url, id };
+    }
 }

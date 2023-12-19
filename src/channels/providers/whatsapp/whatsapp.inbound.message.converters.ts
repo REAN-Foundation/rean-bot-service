@@ -41,6 +41,9 @@ export class WhatsAppInboundMessageConverter  {
         else if (this._contentType === MessageContentType.Location) {
             return await this.fromLocation(inbound);
         }
+        else if (this._contentType === MessageContentType.SharedContact) {
+            return await this.fromContact(inbound);
+        }
         return await this.fromText(inbound);
 
     };
@@ -97,14 +100,28 @@ export class WhatsAppInboundMessageConverter  {
 
         const message = inMessage?.message;
         const incomingMessage = this.getCommonData(inMessage);
-        const metadata_ = {
-            mimetype : message?.image?.mime_type,
-            sha256   : message?.image?.sha256,
-            caption  : message?.image?.caption,
-        };
-        incomingMessage.Content = message?.image?.id;
         incomingMessage.MessageType = MessageContentType.Image;
-        incomingMessage.Metadata = metadata_;
+
+        const isSticker = message?.type === 'sticker';
+        if (isSticker) {
+            incomingMessage.Content = message?.sticker?.id;
+            const metadata_ = {
+                MimeType : message?.sticker?.mime_type,
+                Sha256   : message?.sticker?.sha256,
+                Animated : message?.sticker?.animated,
+            };
+            incomingMessage.Metadata = metadata_;
+        }
+        else {
+            incomingMessage.Content = message?.image?.id;
+            const metadata_ = {
+                MimeType : message?.image?.mime_type,
+                Sha256   : message?.image?.sha256,
+                Caption  : message?.image?.caption,
+            };
+            incomingMessage.Metadata = metadata_;
+        }
+        incomingMessage.MessageType = MessageContentType.Image;
 
         return incomingMessage;
     };
@@ -114,9 +131,9 @@ export class WhatsAppInboundMessageConverter  {
         const message = inMessage?.message;
         const incomingMessage = this.getCommonData(inMessage);
         const metadata_ = {
-            mimetype : message?.video?.mime_type,
-            sha256   : message?.video?.sha256,
-            caption  : message?.video?.caption,
+            MimeType : message?.video?.mime_type,
+            Sha256   : message?.video?.sha256,
+            Caption  : message?.video?.caption,
         };
         incomingMessage.Content = message?.video?.id;
         incomingMessage.MessageType = MessageContentType.Video;
@@ -132,9 +149,9 @@ export class WhatsAppInboundMessageConverter  {
         const data = message?.audio ?? message?.data;
         if (data) {
             const metadata_ = {
-                mimetype : data.mime_type,
-                sha256   : data.sha256,
-                voice    : data.voice,
+                MimeType : data.mime_type,
+                Sha256   : data.sha256,
+                Voice    : data.voice,
             };
             incomingMessage.Content = data.id;
             incomingMessage.Metadata = metadata_;
@@ -148,9 +165,9 @@ export class WhatsAppInboundMessageConverter  {
         const message = inMessage?.message;
         const incomingMessage = this.getCommonData(inMessage);
         const metadata_ = {
-            mimetype : message?.document?.mime_type,
-            sha256   : message?.document?.sha256,
-            filename : message?.document?.filename,
+            MimeType : message?.document?.mime_type,
+            Sha256   : message?.document?.sha256,
+            Filename : message?.document?.filename,
         };
         incomingMessage.Content = message?.document?.id;
         incomingMessage.MessageType = MessageContentType.File;
@@ -163,11 +180,11 @@ export class WhatsAppInboundMessageConverter  {
 
         const message = inMessage?.message;
         const incomingMessage = this.getCommonData(inMessage);
-        const interactive = message?.interactive;
+        const i = message?.interactive;
         const metadata_ = {
-            type        : message?.interactive?.type,
-            reply_id    : interactive?.button_reply ? interactive?.button_reply?.id : interactive?.list_reply?.id,
-            reply_title : interactive?.button_reply ? interactive?.button_reply?.title : interactive?.list_reply?.title,
+            Type                : message?.interactive?.type === 'list_reply' ? 'list' : 'button',
+            SelectedOptionId    : i?.button_reply ? i?.button_reply?.id : i?.list_reply?.id,
+            SelectedOptionTitle : i?.button_reply ? i?.button_reply?.title : i?.list_reply?.title,
         };
         incomingMessage.Content = JSON.stringify(metadata_);
         incomingMessage.MessageType = MessageContentType.OptionChoice;
@@ -181,11 +198,47 @@ export class WhatsAppInboundMessageConverter  {
         const message = inMessage?.message;
         const incomingMessage = this.getCommonData(inMessage);
         const metadata_ = {
-            latitude  : message?.location?.latitude,
-            longitude : message?.location?.longitude,
+            Latitude  : message?.location?.latitude,
+            Longitude : message?.location?.longitude,
+            Name      : message?.location?.name,
+            Address   : message?.location?.address,
         };
         incomingMessage.Content = JSON.stringify(metadata_);
         incomingMessage.MessageType = MessageContentType.Location;
+        incomingMessage.Metadata = metadata_;
+
+        return incomingMessage;
+    };
+
+    private fromContact = async (inMessage: any): Promise<IncomingMessage> => {
+
+        const message = inMessage?.message;
+        const incomingMessage = this.getCommonData(inMessage);
+        const contactList = message?.contacts.map((c) => {
+            const email = c?.emails.length > 0 ? c?.emails[0]?.email : null;
+            const phone = c?.phones.length > 0 ? c?.phones[0]?.phone : null;
+            const channelUserId = c?.phones.length > 0 ? c?.phones[0]?.wa_id : null;
+            const channelUserName = c?.name?.formatted_name;
+            const firstName = c?.name?.first_name;
+            const lastName = c?.name?.last_name;
+            const prefix = c?.name?.prefix;
+            return {
+                ContactId       : c?.wa_id,
+                ContactName     : c?.profile?.name,
+                FirstName       : firstName,
+                LastName        : lastName,
+                Prefix          : prefix,
+                Phone           : phone,
+                Email           : email,
+                ChannelUserId   : channelUserId,
+                ChannelUserName : channelUserName,
+            };
+        });
+        const metadata_ = {
+            ContactList : contactList,
+        };
+        incomingMessage.Content = JSON.stringify(metadata_);
+        incomingMessage.MessageType = MessageContentType.SharedContact;
         incomingMessage.Metadata = metadata_;
 
         return incomingMessage;
