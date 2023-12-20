@@ -142,6 +142,7 @@ export interface IncomingMessage extends Message {
 
 export interface OutgoingMessage extends Message {
     PrimaryMessageHandler ?: MessageHandlerType;
+    SmallTalk             ?: boolean;
     Intent                ?: IntentDetails;
     Assessment            ?: AssessmentDetails;
     Feedback              ?: Feedback;

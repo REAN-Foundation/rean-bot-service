@@ -7,7 +7,7 @@ import { IChannel } from '../../channels/channel.interface';
 import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
 import { SessionService } from '../../database/typeorm/services/session.service';
 import { UserService } from '../../database/typeorm/services/user.service';
-import { ChatMessageCreateModel, incomingMessageToCreateModel, outgoingMessageToCreateModel } from '../../domain.types/chat.message.types';
+import { ChatMessageCreateModel, incomingMessageToCreateModel } from '../../domain.types/chat.message.types';
 import { ChannelUser, IncomingMessage,  ProcessibleMessage } from '../../domain.types/message';
 import { SessionCreateModel, sessionDtoToChatSession } from '../../domain.types/session.types';
 import { UserCreateModel } from '../../domain.types/user.types';
@@ -17,6 +17,7 @@ import { Tenant } from '../../domain.types/tenant.types';
 import { ChannelType } from '../../domain.types/enums';
 import MessageHandlerRouter from '../../message.handlers/message.handler.router';
 import MessageCache from '../../message.pipelines/cache/message.cache';
+import { OutMessageProcessor } from './outmessage.processor';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -81,47 +82,47 @@ export default class MessageProcessQueue {
         await MessageCache.addMessage(session.id, incomingMessage);
 
         //6. Send the message to the message handlers
-        const primaryHandler = await MessageHandlerRouter.getPrimaryHandler(incomingMessage);
-        var processible: ProcessibleMessage = await primaryHandler.handle(incomingMessage);
+        const selected = await MessageHandlerRouter.getHandlers(incomingMessage);
+        const messageHandlers = selected.Handlers;
+        var processible: ProcessibleMessage = selected.Message;
 
-        //7. Handle feedback if needed
+        //7. If feedback, handle it right away
         if (processible.Feedback) {
             const feedbackHandler = container.resolve('FeedbackHandler');
             return feedbackHandler.handle(processible);
         }
 
-        //8. Handle Human-Handoff if needed
+        //8. If Human-Handoff, continue on it right away
         if (processible.HumanHandoff) {
             const humanHandoffHandler = container.resolve('HumanHandoffHandler');
             return humanHandoffHandler.handle(processible);
         }
 
-        //9. Intent handling if an intent is detected
-        if (processible.Intent) {
-            const intentHandler = container.resolve('IntentHandler');
-            processible = intentHandler.handle(processible);
+        //9. Process the message through all identified message handlers
+        const processedMessages: ProcessibleMessage[] = [];
+        for await (const handler of messageHandlers) {
+            const outProcessible = await handler.handle(processible);
+            processedMessages.push(outProcessible);
         }
 
-        //10. Process outgoing message
-        processible = await channel.processOutgoing(processible);
+        //10. Process outgoing messages through the post-processing pipeline
+        const meta = {
+            container,
+            channel,
+            channelName,
+            tenantName,
+            tenantId,
+            session,
+            botUser,
+        };
+        const results = [];
+        const outProcessor: OutMessageProcessor = container.resolve('OutMessageProcessor');
+        for await (const outProcessible of processedMessages) {
+            const result = await outProcessor.process(meta, outProcessible);
+            results.push(result);
+        }
 
-        //11. Convert outgoing message to channel specific format
-        const outgoingMessageToChannel = await messageConverter.toChannel(processible);
-
-        //12. Send the message to the channel
-        const channelSendResponse = await channel.send(channelUserId, outgoingMessageToChannel);
-        const outMessageCahnnelId = channelSendResponse.ChannelMessageId;
-        processible.ChannelMessageId = outMessageCahnnelId;
-
-        //13. Store the outgoing message in the database
-        const outCreateModel: ChatMessageCreateModel = outgoingMessageToCreateModel(processible);
-        const storedOutgoingMessage = await dbChatMessageService.create(outCreateModel);
-
-        //14. Update the message cache with the outgoing message from user
-        await MessageCache.addMessage(session.id, processible);
-
-        logger.info('MessageProcessQueue.processMessage: Message sent to channel');
-        logger.info(JSON.stringify(channelSendResponse, null, 2));
+        logger.info('MessageProcessQueue.processMessage completed');
 
     };
 

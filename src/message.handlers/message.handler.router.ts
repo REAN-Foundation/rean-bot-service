@@ -4,10 +4,15 @@ import { IMessageHandler } from "./message.handler.interface";
 
 //////////////////////////////////////////////////////////////////////////////////////
 
+export interface RouterResults {
+    Handlers : IMessageHandler[];
+    Message  : ProcessibleMessage;
+}
+
 export default class MessageHandlerRouter {
 
-    public static getPrimaryHandler = async (message: ProcessibleMessage): Promise<IMessageHandler> => {
-        logger.info('MessageHandlerRouter.getPrimaryHandler');
+    public static getHandlers = async (message: ProcessibleMessage): Promise<RouterResults> => {
+        logger.info('MessageHandlerRouter.getHandlers');
         logger.info(JSON.stringify(message, null, 2));
         return null;
     };
