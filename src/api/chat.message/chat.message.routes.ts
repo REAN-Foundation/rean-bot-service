@@ -9,11 +9,8 @@ export const register = (app: express.Application): void => {
     const controller = new ChatMessageController();
     const contextBase = 'ChatMessage';
 
-    router.post('/', context(`${contextBase}.Create`), controller.create);
     router.get('/search', context(`${contextBase}.Search`), controller.search);
     router.get('/:id', context(`${contextBase}.GetById`), controller.getById);
-    router.put('/:id', context(`${contextBase}.Update`), controller.update);
-    router.delete('/:id', context(`${contextBase}.Delete`), controller.delete);
 
     app.use('/api/v1/chat_messages', router);
 };

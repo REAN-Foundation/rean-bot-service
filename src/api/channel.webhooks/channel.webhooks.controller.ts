@@ -1,26 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import express from 'express';
 import { ResponseHandler } from '../../common/handlers/response.handler';
-import { ErrorHandler } from '../../common/handlers/error.handler';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
-import { Lifecycle, inject, scoped } from 'tsyringe';
+import { Lifecycle, scoped } from 'tsyringe';
 import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 import { IChannel } from '../../channels/channel.interface';
 import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
 import { SessionService } from '../../database/typeorm/services/session.service';
 import { UserService } from '../../database/typeorm/services/user.service';
-import { ChatMessageCreateModel, incomingMessageToCreateModel, outgoingMessageToCreateModel } from '../../domain.types/chat.message.types';
-import { ChannelUser, IncomingMessage, OutgoingMessage, ProcessibleMessage } from '../../domain.types/message';
-import { SessionCreateModel, sessionDtoToChatSession } from '../../domain.types/session.types';
-import { logger } from '../../logger/logger';
-import { UserCreateModel } from '../../domain.types/user.types';
-import { registerUser } from '../../integrations/reancare/api.access/user';
-import { CoreTypesStore } from '../../integrations/reancare/core.types.store';
-import { Tenant } from '../../domain.types/tenant.types';
-import { ChannelType } from '../../domain.types/enums';
-import MessageHandlerRouter from '../../message.handlers/message.handler.router';
-import MessageCache from '../../message.pipelines/cache/message.cache';
-import { SerializableMessage } from '../../domain.types/message';
 import MessageProcessQueue from '../../message.pipelines/process.queue/message.process.queue';
 
 ///////////////////////////////////////////////////////////////////////////////////////
