@@ -22,11 +22,14 @@ import { WhatsAppChannel } from '../channels/providers/whatsapp/whatsapp.channel
 
 import { DialogFlowHandler } from '../message.handlers/nlp/dialogflow/dialogflow.handler';
 
+import WhatsAppMessageConverter from '../channels/providers/whatsapp/whatsapp.message.converter';
+import { UserLanguage } from '../message.pipelines/translation/user.language';
+import { GoogleTranslator } from '../message.pipelines/translation/providers/google.translator';
+
 import { ModuleInjector } from '../modules/module.injector';
 import { DatabaseInjector } from '../database/database.injector';
-import WhatsAppMessageConverter from '../channels/providers/whatsapp/whatsapp.message.converter';
 
-//////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 export class Injector {
 
@@ -74,6 +77,9 @@ export class Injector {
         //     ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
         //     ctnr.register('IWebhookAuthenticator', { useClass: MobileAppAuthenticator });
         // }
+
+        ctnr.register('UserLanguage', { useClass: UserLanguage });
+        ctnr.register('ITranslator', { useClass: GoogleTranslator });
 
         // Message Handler injections
 

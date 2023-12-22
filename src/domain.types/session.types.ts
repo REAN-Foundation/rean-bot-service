@@ -11,11 +11,13 @@ export interface SessionCreateModel {
     Channel       : ChannelType;
     ChannelUserId?: string;
     TenantId     ?: uuid;
+    Language     ?: string;
     TenantName   ?: string;
 }
 
 export interface SessionUpdateModel {
     LastMessageDate?: Date;
+    Language       ?: string;
 }
 
 export interface SessionResponseDto {
@@ -24,6 +26,7 @@ export interface SessionResponseDto {
     Channel        : ChannelType;
     ChannelUserId ?: string;
     LastMessageDate: Date;
+    Language      ?: string;
     User          ?: UserResponseDto;
 }
 
@@ -32,6 +35,7 @@ export interface SessionSearchDto {
     UserId         : uuid;
     Channel        : ChannelType;
     ChannelUserId ?: string;
+    Language      ?: string;
     LastMessageDate: Date;
 }
 
@@ -55,5 +59,6 @@ export const sessionDtoToChatSession = (session: SessionResponseDto): ChatSessio
         Channel         : session.Channel,
         ChannelUserId   : session.ChannelUserId,
         LastMessageDate : session.LastMessageDate,
+        Language        : session.Language,
     };
 };

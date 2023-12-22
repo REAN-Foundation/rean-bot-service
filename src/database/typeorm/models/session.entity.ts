@@ -46,6 +46,10 @@ export class Session {
     @Column({ type: 'timestamp', nullable: false })
     LastMessageDate: Date;
 
+    @Column({ type: 'varchar', nullable: false, default: 'en' })
+    @Max(8)
+    Language: string;
+
     // @ManyToOne(() => User, (user) => user.Sessions, )
     // User: User;
 

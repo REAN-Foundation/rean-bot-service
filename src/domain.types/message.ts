@@ -167,4 +167,5 @@ export interface ChatSession {
     Channel          : ChannelType;
     ChannelUserId   ?: string;
     LastMessageDate ?: Date;
+    Language        ?: string;
 }
