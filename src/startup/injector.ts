@@ -29,6 +29,7 @@ import { GoogleTranslator } from '../message.pipelines/translation/providers/goo
 import { ModuleInjector } from '../modules/module.injector';
 import { DatabaseInjector } from '../database/database.injector';
 import { OpenAIProvider } from '../integrations/llm/providers/openai.provider';
+import { AwsSpeechService } from '../message.pipelines/speech/providers/aws.speech.service';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -82,6 +83,7 @@ export class Injector {
         ctnr.register('UserLanguage', { useClass: UserLanguage });
         ctnr.register('ITranslator', { useClass: GoogleTranslator });
         ctnr.register('ILLMServiceProvider', { useClass: OpenAIProvider });
+        ctnr.register('ISpeechService', { useClass: AwsSpeechService });
 
         // Message Handler injections
 

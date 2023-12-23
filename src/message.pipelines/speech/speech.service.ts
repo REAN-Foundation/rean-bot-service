@@ -5,7 +5,7 @@ import { ISpeechService } from './speech.interface';
 //////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
-export class SpeechToTextConverter {
+export class SpeechService {
 
     constructor(
         @inject(TenantEnvironmentProvider) private _tenantEnvProvider?: TenantEnvironmentProvider,
