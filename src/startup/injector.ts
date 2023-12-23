@@ -6,7 +6,6 @@ import { ChannelType } from '../domain.types/enums';
 import { DependencyContainer, container } from 'tsyringe';
 
 import { WhatsAppAuthenticator } from '../auth/webhook.authenticator/providers/whatsapp.authenticator';
-import { WhatsAppD360Authenticator } from '../auth/webhook.authenticator/providers/whatsapp.d360.authenticator';
 import { TelegramAuthenticator } from '../auth/webhook.authenticator/providers/telegram.authenticator';
 import { WebAppAuthenticator } from '../auth/webhook.authenticator/providers/web.app.authenticator';
 import { MobileAppAuthenticator } from '../auth/webhook.authenticator/providers/mobile.app.authenticator';
@@ -14,8 +13,9 @@ import { ClickUpAuthenticator } from '../auth/webhook.authenticator/providers/cl
 import { SlackAuthenticator } from '../auth/webhook.authenticator/providers/slack.authenticator';
 
 import { WhatsAppChannel } from '../channels/providers/whatsapp/whatsapp.channel';
-// import { ClickupChannel } from '../channels/providers/clickup/clickup.channel';
-// import { SlackChannel } from '../channels/providers/slack/slack.channel';
+import { ClickupChannel } from '../channels/providers/clickup/clickup.channel';
+import { SlackChannel } from '../channels/providers/slack/slack.channel';
+
 // import { TelegramChannel } from '../channels/providers/telegram/telegram.channel';
 // import { WebChannel } from '../channels/providers/web/web.channel';
 // import { MobileChannel } from '../channels/providers/mobile/mobile.channel';
@@ -28,6 +28,7 @@ import { GoogleTranslator } from '../message.pipelines/translation/providers/goo
 
 import { ModuleInjector } from '../modules/module.injector';
 import { DatabaseInjector } from '../database/database.injector';
+import { OpenAIProvider } from '../integrations/llm/providers/openai.provider';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,16 +57,16 @@ export class Injector {
             ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
             ctnr.register('IWebhookAuthenticator', { useClass: TelegramAuthenticator });
         }
-        // if (channel === ChannelType.Clickup) {
-        //     ctnr.register('IChannel', { useClass: ClickupChannel });
-        //     ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
-        //     ctnr.register('IWebhookAuthenticator', { useClass: ClickUpAuthenticator });
-        // }
-        // if (channel === ChannelType.Slack) {
-        //     ctnr.register('IChannel', { useClass: SlackChannel });
-        //     ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
-        //     ctnr.register('IWebhookAuthenticator', { useClass: SlackAuthenticator });
-        // }
+        if (channel === ChannelType.Clickup) {
+            ctnr.register('IChannel', { useClass: ClickupChannel });
+            // ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
+            ctnr.register('IWebhookAuthenticator', { useClass: ClickUpAuthenticator });
+        }
+        if (channel === ChannelType.Slack) {
+            ctnr.register('IChannel', { useClass: SlackChannel });
+            // ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
+            ctnr.register('IWebhookAuthenticator', { useClass: SlackAuthenticator });
+        }
 
         // if (channel === ChannelType.Web) {
         //     ctnr.register('IChannel', { useClass: WebChannel });
@@ -80,6 +81,7 @@ export class Injector {
 
         ctnr.register('UserLanguage', { useClass: UserLanguage });
         ctnr.register('ITranslator', { useClass: GoogleTranslator });
+        ctnr.register('ILLMServiceProvider', { useClass: OpenAIProvider });
 
         // Message Handler injections
 

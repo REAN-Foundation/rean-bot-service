@@ -22,19 +22,35 @@ export class Translator {
         return languageCode;
     }
 
-    public translate = async (sessionId: string, text: string): Promise<string> => {
+    public translate = async (
+        sessionId: string,
+        text: string,
+        messageType: MessageContentType = MessageContentType.Text,
+        useGlossary = false): Promise<string> => {
         if (!text) {
             return text;
         }
-        let targetLanguage = await this.getTargetLanguage(sessionId, text);
+        let targetLanguage = await this.getTargetLanguage(sessionId, text, messageType);
         if (!targetLanguage) {
             targetLanguage = 'en';
         }
-        const translatedText = await this._translator.translate(targetLanguage, text);
-        return translatedText;
+        const detectedLanguage = await this.detectLanguage(text);
+        if (detectedLanguage === targetLanguage) {
+            return text;
+        }
+        if (!useGlossary) {
+            const translatedText = await this._translator.translate(targetLanguage, text);
+            return translatedText;
+        }
+        else {
+            const translatedText = await this._translator.translate(targetLanguage, text);
+            return translatedText;
+        }
     };
 
-    private getLanguageFromMessage = async (text: string, messageType: MessageContentType): Promise<LanguageCode> => {
+    private getLanguageFromMessage = async (
+        text: string,
+        messageType: MessageContentType): Promise<LanguageCode> => {
         let detectedLanguage:LanguageCode = 'en';
         if (messageType !== MessageContentType.Location &&
             messageType !== MessageContentType.Image) {
@@ -46,13 +62,17 @@ export class Translator {
         return detectedLanguage;
     };
 
-    private getTargetLanguage = async (sessionId: string, text: string): Promise<LanguageCode> => {
+    private getTargetLanguage = async (
+        sessionId: string,
+        text: string,
+        messageType: MessageContentType = MessageContentType.Text)
+        : Promise<LanguageCode> => {
         let targetLanguage = await this._userLanguage.getLanguage(sessionId);
         const threshold = this._tenantEnvProvider.getTenantEnvironmentVariable("TRANSLATE_SETTING");
         let textLengthThreshold = parseInt(threshold);
         textLengthThreshold = textLengthThreshold ? textLengthThreshold : 10;
         if (text.length >= textLengthThreshold) {
-            targetLanguage = await this.getLanguageFromMessage(text, MessageContentType.Text);
+            targetLanguage = await this.getLanguageFromMessage(text, messageType);
             return targetLanguage;
         }
         return targetLanguage;

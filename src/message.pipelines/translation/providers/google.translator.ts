@@ -36,7 +36,7 @@ export class GoogleTranslator implements ITranslator {
         return language_ as LanguageCode;
     };
 
-    public translateTextWithGlossary = async(message: string, targetLanguage: string) => {
+    public translateTextWithGlossary = async(targetLanguage: LanguageCode, text: string) => {
         let output = null;
         const translationGlossaryId = this._tenantEnvProvider.getTenantEnvironmentVariable("TRANSLATE_GLOSSARY");
         const translationClient = new TranslationServiceClient(this._options);
@@ -48,10 +48,10 @@ export class GoogleTranslator implements ITranslator {
         };
         const request = {
             parent             : `projects/${projectId}/locations/${location}`,
-            contents           : [message],
+            contents           : [text],
             mimeType           : 'text/plain', // mime types: text/plain, text/html
             sourceLanguageCode : 'en',
-            targetLanguageCode : targetLanguage,
+            targetLanguageCode : targetLanguage as string,
             glossaryConfig     : glossaryConfig,
         };
         try {
