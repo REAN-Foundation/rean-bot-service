@@ -21,10 +21,12 @@
     "author": "Kiran Kharade",
     "license": "ISC",
     "dependencies": {
+        "@aws-sdk/client-transcribe": "^3.478.0",
         "@google-cloud/dialogflow": "^6.2.0",
+        "@google-cloud/speech": "^6.1.0",
         "@google-cloud/translate": "^8.0.2",
         "approx-string-match": "^2.0.0",
-        "aws-sdk": "^2.1510.0",
+        "aws-sdk": "^2.1525.0",
         "axios": "^1.6.2",
         "bcryptjs": "^2.4.3",
         "body-parser": "^1.20.2",
