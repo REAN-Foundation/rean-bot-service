@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import speech from '@google-cloud/speech';
-import AWS from 'aws-sdk';
+import textToSpeech from '@google-cloud/text-to-speech';
+import util from 'util';
 import fs from 'fs';
 import crypto from 'crypto';
 import { ISpeechService } from '../speech.interface';
@@ -10,6 +11,9 @@ import { AwsManager } from '../../../integrations/aws/aws.manager';
 import { logger } from '../../../logger/logger';
 
 ////////////////////////////////////////////////////////////////////////////////
+type AudioEncoding = "OGG_OPUS" | "MP3" | "AUDIO_ENCODING_UNSPECIFIED" | "LINEAR16" | "MULAW" | "ALAW";
+type SSMLGender = "MALE" | "FEMALE" | "NEUTRAL";
+////////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
 export class GcpSpeechService implements ISpeechService {
@@ -18,7 +22,8 @@ export class GcpSpeechService implements ISpeechService {
 
     constructor(
         @inject(TenantEnvironmentProvider) private _tenantEnvProvider?: TenantEnvironmentProvider,
-        @inject('TenantName') private _tenantName?: string
+        @inject('TenantName') private _tenantName?: string,
+        @inject(AwsManager) private _awsManager?: AwsManager
     ) {
         const gcpCreds = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
         this._options = {
@@ -27,86 +32,82 @@ export class GcpSpeechService implements ISpeechService {
         };
     }
 
-    public speechToText = async (audio: Buffer|string): Promise<string> => {
-        var transcribedText = '';
+    public speechToText = async (
+        buffer: Buffer,
+        mediaType: string,
+        preferredLanguage: string
+    ): Promise<string> => {
         try {
-        //     const creds = await AwsManager.getCrossAccountCredentials();
-        //     const transcribeClient = await this.getTransciber(creds);
-        //     const jobName = `transcription-${new Date().getTime().toFixed(0)}`;
+            // Usage: please use the following code snippet to get the buffer from S3
+            // var buffer = await this.getBytesFromS3File(awsS3StorageKey);
+            // var extension = path.extname(awsS3StorageKey);
+            // var mimeType = Helper.getMimeType(extension);
 
-            //     let fileUri = '';
-            //     if (audio instanceof Buffer) {
-            //         const base64Audio = audio.toString('base64');
-            //         fileUri = `data:audio/mp3;base64,${base64Audio}`;
-            //     }
-            //     else {
-            //         fileUri = audio;
-            //     }
-            //     const params = {
-            //         TranscriptionJobName : jobName,
-            //         LanguageCode         : 'en-US' as LanguageCode,
-            //         MediaFormat          : MediaFormat.MP3,
-            //         Media                : {
-            //             MediaFileUri : fileUri,
-            //         },
-            //         OutputBucketName : process.env.BUCKET_NAME, //'bot-speech-to-text-transcriptions',
-            //         OutputKey        : `${jobName}.json`,
-            //     };
-            //     const response: StartTranscriptionJobCommandOutput = await transcribeClient.send(
-            //         new StartTranscriptionJobCommand(params)
-            //     );
-            //     if (response.TranscriptionJob.TranscriptionJobStatus === 'COMPLETED') {
-            //         // Access the transcribed text
-            //         transcribedText = response.TranscriptionJob.Transcript.TranscriptFileUri;
-            //         // You might want to fetch the transcribed text file content or URL at this point
-            //         logger.info(`Transcribed Text:', ${transcribedText}`);
-            //     } else {
-            //         logger.info('Transcription job is still in progress.');
-            //     }
-            return transcribedText;
-        }
-        catch (error) {
-            logger.info(error);
+            const audioBytes_ = buffer.toString('base64');
+            const audio = {
+                content : audioBytes_,
+            };
+            const sampleRate = mediaType === '.oga' ? 48000 : 16000;
+            const config = {
+                encoding                            : 'OGG_OPUS',
+                sampleRateHertz                     : sampleRate,
+                languageCode                        : preferredLanguage ?? 'en-US',
+                enableSeparateRecognitionPerChannel : true,
+            };
+            let request = {};
+            request = {
+                audio  : audio,
+                config : config,
+            };
+
+            const gcpCred = this._options;
+            const client = new speech.SpeechClient(gcpCred);
+
+            const [response] = await client.recognize(request);
+            const transcription = response.results
+                .map(result => result.alternatives[0].transcript)
+                .join('\n');
+            logger.info(`Transcription: ${transcription}`);
+            return transcription;
+        } catch (error) {
+            logger.error(error);
+            return null;
         }
     };
 
-    public async textToSpeech(text: string): Promise<string> {
+    public async textToSpeech(
+        text: string,
+        mediaType: string = '.mp3',
+        preferredLanguage: string = 'en-US'): Promise<string> {
 
         try {
-            return '';
-            // const creds = await AwsManager.getCrossAccountCredentials();
-            // const polly = this.getPolly(creds);
-            // const params = {
-            //     Engine       : 'neural',
-            //     OutputFormat : 'mp3',
-            //     Text         : text,
-            //     TextType     : 'text',
-            //     VoiceId      : 'Joanna',
-            // };
-            // const randomString = crypto.randomBytes(16).toString('hex');
-            // const res: Promise<string> = new Promise((resolve, reject) => {
-            //     polly.synthesizeSpeech(params, async(error, data) => {
-            //         if (error) {
-            //             logger.error(error.message);
-            //             reject(error);
-            //         }
-            //         if (data.AudioStream instanceof Buffer) {
-            //             logger.info(`data: ${data}`);
-            //             const filename = './audio/' + randomString + '.mp3';
-            //             logger.info(`filename: ${filename}`);
-            //             fs.writeFile(filename, data.AudioStream, async(err) => {
-            //                 if (err) {
-            //                     logger.error(err.message);
-            //                     reject(err);
-            //                 }
-            //                 logger.info('Success');
-            //                 resolve(filename);
-            //             });
-            //         }
-            //     });
-            // });
-            // const filename = (await res) as string;
-            // return filename;
+            const gcpCred = this._options;
+            const client = new textToSpeech.TextToSpeechClient(gcpCred);
+            const lang = preferredLanguage ? preferredLanguage : 'en-US';
+            const encoding: AudioEncoding = mediaType === '.oga' ? 'OGG_OPUS' : 'MP3';
+            const ssmlGender: SSMLGender = "FEMALE";
+            const request = {
+                input : {
+                    text : text
+                },
+                // Select the language and SSML voice gender (optional)
+                voice : {
+                    languageCode : lang,
+                    name         : 'en-US-Standard-B',
+                    ssmlGender   : ssmlGender
+                },
+                // select the type of audio encoding
+                audioConfig : {
+                    audioEncoding : encoding
+                },
+            };
+            const [response] = await client.synthesizeSpeech(request);
+            const writeFile = util.promisify(fs.writeFile);
+            //TODO: Please use temp folder instead of audio folder.
+            //We clean-up temp folder every 5 minutes of older files.
+            const filename = './audio/output_' + crypto.randomBytes(16).toString('hex') + mediaType;
+            await writeFile(filename, response.audioContent, 'binary');
+            return filename;
         }
         catch (error) {
             logger.info(error);

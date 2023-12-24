@@ -17,7 +17,8 @@ export class AwsSpeechService implements ISpeechService {
 
     constructor(
         @inject(TenantEnvironmentProvider) private _tenantEnvProvider?: TenantEnvironmentProvider,
-        @inject('TenantName') private _tenantName?: string
+        @inject('TenantName') private _tenantName?: string,
+        @inject(AwsManager) private _awsManager?: AwsManager
     ) {
     }
 
@@ -43,10 +44,14 @@ export class AwsSpeechService implements ISpeechService {
         return transcribeClient;
     }
 
-    public speechToText = async (audio: Buffer|string): Promise<string> => {
+    public speechToText = async (
+        audio: Buffer,
+        mediaType: string = '.mp3',
+        prefferedLanguage: string = 'en-US')
+        : Promise<string> => {
         var transcribedText = '';
         try {
-            const creds = await AwsManager.getCrossAccountCredentials();
+            const creds = await this._awsManager.getCrossAccountCredentials();
             const transcribeClient = await this.getTransciber(creds);
             const jobName = `transcription-${new Date().getTime().toFixed(0)}`;
 
@@ -58,10 +63,12 @@ export class AwsSpeechService implements ISpeechService {
             else {
                 fileUri = audio;
             }
+            const mediaFormat = mediaType === '.oga' ? MediaFormat.OGG : MediaFormat.MP3;
+            const lang = prefferedLanguage ? prefferedLanguage : 'en-US';
             const params = {
                 TranscriptionJobName : jobName,
-                LanguageCode         : 'en-US' as LanguageCode,
-                MediaFormat          : MediaFormat.MP3,
+                LanguageCode         : lang as LanguageCode,
+                MediaFormat          : mediaFormat,
                 Media                : {
                     MediaFileUri : fileUri,
                 },
@@ -89,7 +96,7 @@ export class AwsSpeechService implements ISpeechService {
     public async textToSpeech(text: string): Promise<string> {
 
         try {
-            const creds = await AwsManager.getCrossAccountCredentials();
+            const creds = await this._awsManager.getCrossAccountCredentials();
             const polly = this.getPolly(creds);
             const params = {
                 Engine       : 'neural',

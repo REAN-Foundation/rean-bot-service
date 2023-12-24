@@ -1,7 +1,7 @@
 
 export interface ISpeechService {
 
-    speechToText(audio: Buffer): Promise<string>;
+    speechToText(audio: Buffer, mimeType: string, preferredLanguage: string): Promise<string>;
 
     textToSpeech(text: string): Promise<string>;
 
