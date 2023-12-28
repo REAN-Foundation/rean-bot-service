@@ -5,14 +5,15 @@ import { OutgoingMessage, IncomingMessage } from '../../../domain.types/message'
 import { MessageContentType } from '../../../domain.types/enums';
 import { WhatsAppInboundMessageConverter } from './whatsapp.inbound.message.converters';
 import { WhatsAppOutboundMessageConverter } from './whatsapp.outbound.message.converter';
+import { InMessageMetadata } from '../../../domain.types/intermediate.data.types';
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
 export default class WhatsAppMessageConverter implements IChannelMessageConverter {
 
-    public fromChannel = async (body: any): Promise<IncomingMessage> => {
-        const { message, contact, metadata } = this.fromChannelMessage(body);
+    public fromChannel = async (msgMetadata: InMessageMetadata): Promise<IncomingMessage> => {
+        const { message, contact, metadata } = this.fromChannelMessage(msgMetadata);
         if (!message || !contact) {
             return null;
         }
@@ -33,7 +34,8 @@ export default class WhatsAppMessageConverter implements IChannelMessageConverte
         return null;
     };
 
-    private fromChannelMessage = (requestBody) => {
+    private fromChannelMessage = (messageMetadata: InMessageMetadata) => {
+        const requestBody = messageMetadata.RequestBody;
         var message = null;
         var contact = null;
         var metadata = null;

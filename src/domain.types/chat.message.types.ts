@@ -15,7 +15,8 @@ import {
     OutgoingMessage,
     IntentDetails,
     MessageChannelDetails,
-    QnADetails
+    QnADetails,
+    SupportChannel
 } from './message';
 import { Language } from './language';
 
@@ -34,6 +35,7 @@ export interface ChatMessageCreateModel {
     MessageType          ?: MessageContentType;
     Content              ?: string;
     TranslatedContent    ?: string;
+    SupportChannel       ?: SupportChannel;
     Timestamp            ?: Date;
     PrevMessageId        ?: uuid;
     GeoLocation          ?: JsonString;
@@ -56,6 +58,7 @@ export interface ChatMessageUpdateModel {
     GeoLocation          ?: JsonString;
     ChannelSpecifics     ?: JsonString;
     PrimaryMessageHandler?: MessageHandlerType;
+    SupportChannel       ?: SupportChannel;
     Metadata             ?: JsonString;
     Intent               ?: JsonString;
     Assessment           ?: JsonString;
@@ -77,8 +80,12 @@ export interface ChatMessageBaseDto {
     Language             ?: Language;
     Content              ?: string | unknown;
     TranslatedContent    ?: string;
+    SupportChannel       ?: SupportChannel;
     Timestamp             : Date;
     PrevMessageId        ?: uuid;
+    IsSupportResponse    ?: boolean; // Message from support agent received on support channel
+    SupportTaskId        ?: string;  // TaskId of the support task in support's channel system
+    SupportExitMessage   ?: boolean; // Message from support agent to exit the support session
 }
 
 export interface ChatMessageResponseDto extends ChatMessageBaseDto {

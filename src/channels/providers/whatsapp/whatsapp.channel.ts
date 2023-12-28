@@ -125,18 +125,6 @@ export class WhatsAppChannel extends ChannelBase {
         }
     };
 
-    public processIncoming = async (message: Message): Promise<Message> => {
-        throw new Error("Method not implemented.");
-    };
-
-    public processOutgoing = async (message: Message): Promise<OutgoingMessage> => {
-        throw new Error("Method not implemented.");
-    };
-
-    public acknowledge = async (response: express.Response, message: Message): Promise<boolean> => {
-        throw new Error("Method not implemented.");
-    };
-
     //#region  Private Methods
 
     //#endregion

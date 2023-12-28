@@ -74,6 +74,20 @@ export class ChatMessage {
     @Column({ type: 'text', nullable: true })
     TranslatedContent: string;
 
+    @Column({ type: 'enum', enum: ChannelType, nullable: true })
+    SupportChannelType: ChannelType;
+
+    @Column({ type: 'boolean', nullable: false, default: false })
+    IsSupportResponse: boolean;
+
+    @Column({ type: 'string', nullable: true })
+    @Max(512)
+    @Min(1)
+    SupportTaskId: string;
+
+    @Column({ type: 'boolean', nullable: false, default: false })
+    SupportExitMessage: boolean;
+
     @Column({ type: 'enum', enum: MessageHandlerType, default: MessageHandlerType.Unhandled })
     PrimaryMessageHandler: MessageHandlerType;
 

@@ -18,6 +18,9 @@ import { ChannelType } from '../../domain.types/enums';
 import MessageHandlerRouter from '../../message.handlers/message.handler.router';
 import MessageCache from '../../message.pipelines/cache/message.cache';
 import { OutMessageProcessor } from './outmessage.processor';
+import { InMessageMetadata } from '../../domain.types/intermediate.data.types';
+import { FeedbackHandler } from '../../message.handlers/feedback/feedback.handler';
+import { HumanHandoffHandler } from '../../message.handlers/human.handoff/human.handoff.handler';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -34,17 +37,17 @@ export default class MessageProcessQueue {
 
     };
 
-    private static processMessage = async (messageBody: any): Promise<void> => {
+    private static processMessage = async (messageBody: InMessageMetadata): Promise<void> => {
 
         logger.info('MessageProcessQueue.processMessage');
         logger.info(JSON.stringify(messageBody, null, 2));
 
-        const container = messageBody.container;
-        const body = messageBody.requestBody;
-        const channel = messageBody.channel as IChannel;
-        const channelName = messageBody.channelName;
-        const tenantName = messageBody.tenantName;
-        const tenantId = messageBody.tenantId as uuid;
+        const container   = messageBody.Container;
+        const body        = messageBody.RequestBody;
+        const channel     = messageBody.Channel as IChannel;
+        const channelName = messageBody.ChannelName;
+        const tenantName  = messageBody.TenantName;
+        const tenantId    = messageBody.TenantId as uuid;
 
         const tenant: Tenant = {
             id   : tenantId,
@@ -54,7 +57,7 @@ export default class MessageProcessQueue {
 
         //1. Convert incoming message to a standard format
         const messageConverter = channel.messageConverter();
-        const incomingMessage: IncomingMessage = await messageConverter.fromChannel(body);
+        const incomingMessage: IncomingMessage = await messageConverter.fromChannel(messageBody);
         incomingMessage.TenantId = tenantId;
         incomingMessage.TenantName = tenantName;
 
@@ -88,14 +91,16 @@ export default class MessageProcessQueue {
 
         //7. If feedback, handle it right away
         if (processible.Feedback) {
-            const feedbackHandler = container.resolve('FeedbackHandler');
-            return feedbackHandler.handle(processible);
+            const feedbackHandler = container.resolve('FeedbackHandler') as FeedbackHandler;
+            await feedbackHandler.handle(processible);
+            return;
         }
 
         //8. If Human-Handoff, continue on it right away
         if (processible.HumanHandoff) {
-            const humanHandoffHandler = container.resolve('HumanHandoffHandler');
-            return humanHandoffHandler.handle(processible);
+            const humanHandoffHandler = container.resolve('HumanHandoffHandler') as HumanHandoffHandler;
+            await humanHandoffHandler.handle(processible);
+            return;
         }
 
         //9. Process the message through all identified message handlers

@@ -8,6 +8,7 @@ import { ChatMessageService } from '../../database/typeorm/services/chat.message
 import { SessionService } from '../../database/typeorm/services/session.service';
 import { UserService } from '../../database/typeorm/services/user.service';
 import MessageProcessQueue from '../../message.pipelines/process.queue/message.process.queue';
+import { InMessageMetadata } from '../../domain.types/intermediate.data.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -31,22 +32,23 @@ export class ChannelWebhookController {
             //1. Authenticate with channel
             await channel.webhookAuthenticator().authenticate(request);
 
-            //2. Check if this message is related to acknowledgement of a message sent
-            const ack = await channel.shouldAcknowledge(request);
-            if (ack?.ShouldAcknowledge === true) {
-                return ResponseHandler.success(request, response, ack.Message, ack.StatusCode);
-            }
-
-            const messageBody = {
-                container,
-                requestBody : request.body,
-                channel,
-                channelName,
-                tenantName,
-                tenantId,
+            const messageBody: InMessageMetadata = {
+                Container   : container,
+                RequestBody : request.body,
+                Channel     : channel,
+                ChannelName : channelName,
+                TenantName  : tenantName,
+                TenantId    : tenantId,
             };
 
+            //2. Enqueue message for processing
             MessageProcessQueue.enqueue(messageBody);
+
+            //3. Check if this message is related to acknowledgement of a message sent
+            const ack = await channel.shouldAcknowledge(request);
+            if (ack?.ShouldAcknowledge === true) {
+                return channel.acknowledge(request, response, ack);
+            }
 
             return ResponseHandler.success(request, response, 'Message received successfully!', 200, null);
 

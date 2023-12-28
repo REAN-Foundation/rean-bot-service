@@ -8,6 +8,7 @@ export enum ChannelType {
     Clickup      = 'Clickup',
     Slack        = 'Slack',
     Mock         = 'Mock',
+    None         = 'None',
 }
 
 export const ChannelTypeList: ChannelType[] = [

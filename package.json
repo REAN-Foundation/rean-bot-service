@@ -30,6 +30,8 @@
         "@google-cloud/speech": "^6.1.0",
         "@google-cloud/text-to-speech": "^5.0.1",
         "@google-cloud/translate": "^8.0.2",
+        "@slack/events-api": "^3.0.1",
+        "@slack/web-api": "^6.11.0",
         "approx-string-match": "^2.0.0",
         "aws-sdk": "^2.1525.0",
         "axios": "^1.6.2",

@@ -30,6 +30,7 @@ import { ModuleInjector } from '../modules/module.injector';
 import { DatabaseInjector } from '../database/database.injector';
 import { OpenAIProvider } from '../integrations/llm/providers/openai.provider';
 import { AwsSpeechService } from '../message.pipelines/speech/providers/aws.speech.service';
+import SlackMessageConverter from '../channels/providers/slack/slack.message.converter';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -58,17 +59,6 @@ export class Injector {
             ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
             ctnr.register('IWebhookAuthenticator', { useClass: TelegramAuthenticator });
         }
-        if (channel === ChannelType.Clickup) {
-            ctnr.register('IChannel', { useClass: ClickupChannel });
-            // ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
-            ctnr.register('IWebhookAuthenticator', { useClass: ClickUpAuthenticator });
-        }
-        if (channel === ChannelType.Slack) {
-            ctnr.register('IChannel', { useClass: SlackChannel });
-            // ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
-            ctnr.register('IWebhookAuthenticator', { useClass: SlackAuthenticator });
-        }
-
         // if (channel === ChannelType.Web) {
         //     ctnr.register('IChannel', { useClass: WebChannel });
         //     ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
@@ -79,6 +69,18 @@ export class Injector {
         //     ctnr.register('IChannelMessageConverter', { useClass: WhatsAppMessageConverter });
         //     ctnr.register('IWebhookAuthenticator', { useClass: MobileAppAuthenticator });
         // }
+
+        // if (channel === ChannelType.Clickup) {
+        //     ctnr.register('ClickupChannel', { useClass: ClickupChannel });
+        //     ctnr.register('ClickupMessageConverter', { useClass: ClickupMessageConverter });
+        //     ctnr.register('IWebhookAuthenticator', { useClass: ClickUpAuthenticator });
+        // }
+
+        if (channel === ChannelType.Slack) {
+            ctnr.register('SlackChannel', { useClass: SlackChannel });
+            ctnr.register('SlackMessageConverter', { useClass: SlackMessageConverter });
+            ctnr.register('IWebhookAuthenticator', { useClass: SlackAuthenticator });
+        }
 
         ctnr.register('UserLanguage', { useClass: UserLanguage });
         ctnr.register('ITranslator', { useClass: GoogleTranslator });

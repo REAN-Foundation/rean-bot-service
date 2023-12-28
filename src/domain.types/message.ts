@@ -16,6 +16,7 @@ export interface Acknowledgement {
     ShouldAcknowledge : boolean;
     Message          ?: string;
     StatusCode       ?: number;
+    Data             ?: any;
 }
 
 export interface MessageChannelDetails {
@@ -36,8 +37,13 @@ export interface ChannelUser {
     Phone        ?: string;
 }
 
-export interface SupportChannel extends MessageChannelDetails {
-    SupportTaskId: string;
+export interface SupportChannel {
+    SupportChannelType   ?: ChannelType;
+    SupportChannelUserId ?: string;
+    ReferenceMessageId   ?: string;
+    IsSupportResponse    ?: boolean; // Message from support agent received on support channel
+    SupportTaskId        ?: string;  // TaskId of the support task in support's channel system
+    SupportExitMessage   ?: boolean; // Message from support agent to exit the support session
 }
 
 export interface GeoLocation {
@@ -116,28 +122,29 @@ export interface OptionsUI {
 }
 
 export interface Message {
-    id               ?: uuid;
-    TenantId         ?: uuid;
-    TenantName       ?: string;
-    UserId           ?: uuid;
-    ChannelUser      ?: ChannelUser;
-    Channel           : ChannelType;
-    ChannelMessageId ?: string;
-    MessageType      ?: MessageContentType;
-    Direction         : MessageDirection;
-    SessionId        ?: uuid;
-    Language         ?: Language;
-    Content          ?: string;
-    TranslatedContent?: string;
-    Timestamp         : Date;
-    Metadata         ?: Record<string, any>;
-    GeoLocation      ?: GeoLocation;
-    ChannelSpecifics ?: MessageChannelDetails;
-    PrevContextMessageId ?: uuid;
+    id                  ?: uuid;
+    TenantId            ?: uuid;
+    TenantName          ?: string;
+    UserId              ?: uuid;
+    ChannelUser         ?: ChannelUser;
+    Channel              : ChannelType;
+    ChannelMessageId    ?: string;
+    MessageType         ?: MessageContentType;
+    Direction            : MessageDirection;
+    SessionId           ?: uuid;
+    Language            ?: Language;
+    Content             ?: string;
+    TranslatedContent   ?: string;
+    Timestamp            : Date;
+    Metadata            ?: Record<string, any>;
+    GeoLocation         ?: GeoLocation;
+    ChannelSpecifics    ?: MessageChannelDetails;
+    PrevContextMessageId?: uuid;
 }
 
 export interface IncomingMessage extends Message {
     // This interface is used to deserialize the message object
+    SupportChannel ?: SupportChannel;
 }
 
 export interface OutgoingMessage extends Message {
@@ -169,3 +176,4 @@ export interface ChatSession {
     LastMessageDate ?: Date;
     Language        ?: string;
 }
+

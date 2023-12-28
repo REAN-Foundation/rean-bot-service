@@ -1,5 +1,5 @@
 import express from 'express';
-import { Acknowledgement, ChatSession, IncomingMessage, Message, OutgoingMessage } from '../domain.types/message';
+import { Acknowledgement, ChatSession, IncomingMessage, OutgoingMessage } from '../domain.types/message';
 import { IWebhookAuthenticator } from '../auth/webhook.authenticator/webhook.authenticator.interface';
 import { IChannelMessageConverter } from './channel.message.converter.interface';
 import { ChannelType } from '../domain.types/enums';
@@ -26,6 +26,6 @@ export interface IChannel {
 
     send: (channelUserId: string, message: any) => Promise<any>;
 
-    acknowledge: (response: express.Response, message: Message) => Promise<boolean>;
+    acknowledge: (request: express.Request, response: express.Response, ack: Acknowledgement) => Promise<any>;
 
 }
