@@ -12,16 +12,16 @@ import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tena
 import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";
 import { logger } from "../../../logger/logger";
 import { IChannelMessageConverter } from "../../channel.message.converter.interface";
-import { ISupportChannel } from "../../../channels/support.channels/support.channel.interface";
-import { IChannel } from "../../../channels/channel.interface";
-import { SupportChannelCommon } from "../../../channels/support.channels/support.channel.base";
+import { ISupportChannel } from "../../support.channels/support.channel.interface";
+import { IChannel } from "../../channel.interface";
+import { SupportChannelCommon } from "../../support.channels/support.channel.base";
 import { ResponseHandler } from "../../../common/handlers/response.handler";
 
 //////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
 @injectable()
-export class SlackChannel extends ChannelBase implements ISupportChannel {
+export class SlackSupportChannel extends ChannelBase implements ISupportChannel {
 
     _initialized = false;
 

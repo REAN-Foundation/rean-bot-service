@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { scoped, Lifecycle } from 'tsyringe';
-import { IChannelMessageConverter } from '../../channel.message.converter.interface';
-import { OutgoingMessage, IncomingMessage } from '../../../domain.types/message';
+import { ISupportChannelMessageConverter } from '../../support.channels/support.channel.message.converter.interface';
+import { OutgoingSupportMessage, SupportMessage } from '../../../domain.types/message';
 import { MessageContentType } from '../../../domain.types/enums';
-import { SlackInboundMessageConverter } from './slack.inbound.message.converters';
-import { SlackOutboundMessageConverter } from './slack.outbound.message.converter';
-import { InMessageMetadata } from '../../../domain.types/intermediate.data.types';
+import { SlackInboundMessageConverter } from './slack.support.inbound.message.converters';
+import { SlackOutboundMessageConverter } from './slack.support.outbound.message.converter';
+import { InMessageMetadata, SupportInMessageMetadata } from '../../../domain.types/intermediate.data.types';
 
 ////////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
-export default class SlackMessageConverter implements IChannelMessageConverter {
+export default class SlackMessageConverter implements ISupportChannelMessageConverter {
 
-    public fromChannel = async (msgMetadata: InMessageMetadata): Promise<IncomingMessage> => {
+    public fromChannel = async (msgMetadata: SupportInMessageMetadata): Promise<SupportMessage> => {
         // const { message, contact, metadata } = this.fromChannelMessage(msgMetadata);
         // if (!message || !contact) {
         //     return null;
@@ -24,7 +24,7 @@ export default class SlackMessageConverter implements IChannelMessageConverter {
         return convertedMessage;
     };
 
-    public toChannel = async (outMessage: OutgoingMessage): Promise<any> => {
+    public toChannel = async (outMessage: OutgoingSupportMessage): Promise<any> => {
         const messageType = outMessage.MessageType;
         const contentConverter = new SlackOutboundMessageConverter(messageType);
         const convertedMessage = await contentConverter.convert(outMessage);

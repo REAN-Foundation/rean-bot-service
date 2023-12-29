@@ -5,7 +5,8 @@ import {
     UserFeedbackType,
     MessageHandlerType,
     QnADocumentType,
-    MessageDirection
+    MessageDirection,
+    SupportMessageDirection
 } from "./enums";
 import { uuid } from "./miscellaneous/system.types";
 import { Language, LanguageCode } from "./language";
@@ -38,12 +39,15 @@ export interface ChannelUser {
 }
 
 export interface SupportChannel {
-    SupportChannelType   ?: ChannelType;
-    SupportChannelUserId ?: string;
-    ReferenceMessageId   ?: string;
-    IsSupportResponse    ?: boolean; // Message from support agent received on support channel
-    SupportTaskId        ?: string;  // TaskId of the support task in support's channel system
-    SupportExitMessage   ?: boolean; // Message from support agent to exit the support session
+    SupportChannelType     ?: ChannelType;
+    MessageDirection       ?: SupportMessageDirection;
+    SupportChannelUserId   ?: string;  // UserId in support's channel system
+    SupportChannelAgentId  ?: string;  // Support Agent/ Expert Id in support's channel system
+    ChatMessageId          ?: string;  // MessageId of the chat in our database
+    TicketId               ?: string;  // TicketId of the support event
+    SupportChannelTaskId   ?: string;  // TaskId of the support task in support's channel system
+    SupportChannelMessageId?: string;  // MessageId of the message in support's channel system, Could be same as SupportChannelTaskId!
+    IsExitMessage          ?: boolean; // Message from support agent to exit the support session
 }
 
 export interface GeoLocation {
@@ -144,7 +148,6 @@ export interface Message {
 
 export interface IncomingMessage extends Message {
     // This interface is used to deserialize the message object
-    SupportChannel ?: SupportChannel;
 }
 
 export interface OutgoingMessage extends Message {
@@ -177,3 +180,23 @@ export interface ChatSession {
     Language        ?: string;
 }
 
+export interface SupportMessage {
+    UserId                  : uuid;
+    TenantId               ?: uuid;
+    TenantName             ?: string;
+    SupportChannelType     ?: ChannelType;
+    MessageDirection       ?: SupportMessageDirection;
+    SupportChannelUserId   ?: string;  // UserId in support's channel system
+    SupportChannelAgentId  ?: string;  // Support Agent/ Expert Id in support's channel system
+    ChatMessageId          ?: string;  // MessageId of the chat in our database
+    TicketId               ?: string;  // TicketId of the support event
+    SupportChannelTaskId   ?: string;  // TaskId of the support task in support's channel system
+    SupportChannelMessageId?: string;  // MessageId of the message in support's channel system, Could be same as SupportChannelTaskId!
+    IsExitMessage          ?: boolean; // Message from support agent to exit the support session
+}
+
+export interface OutgoingSupportMessage extends SupportMessage {
+    Feedback           ?: Feedback;
+    HumanHandoff       ?: HumanHandoff;
+    MainChannelMessage ?: Message;
+}

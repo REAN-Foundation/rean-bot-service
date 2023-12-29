@@ -1,5 +1,5 @@
 import express from 'express';
-import { ChannelWebhookController } from './channel.webhooks.controller';
+import { SupportChannelWebhookController } from './support.channel.webhooks.controller';
 import { context } from '../../auth/context.handler';
 import { Lifecycle, inject, scoped } from 'tsyringe';
 // import { logger } from '../../logger/logger';
@@ -7,10 +7,10 @@ import { Lifecycle, inject, scoped } from 'tsyringe';
 ///////////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
-export class ChannelWebhookRoutes {
+export class SupportChannelWebhookRoutes {
 
     constructor (
-        @inject(ChannelWebhookController) private _controller?: ChannelWebhookController
+        @inject(SupportChannelWebhookController) private _controller?: SupportChannelWebhookController
     ) {
     }
 
@@ -18,14 +18,11 @@ export class ChannelWebhookRoutes {
 
         const router = express.Router();
 
-        const contextBase = 'ChannelWebhook';
+        const contextBase = 'SupportChannelWebhook';
 
-        router.post(`/:client/:channel/:unique_token/send`, context(`${contextBase}.SendMessage`), this._controller.sendMessage);
         router.post(`/:client/:channel/:unique_token/receive`, context(`${contextBase}.ReceiveMessage`), this._controller.receiveMessage);
-        //router.get(`/:client/:channel/:unique_token/webhook`,
-        //context(`${contextBase}.Authenticate`), this._controller.authenticate);
 
-        app.use('/v1', router);
+        app.use('/v1/support', router);
     };
 
 }
