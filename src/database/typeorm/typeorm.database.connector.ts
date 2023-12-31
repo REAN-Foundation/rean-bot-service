@@ -15,6 +15,7 @@ import { ChatMessage } from './models/chat.message.entity';
 import { Session } from './models/session.entity';
 import { User } from './models/user.entity';
 import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
+import { SupportMessage } from './models/support.message.entity';
 
 // <-- Entities imports
 
@@ -24,6 +25,7 @@ import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.
 const entities = [
     // Entities--->
     ChatMessage,
+    SupportMessage,
     Session,
     User,
     // <---Entities

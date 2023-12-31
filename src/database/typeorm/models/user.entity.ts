@@ -11,8 +11,6 @@ import {
 } from 'typeorm';
 import { IsEmail, Max, Min } from 'class-validator';
 import { Gender } from '../../../domain.types/enums';
-// import { Session } from './session.entity';
-// import { ChatMessage } from './chat.message.entity';
 
 ////////////////////////////////////////////////////////////////////////
 

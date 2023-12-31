@@ -86,12 +86,12 @@ export class ChatMessageService extends BaseService {
         }
     };
 
-    public getBySupportTaskId = async (supportTaskId: string): Promise<ChatMessageResponseDto> => {
+    public getBySupportTicketId = async (supportTicketId: string): Promise<ChatMessageResponseDto> => {
         try {
             const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
             var chatMessage = await repo.findOne({
                 where : {
-                    SupportTaskId : supportTaskId,
+                    SupportTicketId : supportTicketId,
                 },
             });
             return ChatMessageMapper.toResponseDto(chatMessage);

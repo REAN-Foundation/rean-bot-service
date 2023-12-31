@@ -80,15 +80,14 @@ export interface ChatMessageBaseDto {
     Language             ?: Language;
     Content              ?: string | unknown;
     TranslatedContent    ?: string;
-    SupportChannel       ?: SupportChannel;
+    SupportTicketId      ?: string;
+    SupportMessageId     ?: uuid;
     Timestamp             : Date;
     PrevMessageId        ?: uuid;
-    IsSupportResponse    ?: boolean; // Message from support agent received on support channel
-    SupportTaskId        ?: string;  // TaskId of the support task in support's channel system
-    SupportExitMessage   ?: boolean; // Message from support agent to exit the support session
 }
 
 export interface ChatMessageResponseDto extends ChatMessageBaseDto {
+    SupportChannel       ?: SupportChannel;
     GeoLocation          ?: GeoLocation;
     ChannelSpecifics     ?: MessageChannelDetails;
     Metadata             ?: Record<string, unknown> | unknown;

@@ -14,7 +14,7 @@ import { logger } from "../../../logger/logger";
 import { IChannelMessageConverter } from "../../channel.message.converter.interface";
 import { ISupportChannel } from "../../support.channels/support.channel.interface";
 import { IChannel } from "../../channel.interface";
-import { SupportChannelCommon } from "../../support.channels/support.channel.base";
+import { SupportChannelCommonUtilities } from "../../support.channels/support.channel.common.utilities";
 import { ResponseHandler } from "../../../common/handlers/response.handler";
 
 //////////////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ export class SlackSupportChannel extends ChannelBase implements ISupportChannel 
     };
 
     public sendSupportResponse = async (outChannel: IChannel, message: OutgoingMessage): Promise<any> => {
-        return await SupportChannelCommon.sendSupportResponse(outChannel, message);
+        return await SupportChannelCommonUtilities.sendSupportResponse(outChannel, message);
     };
 
     public acknowledge = async (

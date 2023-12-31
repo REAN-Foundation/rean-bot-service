@@ -5,7 +5,7 @@ import { IChannel } from "../channel.interface";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class SupportChannelCommon {
+export class SupportChannelCommonUtilities {
 
     public static async sendSupportResponse(outChannel: IChannel, message: OutgoingMessage): Promise<any>
     {
@@ -17,7 +17,6 @@ export class SupportChannelCommon {
         }
         logger.info(JSON.stringify(message.HumanHandoff, null, 2));
 
-        message.IsSupportResponse = true;
         message.Channel = outChannel.channelType();
 
         return await outChannel.send(message.ChannelUser.ChannelUserId, message);

@@ -39,14 +39,14 @@ export interface ChannelUser {
 }
 
 export interface SupportChannel {
+    TicketId               ?: string;  // TicketId of the support event
     SupportChannelType     ?: ChannelType;
     MessageDirection       ?: SupportMessageDirection;
+    SupportChannelTaskId   ?: string;  // TaskId of the support task in support's channel system
+    SupportChannelMessageId?: string;  // MessageId of the message in support's channel system, Could be same as SupportChannelTaskId!
     SupportChannelUserId   ?: string;  // UserId in support's channel system
     SupportChannelAgentId  ?: string;  // Support Agent/ Expert Id in support's channel system
     ChatMessageId          ?: string;  // MessageId of the chat in our database
-    TicketId               ?: string;  // TicketId of the support event
-    SupportChannelTaskId   ?: string;  // TaskId of the support task in support's channel system
-    SupportChannelMessageId?: string;  // MessageId of the message in support's channel system, Could be same as SupportChannelTaskId!
     IsExitMessage          ?: boolean; // Message from support agent to exit the support session
 }
 
@@ -140,6 +140,7 @@ export interface Message {
     Content             ?: string;
     TranslatedContent   ?: string;
     Timestamp            : Date;
+    SupportTicketId     ?: string;
     Metadata            ?: Record<string, any>;
     GeoLocation         ?: GeoLocation;
     ChannelSpecifics    ?: MessageChannelDetails;

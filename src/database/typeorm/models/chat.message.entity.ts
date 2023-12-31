@@ -5,7 +5,6 @@ import {
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
-    // ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
@@ -16,9 +15,6 @@ import {
     MessageHandlerType,
     MessageContentType,
 } from '../../../domain.types/enums';
-
-// import { Session } from './session.entity';
-// import { User } from './user.entity';
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -74,19 +70,12 @@ export class ChatMessage {
     @Column({ type: 'text', nullable: true })
     TranslatedContent: string;
 
-    @Column({ type: 'enum', enum: ChannelType, nullable: true })
-    SupportChannelType: ChannelType;
-
-    @Column({ type: 'boolean', nullable: false, default: false })
-    IsSupportResponse: boolean;
-
     @Column({ type: 'string', nullable: true })
-    @Max(512)
-    @Min(1)
-    SupportTaskId: string;
+    @Max(64)
+    SupportTicketId: string;
 
-    @Column({ type: 'boolean', nullable: false, default: false })
-    SupportExitMessage: boolean;
+    @Column({ type: 'uuid', nullable: true })
+    SupportMessageId: string;
 
     @Column({ type: 'enum', enum: MessageHandlerType, default: MessageHandlerType.Unhandled })
     PrimaryMessageHandler: MessageHandlerType;
