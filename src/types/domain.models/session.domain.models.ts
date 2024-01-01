@@ -1,8 +1,8 @@
-import { ChannelType } from './enums';
-import { ChatSession } from './message';
-import { BaseSearchFilters, BaseSearchResults } from './miscellaneous/base.search.types';
-import { uuid } from './miscellaneous/system.types';
-import { UserResponseDto } from './user.types';
+import { ChannelType } from '../enums';
+import { ChatSession } from '../common.types';
+import { BaseSearchFilters, BaseSearchResults } from '../miscellaneous/base.search.types';
+import { uuid } from '../miscellaneous/system.types';
+import { UserResponseDto } from './user.domain.models';
 
 //////////////////////////////////////////////////////////////////////////////
 

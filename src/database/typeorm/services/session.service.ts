@@ -14,7 +14,7 @@ import {
     SessionSearchFilters,
     SessionSearchResults,
     SessionUpdateModel,
-} from '../../../domain.types/session.types';
+} from '../../../domain.types/domain.models/session.domain.models';
 
 ///////////////////////////////////////////////////////////////////////
 

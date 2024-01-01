@@ -9,7 +9,7 @@ import {
     UserSearchFilters,
     UserSearchResults,
     UserUpdateModel,
-} from '../../../domain.types/user.types';
+} from '../../../domain.types/domain.models/user.domain.models';
 import { UserMapper } from '../mappers/user.mapper';
 import { User } from '../models/user.entity';
 import { Lifecycle, inject, scoped } from 'tsyringe';

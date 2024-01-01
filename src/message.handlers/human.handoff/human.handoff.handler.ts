@@ -1,4 +1,4 @@
-import { ProcessableMessage } from '../../domain.types/message';
+import { ProcessableMessage } from '../../domain.types/common.types';
 import { logger } from '../../logger/logger';
 import { IMessageHandler } from '../message.handler.interface';
 

@@ -4,7 +4,7 @@ import {
     MessageContentType,
     MessageDirection
 } from "../../../domain.types/enums";
-import { IncomingMessage, OptionButtonType, OutgoingMessage } from "../../../domain.types/message";
+import { IncomingMessage, OptionButtonType, OutgoingMessage } from "../../../domain.types/common.types";
 
 ////////////////////////////////////////////////////////////////////////////////
 

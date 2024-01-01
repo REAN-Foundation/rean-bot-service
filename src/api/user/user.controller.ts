@@ -4,7 +4,7 @@ import { ErrorHandler } from '../../common/handlers/error.handler';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { UserValidator } from './user.validator';
 import { UserService } from '../../database/typeorm/services/user.service';
-import { UserCreateModel, UserSearchFilters, UserUpdateModel } from '../../domain.types/user.types';
+import { UserCreateModel, UserSearchFilters, UserUpdateModel } from '../../domain.types/domain.models/user.domain.models';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

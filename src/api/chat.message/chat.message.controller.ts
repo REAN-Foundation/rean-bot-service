@@ -4,7 +4,7 @@ import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
 import {
     ChatMessageSearchFilters,
-} from '../../domain.types/chat.message.types';
+} from '../../domain.types/domain.models/chat.message.domain.models';
 import { ChatMessageValidator } from '../channel.webhooks/channel.webhooks.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////

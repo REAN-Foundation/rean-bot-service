@@ -1,5 +1,5 @@
 import { logger } from "../logger/logger";
-import { ProcessableMessage } from "../domain.types/message";
+import { ProcessableMessage } from "../domain.types/common.types";
 import { IMessageHandler } from "./message.handler.interface";
 
 //////////////////////////////////////////////////////////////////////////////////////

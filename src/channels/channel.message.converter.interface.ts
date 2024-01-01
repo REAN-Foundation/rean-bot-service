@@ -1,5 +1,5 @@
-import { InMessageMetadata } from '../domain.types/intermediate.data.types';
-import { OutgoingMessage, IncomingMessage } from '../domain.types/message';
+import { InMessageMetadata } from '../domain.types/intermediate.types';
+import { OutgoingMessage, IncomingMessage } from '../domain.types/common.types';
 
 ////////////////////////////////////////////////////////////////////////////////
 

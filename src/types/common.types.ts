@@ -13,6 +13,11 @@ import { Language, LanguageCode } from "./language";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+export interface Tenant {
+    id  : uuid;
+    Name: string;
+}
+
 export interface Acknowledgement {
     ShouldAcknowledge : boolean;
     Message          ?: string;

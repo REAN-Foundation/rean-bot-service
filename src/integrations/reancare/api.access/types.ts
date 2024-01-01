@@ -1,4 +1,4 @@
-import type { PersonRole } from "../../../domain.types/user.types";
+import type { PersonRole } from "../../../domain.types/domain.models/user.domain.models";
 import { ApiError } from "../../../common/handlers/error.handler";
 import { logger } from "../../../logger/logger";
 

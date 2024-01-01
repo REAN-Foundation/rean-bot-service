@@ -1,9 +1,9 @@
-import { BaseSearchFilters, BaseSearchResults } from './miscellaneous/base.search.types';
-import { JsonString, LangCode, uuid } from './miscellaneous/system.types';
+import { BaseSearchFilters, BaseSearchResults } from '../miscellaneous/base.search.types';
+import { JsonString, LangCode, uuid } from '../miscellaneous/system.types';
 import {
     SupportMessageDirection,
     ChannelType
-} from './enums';
+} from '../enums';
 
 //////////////////////////////////////////////////////////////////////////////
 

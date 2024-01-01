@@ -4,7 +4,7 @@ import { ErrorHandler } from '../../common/handlers/error.handler';
 import { uuid } from '../../domain.types/miscellaneous/system.types';
 import { SessionValidator } from './session.validator';
 import { SessionService } from '../../database/typeorm/services/session.service';
-import { SessionCreateModel, SessionSearchFilters, SessionUpdateModel } from '../../domain.types/session.types';
+import { SessionCreateModel, SessionSearchFilters, SessionUpdateModel } from '../../domain.types/domain.models/session.domain.models';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

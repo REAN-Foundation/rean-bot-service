@@ -1,5 +1,5 @@
 import { ChatMessage } from '../models/chat.message.entity';
-import { ChatMessageCreateModel, ChatMessageResponseDto } from '../../../domain.types/chat.message.types';
+import { ChatMessageCreateModel, ChatMessageResponseDto } from '../../../domain.types/domain.models/chat.message.domain.models';
 import { getLanguage } from '../../../domain.types/language';
 import {
     QnADetails,
@@ -8,7 +8,7 @@ import {
     AssessmentDetails,
     IntentDetails,
     MessageChannelDetails,
-} from '../../../domain.types/message';
+} from '../../../domain.types/common.types';
 
 ///////////////////////////////////////////////////////////////////////////////////
 

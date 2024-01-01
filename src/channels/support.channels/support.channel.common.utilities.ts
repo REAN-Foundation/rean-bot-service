@@ -1,4 +1,4 @@
-import { OutgoingMessage } from "../../domain.types/message";
+import { OutgoingMessage } from "../../domain.types/common.types";
 import { ChannelType } from "../../domain.types/enums";
 import { logger } from "../../logger/logger";
 import { IChannel } from "../channel.interface";

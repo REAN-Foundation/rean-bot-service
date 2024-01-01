@@ -4,7 +4,7 @@ import {
     MessageContentType,
     MessageDirection
 } from "../../../domain.types/enums";
-import { IncomingMessage } from "../../../domain.types/message";
+import { IncomingMessage } from "../../../domain.types/common.types";
 
 ////////////////////////////////////////////////////////////////////////////////
 

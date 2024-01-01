@@ -1,5 +1,5 @@
 import express from 'express';
-import { Acknowledgement, IncomingMessage, OutgoingMessage } from '../domain.types/message';
+import { Acknowledgement, IncomingMessage, OutgoingMessage } from '../domain.types/common.types';
 import { IChannel } from './channel.interface';
 import { IWebhookAuthenticator } from '../auth/webhook.authenticator/webhook.authenticator.interface';
 import { IChannelMessageConverter } from './channel.message.converter.interface';

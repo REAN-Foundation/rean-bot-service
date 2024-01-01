@@ -1,7 +1,7 @@
-import { BaseSearchFilters, BaseSearchResults } from './miscellaneous/base.search.types';
-import { uuid } from './miscellaneous/system.types';
-import { Gender } from './enums';
-import { SessionResponseDto } from './session.types';
+import { BaseSearchFilters, BaseSearchResults } from '../miscellaneous/base.search.types';
+import { uuid } from '../miscellaneous/system.types';
+import { Gender } from '../enums';
+import { SessionResponseDto } from './session.domain.models';
 
 ////////////////////////////////////////////////////////////////////////////////
 

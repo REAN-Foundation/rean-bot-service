@@ -9,7 +9,7 @@ import {
     ChatMessageSearchFilters,
     ChatMessageSearchResults,
     ChatMessageUpdateModel,
-} from '../../../domain.types/chat.message.types';
+} from '../../../domain.types/domain.models/chat.message.domain.models';
 import { ChatMessageMapper } from '../mappers/chat.message.mapper';
 import { Session } from '../models/session.entity';
 import { User } from '../models/user.entity';
@@ -30,8 +30,6 @@ export class ChatMessageService extends BaseService {
 
     public create = async (createModel: ChatMessageCreateModel): Promise<ChatMessageResponseDto> => {
         const chatMessageRepo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
-        // const sessionRepo: Repository<Session> = await this.getRepository(this._envProvider, Session);
-        // const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
         const entity: ChatMessage = ChatMessageMapper.toEntity(createModel);
         const chatMessage = chatMessageRepo.create(entity);
         var record = await chatMessageRepo.save(chatMessage);

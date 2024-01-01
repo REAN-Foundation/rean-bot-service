@@ -1,18 +1,13 @@
-// import { IsUrl } from "class-validator";
+import { Max, Min } from 'class-validator';
 import 'reflect-metadata';
 import {
     Column,
     CreateDateColumn,
     DeleteDateColumn,
     Entity,
-    // ManyToOne,
-    // OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { IsEmail, Max, Min } from 'class-validator';
-// import { User } from './user.entity';
-// import { ChatMessage } from './chat.message.entity';
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -34,7 +29,6 @@ export class Session {
     TenantName: string;
 
     @Column({ type: 'varchar', nullable: true, default: 'WhatsApp' })
-    @IsEmail()
     @Max(128)
     @Min(2)
     Channel: string;

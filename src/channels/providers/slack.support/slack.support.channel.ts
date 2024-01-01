@@ -3,7 +3,7 @@ import express from "express";
 import { WebClient } from '@slack/web-api';
 import { createEventAdapter, SlackEventAdapter } from '@slack/events-api';
 import { scoped, Lifecycle, inject, injectable } from "tsyringe";
-import { Acknowledgement, OutgoingMessage } from "../../../domain.types/message";
+import { Acknowledgement, OutgoingMessage } from "../../../domain.types/common.types";
 import { ChannelType } from "../../../domain.types/enums";
 import { ChannelBase } from "../../channel.base";
 import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";

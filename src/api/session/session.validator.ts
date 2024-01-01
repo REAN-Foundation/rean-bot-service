@@ -3,7 +3,7 @@ import joi from 'joi';
 import { ErrorHandler } from '../../common/handlers/error.handler';
 import BaseValidator from '../base.validator';
 import { TypeUtils } from '../../common/utilities/type.utils';
-import { SessionCreateModel, SessionUpdateModel, SessionSearchFilters } from '../../domain.types/session.types';
+import { SessionCreateModel, SessionUpdateModel, SessionSearchFilters } from '../../domain.types/domain.models/session.domain.models';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

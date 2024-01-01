@@ -1,5 +1,5 @@
-import { SupportInMessageMetadata } from '../../domain.types/intermediate.data.types';
-import { SupportMessage, OutgoingSupportMessage } from '../../domain.types/message';
+import { SupportInMessageMetadata } from '../../domain.types/intermediate.types';
+import { SupportMessage, OutgoingSupportMessage } from '../../domain.types/common.types';
 
 ////////////////////////////////////////////////////////////////////////////////
 

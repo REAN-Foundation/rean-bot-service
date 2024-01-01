@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { scoped, Lifecycle, inject } from 'tsyringe';
 import { ISupportChannelMessageConverter } from '../../support.channels/support.channel.message.converter.interface';
-import { OutgoingSupportMessage, SupportMessage } from '../../../domain.types/message';
+import { OutgoingSupportMessage, SupportMessage } from '../../../domain.types/common.types';
 import { ChannelType, SupportMessageDirection } from '../../../domain.types/enums';
-import { SupportInMessageMetadata } from '../../../domain.types/intermediate.data.types';
+import { SupportInMessageMetadata } from '../../../domain.types/intermediate.types';
 import { ChatMessageService } from '../../../database/typeorm/services/chat.message.service';
 import { logger } from "../../../logger/logger";
 import { SupportMessageService } from '../../../database/typeorm/services/support.message.service';

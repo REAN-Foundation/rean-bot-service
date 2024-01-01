@@ -3,7 +3,7 @@ import express from "express";
 import http from 'https';
 import needle from "needle";
 import { scoped, Lifecycle, inject, injectable } from "tsyringe";
-import { Acknowledgement, Message, OutgoingMessage } from "../../../domain.types/message";
+import { Acknowledgement, Message, OutgoingMessage } from "../../../domain.types/common.types";
 import { ChannelType } from "../../../domain.types/enums";
 import { ChannelBase } from "../../channel.base";
 import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";

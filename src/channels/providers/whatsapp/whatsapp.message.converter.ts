@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { scoped, Lifecycle } from 'tsyringe';
 import { IChannelMessageConverter } from '../../channel.message.converter.interface';
-import { OutgoingMessage, IncomingMessage } from '../../../domain.types/message';
+import { OutgoingMessage, IncomingMessage } from '../../../domain.types/common.types';
 import { MessageContentType } from '../../../domain.types/enums';
 import { WhatsAppInboundMessageConverter } from './whatsapp.inbound.message.converters';
 import { WhatsAppOutboundMessageConverter } from './whatsapp.outbound.message.converter';
-import { InMessageMetadata } from '../../../domain.types/intermediate.data.types';
+import { InMessageMetadata } from '../../../domain.types/intermediate.types';
 
 ////////////////////////////////////////////////////////////////////////////////
 

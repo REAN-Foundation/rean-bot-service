@@ -1,4 +1,4 @@
-import { OutgoingMessage, IncomingMessage } from '../domain.types/message';
+import { OutgoingMessage, IncomingMessage } from '../domain.types/common.types';
 
 ////////////////////////////////////////////////////////////////////////////////
 

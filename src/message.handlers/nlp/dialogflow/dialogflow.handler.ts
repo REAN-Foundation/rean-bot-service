@@ -1,5 +1,5 @@
 import { Lifecycle, inject, scoped } from 'tsyringe';
-import { ProcessableMessage, SerializableMessage } from '../../../domain.types/message';
+import { ProcessableMessage, SerializableMessage } from '../../../domain.types/common.types';
 import { logger } from '../../../logger/logger';
 import { INLPHandler } from '../nlp.handler.interface';
 import { Intent } from '../../../intent/intent.emitter';

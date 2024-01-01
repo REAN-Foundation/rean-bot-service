@@ -13,7 +13,7 @@ import { ClickUpAuthenticator } from '../auth/webhook.authenticator/providers/cl
 import { SlackAuthenticator } from '../auth/webhook.authenticator/providers/slack.authenticator';
 
 import { WhatsAppChannel } from '../channels/providers/whatsapp/whatsapp.channel';
-import { ClickupChannel } from '../channels/providers/clickup/clickup.channel';
+// import { ClickupChannel } from '../channels/providers/clickup/clickup.channel';
 import { SlackSupportChannel } from '../channels/providers/slack.support/slack.support.channel';
 
 // import { TelegramChannel } from '../channels/providers/telegram/telegram.channel';
@@ -28,7 +28,7 @@ import { GoogleTranslator } from '../message.pipelines/translation/providers/goo
 
 import { ModuleInjector } from '../modules/module.injector';
 import { DatabaseInjector } from '../database/database.injector';
-import { OpenAIProvider } from '../integrations/llm/providers/openai.provider';
+import { OpenAIProvider } from '../integrations/llm/providers/openai/openai.provider';
 import { AwsSpeechService } from '../message.pipelines/speech/providers/aws.speech.service';
 import SlackMessageConverter from '../channels/providers/slack.support/slack.support.message.converter';
 
@@ -71,13 +71,12 @@ export class Injector {
         // }
 
         // if (channel === ChannelType.Clickup) {
-        //     ctnr.register('ClickupChannel', { useClass: ClickupChannel });
+        //     ctnr.register('IChannel', { useClass: ClickupChannel });
         //     ctnr.register('ClickupMessageConverter', { useClass: ClickupMessageConverter });
         //     ctnr.register('IWebhookAuthenticator', { useClass: ClickUpAuthenticator });
         // }
-
         if (channel === ChannelType.Slack) {
-            ctnr.register('SlackChannel', { useClass: SlackSupportChannel });
+            ctnr.register('IChannel', { useClass: SlackSupportChannel });
             ctnr.register('SlackMessageConverter', { useClass: SlackMessageConverter });
             ctnr.register('IWebhookAuthenticator', { useClass: SlackAuthenticator });
         }

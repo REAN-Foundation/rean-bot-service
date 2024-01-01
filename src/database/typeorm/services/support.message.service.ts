@@ -9,7 +9,7 @@ import {
     SupportMessageSearchFilters,
     // SupportMessageSearchResults,
     SupportMessageUpdateModel,
-} from '../../../domain.types/support.message.types';
+} from '../../../domain.types/domain.models/support.message.domain.models';
 import { SupportMessageMapper } from '../mappers/support.message.mapper';
 import { SupportMessage } from '../models/support.message.entity';
 import { Lifecycle, inject, scoped } from 'tsyringe';

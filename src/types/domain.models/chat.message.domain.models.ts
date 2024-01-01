@@ -1,11 +1,11 @@
-import { BaseSearchFilters, BaseSearchResults } from './miscellaneous/base.search.types';
-import { JsonString, LangCode, uuid } from './miscellaneous/system.types';
+import { BaseSearchFilters, BaseSearchResults } from '../miscellaneous/base.search.types';
+import { JsonString, LangCode, uuid } from '../miscellaneous/system.types';
 import {
     MessageDirection,
     MessageContentType,
     MessageHandlerType,
     ChannelType
-} from './enums';
+} from '../enums';
 import {
     AssessmentDetails,
     Feedback,
@@ -17,8 +17,8 @@ import {
     MessageChannelDetails,
     QnADetails,
     SupportChannel
-} from './message';
-import { Language } from './language';
+} from '../common.types';
+import { Language } from '../language';
 
 //////////////////////////////////////////////////////////////////////////////
 
