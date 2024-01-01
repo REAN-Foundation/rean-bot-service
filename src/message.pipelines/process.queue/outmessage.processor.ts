@@ -1,7 +1,7 @@
 import { Lifecycle, inject, scoped } from 'tsyringe';
 import { logger } from '../../logger/logger';
 import { ChatMessageCreateModel, outgoingMessageToCreateModel } from '../../domain.types/chat.message.types';
-import { ProcessibleMessage } from '../../domain.types/message';
+import { ProcessableMessage } from '../../domain.types/message';
 import MessageCache from '../../message.pipelines/cache/message.cache';
 import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
 
@@ -14,7 +14,7 @@ export class OutMessageProcessor {
         @inject('TenantName') private _tenantName?: string,
     ) {}
 
-    public async process(metadata, message: ProcessibleMessage): Promise<any> {
+    public async process(metadata, message: ProcessableMessage): Promise<any> {
 
         const container = metadata.container;
         const channel = metadata.channel;

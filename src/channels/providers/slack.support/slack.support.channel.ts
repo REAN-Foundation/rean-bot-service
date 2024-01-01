@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import express from "express";
-import http from 'https';
-import needle from "needle";
 import { WebClient } from '@slack/web-api';
 import { createEventAdapter, SlackEventAdapter } from '@slack/events-api';
 import { scoped, Lifecycle, inject, injectable } from "tsyringe";
-import { Acknowledgement, Message, OutgoingMessage } from "../../../domain.types/message";
+import { Acknowledgement, OutgoingMessage } from "../../../domain.types/message";
 import { ChannelType } from "../../../domain.types/enums";
 import { ChannelBase } from "../../channel.base";
 import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";
@@ -15,7 +13,6 @@ import { IChannelMessageConverter } from "../../channel.message.converter.interf
 import { ISupportChannel } from "../../support.channels/support.channel.interface";
 import { IChannel } from "../../channel.interface";
 import { SupportChannelCommonUtilities } from "../../support.channels/support.channel.common.utilities";
-import { ResponseHandler } from "../../../common/handlers/response.handler";
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -73,26 +70,29 @@ export class SlackSupportChannel extends ChannelBase implements ISupportChannel 
 
     public send = async (channelUserId: string, message: any): Promise<any> => {
         try {
+            await this.init();
 
-            const apiVersion = this._tenantEnvProvider.getTenantEnvironmentVariable("META_API_VERSION");
-            const apiToken = this._tenantEnvProvider.getTenantEnvironmentVariable("META_API_TOKEN");
-            const host = this._tenantEnvProvider.getTenantEnvironmentVariable("META_WHATSAPP_HOST");
-            const url = host + '/' + apiVersion + '/' + channelUserId + '/messages';
-            const postData = JSON.stringify(message);
-            const options = {
-                headers : {
-                    'Content-Type'  : 'application/json',
-                    'Authorization' : `Bearer ${apiToken}`,
-                },
-                compressed : true,
-            };
+            const text = message.text;
+            const response = await this._client.chat.postMessage(message);
+            const supportChannelTaskId = response.ts;
+            logger.info(`Response -> Message sent to Slack: ${JSON.stringify(response, null, 2)}`);
+            return supportChannelTaskId;
 
-            const response = await needle('post', url, postData, options);
-            if (response.statusCode !== 201 && response.statusCode !== 200) {
-                logger.error(`Error occurred while sending message to Whatsapp: ${response.body}`);
-            }
-            logger.info(`Message sent to Whatsapp: ${response.body}`);
-            return response.body;
+
+            // let messageContent = response[response.length - 1].dataValues.messageContent;
+            // messageContent = (topic !== null) ? topic : messageContent;
+
+            // const objID = (topic !== null) ?
+            //     response[response.length - 2].dataValues.id :
+            //     response[response.length - 1].dataValues.id;
+
+            // const chatMessageRepository = (
+            //    await this.entityManagerProvider.getEntityManager(this.clientEnvironmentProviderService))
+            //    .getRepository(ChatMessage);
+            // await chatMessageRepository.update({ supportChannelTaskID: response.ts }, { where: { id: objID } })
+            //     .then(() => { console.log("updated"); })
+            //     .catch(error => console.log("error on update", error));
+
         }
         catch (error) {
             logger.error(`Error occurred while sending message to Whatsapp: ${error}`);
@@ -110,9 +110,5 @@ export class SlackSupportChannel extends ChannelBase implements ISupportChannel 
         const challenge = ack.Data;
         return response.status(200).send(challenge);
     };
-
-    //#region  Private Methods
-
-    //#endregion
 
 }

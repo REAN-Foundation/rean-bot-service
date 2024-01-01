@@ -33,6 +33,9 @@ export class SupportMessage {
     @Column({ type: 'enum', enum: ChannelType, default: ChannelType.Clickup })
     SupportChannel: ChannelType;
 
+    @Column({ type: 'enum', enum: ChannelType, default: ChannelType.WhatsApp })
+    UserChannel: ChannelType;
+
     @Column({ type: 'string', nullable: true })
     @Max(64)
     SupportTicketId: string;
@@ -72,13 +75,13 @@ export class SupportMessage {
     SupportChannelType: ChannelType;
 
     @Column({ type: 'boolean', nullable: false, default: false })
-    IsSupportResponse: boolean;
-
-    @Column({ type: 'boolean', nullable: false, default: false })
     IsExitMessage: boolean;
 
     @Column({ type: 'timestamp', nullable: true })
     Timestamp: Date;
+
+    @Column({ type: 'json', nullable: true })
+    Metadata: string;
 
     @CreateDateColumn()
     CreatedAt: Date;

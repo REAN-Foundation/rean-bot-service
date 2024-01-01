@@ -86,12 +86,34 @@ export class ChatMessageService extends BaseService {
         }
     };
 
-    public getBySupportTicketId = async (supportTicketId: string): Promise<ChatMessageResponseDto> => {
+    public getAllBySupportTicketId = async (supportTicketId: string): Promise<ChatMessageResponseDto[]> => {
+        try {
+            const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
+            var chatMessages = await repo.find({
+                where : {
+                    SupportTicketId : supportTicketId,
+                },
+            });
+            var messages = chatMessages.map(x => ChatMessageMapper.toResponseDto(x));
+            messages = messages.sort((a, b) => {
+                return a.Timestamp.getTime() - b.Timestamp.getTime();
+            });
+            return messages;
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getLatestBySupportTicketId = async (supportTicketId: string): Promise<ChatMessageResponseDto> => {
         try {
             const repo: Repository<ChatMessage> = await this.getRepository(this._envProvider, ChatMessage);
             var chatMessage = await repo.findOne({
                 where : {
                     SupportTicketId : supportTicketId,
+                },
+                order : {
+                    Timestamp : 'DESC',
                 },
             });
             return ChatMessageMapper.toResponseDto(chatMessage);

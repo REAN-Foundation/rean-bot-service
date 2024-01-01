@@ -166,7 +166,7 @@ export interface SerializableMessage extends IncomingMessage, OutgoingMessage {
     // This interface is used to serialize the message object
 }
 
-export type ProcessibleMessage = SerializableMessage;
+export type ProcessableMessage = SerializableMessage;
 
 export interface ChatSession {
     id              ?: uuid;
@@ -182,18 +182,22 @@ export interface ChatSession {
 }
 
 export interface SupportMessage {
-    UserId                  : uuid;
-    TenantId               ?: uuid;
-    TenantName             ?: string;
-    SupportChannelType     ?: ChannelType;
-    MessageDirection       ?: SupportMessageDirection;
-    SupportChannelUserId   ?: string;  // UserId in support's channel system
-    SupportChannelAgentId  ?: string;  // Support Agent/ Expert Id in support's channel system
-    ChatMessageId          ?: string;  // MessageId of the chat in our database
-    TicketId               ?: string;  // TicketId of the support event
-    SupportChannelTaskId   ?: string;  // TaskId of the support task in support's channel system
-    SupportChannelMessageId?: string;  // MessageId of the message in support's channel system, Could be same as SupportChannelTaskId!
-    IsExitMessage          ?: boolean; // Message from support agent to exit the support session
+    UserId                    : uuid;
+    TenantId                 ?: uuid;
+    SupportChannel           ?: ChannelType;
+    UserChannel              ?: ChannelType;
+    SupportChannelUserId     ?: string;   // UserId in support's channel system
+    SupportChannelMessageId  ?: string;   // MessageId of the message in support's channel system, Could be same as SupportChannelTaskId!
+    SupportChannelAgentUserId?: string;   // Support Agent/ Expert Id in support's channel system
+    SupportTicketId          ?: string;   // TicketId of the support event in our database
+    SupportChannelTaskId     ?: string;   // TaskId of the support task in support's channel system
+    ChatMessageId            ?: uuid;     // MessageId of the chat in our database
+    LanguageCode             ?: LanguageCode;
+    Direction                ?: SupportMessageDirection;
+    Content                  ?: string;
+    TranslatedContent        ?: string;
+    Timestamp                ?: Date;
+    IsExitMessage            ?: boolean;  // Message from support agent to exit the support session
 }
 
 export interface OutgoingSupportMessage extends SupportMessage {

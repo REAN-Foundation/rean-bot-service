@@ -8,7 +8,7 @@ import { ChatMessageService } from '../../database/typeorm/services/chat.message
 import { SessionService } from '../../database/typeorm/services/session.service';
 import { UserService } from '../../database/typeorm/services/user.service';
 import { ChatMessageCreateModel, incomingMessageToCreateModel } from '../../domain.types/chat.message.types';
-import { ChannelUser, IncomingMessage,  ProcessibleMessage } from '../../domain.types/message';
+import { ChannelUser, IncomingMessage,  ProcessableMessage } from '../../domain.types/message';
 import { SessionCreateModel, sessionDtoToChatSession } from '../../domain.types/session.types';
 import { UserCreateModel } from '../../domain.types/user.types';
 import { registerUser } from '../../integrations/reancare/api.access/user';
@@ -87,27 +87,27 @@ export default class MessageProcessQueue {
         //6. Send the message to the message handlers
         const selected = await MessageHandlerRouter.getHandlers(incomingMessage);
         const messageHandlers = selected.Handlers;
-        var processible: ProcessibleMessage = selected.Message;
+        var processable: ProcessableMessage = selected.Message;
 
         //7. If feedback, handle it right away
-        if (processible.Feedback) {
+        if (processable.Feedback) {
             const feedbackHandler = container.resolve('FeedbackHandler') as FeedbackHandler;
-            await feedbackHandler.handle(processible);
+            await feedbackHandler.handle(processable);
             return;
         }
 
         //8. If Human-Handoff, continue on it right away
-        if (processible.HumanHandoff) {
+        if (processable.HumanHandoff) {
             const humanHandoffHandler = container.resolve('HumanHandoffHandler') as HumanHandoffHandler;
-            await humanHandoffHandler.handle(processible);
+            await humanHandoffHandler.handle(processable);
             return;
         }
 
         //9. Process the message through all identified message handlers
-        const processedMessages: ProcessibleMessage[] = [];
+        const processedMessages: ProcessableMessage[] = [];
         for await (const handler of messageHandlers) {
-            const outProcessible = await handler.handle(processible);
-            processedMessages.push(outProcessible);
+            const outProcessable = await handler.handle(processable);
+            processedMessages.push(outProcessable);
         }
 
         //10. Process outgoing messages through the post-processing pipeline
@@ -122,8 +122,8 @@ export default class MessageProcessQueue {
         };
         const results = [];
         const outProcessor: OutMessageProcessor = container.resolve('OutMessageProcessor');
-        for await (const outProcessible of processedMessages) {
-            const result = await outProcessor.process(meta, outProcessible);
+        for await (const outProcessable of processedMessages) {
+            const result = await outProcessor.process(meta, outProcessable);
             results.push(result);
         }
 

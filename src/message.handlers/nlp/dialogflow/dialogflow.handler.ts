@@ -1,5 +1,5 @@
 import { Lifecycle, inject, scoped } from 'tsyringe';
-import { ProcessibleMessage, SerializableMessage } from '../../../domain.types/message';
+import { ProcessableMessage, SerializableMessage } from '../../../domain.types/message';
 import { logger } from '../../../logger/logger';
 import { INLPHandler } from '../nlp.handler.interface';
 import { Intent } from '../../../intent/intent.emitter';
@@ -34,7 +34,7 @@ export class DialogFlowHandler implements INLPHandler {
         return message.getIntent();
     }
 
-    public identifyIntent = async (message: ProcessibleMessage): Promise<IntentDto> => {
+    public identifyIntent = async (message: ProcessableMessage): Promise<IntentDto> => {
         try {
             const dialogflowLanguage = this.language();
 
@@ -59,7 +59,7 @@ export class DialogFlowHandler implements INLPHandler {
         }
     };
 
-    public identifyIntentFromMessage = async (message: ProcessibleMessage, intent: Intent): Promise<IntentDto> => {
+    public identifyIntentFromMessage = async (message: ProcessableMessage, intent: Intent): Promise<IntentDto> => {
         try {
             const dialogflowLanguage = this.language();
             const userId: string = message.UserId === null ? v4() : message.UserId;
@@ -200,7 +200,7 @@ export class DialogFlowHandler implements INLPHandler {
         return { sessionPath, sessionClient };
     }
 
-    public async handle(message: ProcessibleMessage): Promise<ProcessibleMessage> {
+    public async handle(message: ProcessableMessage): Promise<ProcessableMessage> {
         logger.info('DialogFlowHandler.handle');
         logger.info(JSON.stringify(message, null, 2));
         return null;
