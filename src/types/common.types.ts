@@ -186,7 +186,7 @@ export interface ChatSession {
     Language        ?: string;
 }
 
-export interface HumanSupportMessage {
+export interface ProcessableSupportMessage {
     UserId                    : uuid;
     TenantId                 ?: uuid;
     SupportChannel           ?: ChannelType;
@@ -205,7 +205,7 @@ export interface HumanSupportMessage {
     IsExitMessage            ?: boolean;  // Message from support agent to exit the support session
 }
 
-export interface OutgoingSupportMessage extends HumanSupportMessage {
+export interface OutgoingSupportMessage extends ProcessableSupportMessage {
     Feedback           ?: Feedback;
     HumanHandoff       ?: HumanHandoff;
     MainChannelMessage ?: Message;

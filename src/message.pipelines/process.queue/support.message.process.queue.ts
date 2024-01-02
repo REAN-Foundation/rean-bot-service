@@ -16,15 +16,16 @@ import { CoreTypesStore } from '../../integrations/reancare/core.types.store';
 import { Tenant } from '../../types/common.types';
 import { ChannelType } from '../../types/enums';
 import MessageHandlerRouter from '../../message.handlers/message.handler.router';
-import MessageCache from '../../message.pipelines/cache/message.cache';
+import MessageCache from '../cache/message.cache';
 import { OutMessageProcessor } from './outmessage.processor';
 import { InMessageMetadata } from '../../types/intermediate.types';
 import { FeedbackHandler } from '../../message.handlers/feedback/feedback.handler';
 import { HumanHandoffHandler } from '../../message.handlers/human.handoff/human.handoff.handler';
+import { SupportMessageService } from '../../database/typeorm/services/support.message.service';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-export default class MessageProcessQueue {
+export default class SupportMessageProcessQueue {
 
     private static _queue: PQueue = new PQueue({ concurrency: 4 });
 
@@ -39,7 +40,7 @@ export default class MessageProcessQueue {
 
     private static processMessage = async (messageBody: InMessageMetadata): Promise<void> => {
 
-        logger.info('MessageProcessQueue.processMessage');
+        logger.info('SupportMessageProcessQueue.processMessage');
         logger.info(JSON.stringify(messageBody, null, 2));
 
         const container   = messageBody.Container;
@@ -54,6 +55,7 @@ export default class MessageProcessQueue {
             Name : tenantName,
         };
         const dbChatMessageService = container.resolve(ChatMessageService);
+        const dbSupportMessageService = container.resolve(SupportMessageService);
 
         //1. Convert incoming message to a standard format
         const messageConverter = channel.messageConverter();

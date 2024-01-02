@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { inject } from "tsyringe";
+import { Lifecycle, inject, scoped } from "tsyringe";
 import { LanguageCode } from "../../../../types/language";
 import { ILLMServiceProvider } from "../../llm.provider.interface";
 import OpenAI from 'openai';
 import { TenantEnvironmentProvider } from "../../../../auth/tenant.environment/tenant.environment.provider";
 
 ////////////////////////////////////////////////////////////////////////////////
-@
+@scoped(Lifecycle.ContainerScoped)
 export class OpenAIProvider implements ILLMServiceProvider {
 
     private _openai: OpenAI;

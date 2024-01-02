@@ -107,11 +107,9 @@ export interface ChatMessageSearchFilters extends BaseSearchFilters {
     ChannelUserId ?: string;
     SessionId     ?: uuid;
     ChannelType   ?: string;
-    LanguageCode  ?: string;
     TimestampAfter?: Date;
     Direction     ?: MessageDirection;
     ContentType   ?: MessageContentType;
-    PrimaryHandler?: MessageHandlerType;
 }
 
 export interface ChatMessageSearchResults extends BaseSearchResults {

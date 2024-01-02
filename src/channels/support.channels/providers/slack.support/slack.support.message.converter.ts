@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { scoped, Lifecycle, inject } from 'tsyringe';
-import { ISupportChannelMessageConverter } from '../../support.channels/support.channel.message.converter.interface';
-import { OutgoingSupportMessage, HumanSupportMessage } from '../../../types/common.types';
-import { ChannelType, SupportMessageDirection } from '../../../types/enums';
-import { SupportInMessageMetadata } from '../../../types/intermediate.types';
-import { ChatMessageService } from '../../../database/typeorm/services/chat.message.service';
-import { logger } from "../../../logger/logger";
-import { SupportMessageService } from '../../../database/typeorm/services/support.message.service';
-import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
+import { ISupportChannelMessageConverter } from '../../../support.channels/support.channel.message.converter.interface';
+import { OutgoingSupportMessage, ProcessableSupportMessage } from '../../../../types/common.types';
+import { ChannelType, SupportMessageDirection } from '../../../../types/enums';
+import { SupportInMessageMetadata } from '../../../../types/intermediate.types';
+import { ChatMessageService } from '../../../../database/typeorm/services/chat.message.service';
+import { logger } from "../../../../logger/logger";
+import { SupportMessageService } from '../../../../database/typeorm/services/support.message.service';
+import { TenantEnvironmentProvider } from '../../../../auth/tenant.environment/tenant.environment.provider';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +18,7 @@ export default class SlackMessageConverter implements ISupportChannelMessageConv
         @inject(TenantEnvironmentProvider) private _tenantEnvProvider?: TenantEnvironmentProvider
     ) { }
 
-    public fromChannel = async (msgMetadata: SupportInMessageMetadata): Promise<HumanSupportMessage> => {
+    public fromChannel = async (msgMetadata: SupportInMessageMetadata): Promise<ProcessableSupportMessage> => {
         const incomingMessage = await this.getCommonData(msgMetadata);
         return incomingMessage;
     };
@@ -33,7 +33,7 @@ export default class SlackMessageConverter implements ISupportChannelMessageConv
         return message;
     };
 
-    private getCommonData = async (metadata: SupportInMessageMetadata): Promise<HumanSupportMessage> => {
+    private getCommonData = async (metadata: SupportInMessageMetadata): Promise<ProcessableSupportMessage> => {
 
         if (!metadata?.RequestBody) {
             return null;
@@ -111,7 +111,7 @@ export default class SlackMessageConverter implements ISupportChannelMessageConv
         const messageTextLower = messageText?.toLowerCase();
         const isExitMessage = messageTextLower === 'exit' ? true : false;
 
-        const incomingMessage: HumanSupportMessage = {
+        const incomingMessage: ProcessableSupportMessage = {
             UserId                    : userId,
             TenantId                  : tenantId,
             SupportChannel            : ChannelType.Slack,

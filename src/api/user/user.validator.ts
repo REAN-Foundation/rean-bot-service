@@ -28,6 +28,7 @@ export class UserValidator extends BaseValidator {
             });
             await schema.validateAsync(request.body);
             const model: UserCreateModel = {
+                id                : request.body.id ? request.body.id : null,
                 TenantId          : request.body.TenantId ? request.body.TenantId : null,
                 Prefix            : request.body.Prefix ? request.body.Prefix : null,
                 FirstName         : request.body.FirstName ? request.body.FirstName : null,

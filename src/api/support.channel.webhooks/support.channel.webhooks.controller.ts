@@ -4,10 +4,7 @@ import { ResponseHandler } from '../../common/handlers/response.handler';
 import { Lifecycle, scoped } from 'tsyringe';
 import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 import { IChannel } from '../../channels/channel.interface';
-import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
-import { SessionService } from '../../database/typeorm/services/session.service';
-import { UserService } from '../../database/typeorm/services/user.service';
-import MessageProcessQueue from '../../message.pipelines/process.queue/message.process.queue';
+import SupportMessageProcessQueue from '../../message.pipelines/process.queue/support.message.process.queue';
 import { InMessageMetadata } from '../../types/intermediate.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +39,7 @@ export class SupportChannelWebhookController {
             };
 
             //2. Enqueue message for processing
-            MessageProcessQueue.enqueue(messageBody);
+            SupportMessageProcessQueue.enqueue(messageBody);
 
             //3. Check if this message is related to acknowledgement of a message sent
             const ack = await channel.shouldAcknowledge(request);

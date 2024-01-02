@@ -2,58 +2,18 @@ import express from 'express';
 import joi from 'joi';
 import { ErrorHandler } from '../../common/handlers/error.handler';
 import BaseValidator from '../base.validator';
-import { TypeUtils } from '../../common/utilities/type.utils';
-import { SessionCreateModel, SessionUpdateModel, SessionSearchFilters } from '../../types/domain.models/session.domain.models';
+import { SessionSearchFilters } from '../../types/domain.models/session.domain.models';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 export class SessionValidator extends BaseValidator {
 
-    public validateCreateRequest = async (request: express.Request): Promise<SessionCreateModel> => {
-        try {
-            const schema = joi.object({
-                UserId   : joi.number().integer().required(),
-                Platform : joi.string().email().required(),
-            });
-            await schema.validateAsync(request.body);
-            const model: SessionCreateModel = {
-                UserId   : request.body.UserId ? request.body.UserId : null,
-                Platform : request.body.Platform ? request.body.Platform : 'WhatsApp',
-            };
-            return model;
-        } catch (error) {
-            ErrorHandler.handleValidationError(error);
-        }
-    };
-
-    public validateUpdateRequest = async (request: express.Request): Promise<SessionUpdateModel> => {
-        try {
-            const schema = joi.object({
-                UserId   : joi.number().integer().optional(),
-                Platform : joi.string().email().optional(),
-            });
-            await schema.validateAsync(request.body);
-            var model: SessionUpdateModel = {};
-
-            if (TypeUtils.hasProperty(request.body, 'UserId')) {
-                model.UserId = request.body.UserId;
-            }
-            if (TypeUtils.hasProperty(request.body, 'Platform')) {
-                model.Platform = request.body.Platform;
-            }
-
-            return model;
-        } catch (error) {
-            ErrorHandler.handleValidationError(error);
-        }
-    };
-
     public validateSearchRequest = async (request: express.Request): Promise<SessionSearchFilters> => {
         try {
             const schema = joi.object({
-                userId          : joi.number().integer().optional(),
-                platform        : joi.string().email().optional(),
-                lastMessageDate : joi.date().iso().optional(),
+                userId          : joi.string().uuid().optional(),
+                channelType     : joi.string().optional(),
+                lastMessageDate : joi.date().optional(),
             });
             await schema.validateAsync(request.query);
             const filters = this.getSearchFilters(request.query);
@@ -74,9 +34,9 @@ export class SessionValidator extends BaseValidator {
         if (userId != null) {
             filters['UserId'] = userId;
         }
-        var platform = query.platform ? query.platform : null;
-        if (platform != null) {
-            filters['Platform'] = platform;
+        var channelType = query.channelType ? query.channelType : null;
+        if (channelType != null) {
+            filters['ChannelType'] = channelType;
         }
         var lastMessageDate = query.lastMessageDate ? query.lastMessageDate : null;
         if (lastMessageDate != null) {
