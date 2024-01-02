@@ -1,4 +1,4 @@
-import { OutgoingMessage } from "../../domain.types/common.types";
+import { OutgoingMessage } from "../../types/common.types";
 import { IChannel } from "../channel.interface";
 
 export interface ISupportChannel {

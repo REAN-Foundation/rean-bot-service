@@ -1,7 +1,7 @@
 import { FindManyOptions, Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { uuid } from '../../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../../types/miscellaneous/system.types';
 import { BaseService } from './base.service';
 import {
     ChatMessageCreateModel,
@@ -9,7 +9,7 @@ import {
     ChatMessageSearchFilters,
     ChatMessageSearchResults,
     ChatMessageUpdateModel,
-} from '../../../domain.types/domain.models/chat.message.domain.models';
+} from '../../../types/domain.models/chat.message.domain.models';
 import { ChatMessageMapper } from '../mappers/chat.message.mapper';
 import { Session } from '../models/session.entity';
 import { User } from '../models/user.entity';
@@ -258,8 +258,8 @@ export class ChatMessageService extends BaseService {
             search.where['SessionId'] = filters.SessionId;
         }
 
-        if (filters.Channel) {
-            search.where['Channel'] = Like(`%${filters.Channel}%`);
+        if (filters.ChannelType) {
+            search.where['Channel'] = Like(`%${filters.ChannelType}%`);
         }
 
         if (filters.LanguageCode) {

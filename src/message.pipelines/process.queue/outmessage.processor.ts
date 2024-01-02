@@ -1,7 +1,7 @@
 import { Lifecycle, inject, scoped } from 'tsyringe';
 import { logger } from '../../logger/logger';
-import { ChatMessageCreateModel, outgoingMessageToCreateModel } from '../../domain.types/domain.models/chat.message.domain.models';
-import { ProcessableMessage } from '../../domain.types/common.types';
+import { ChatMessageCreateModel, outgoingMessageToCreateModel } from '../../types/domain.models/chat.message.domain.models';
+import { ProcessableMessage } from '../../types/common.types';
 import MessageCache from '../../message.pipelines/cache/message.cache';
 import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
 

@@ -3,8 +3,8 @@
 // import http from 'https';
 // import needle from "needle";
 // import { scoped, Lifecycle, inject, injectable } from "tsyringe";
-// import { Acknowledgement, Message, OutgoingMessage } from "../../../domain.types/message";
-// import { ChannelType } from "../../../domain.types/enums";
+// import { Acknowledgement, Message, OutgoingMessage } from "../../../types/message";
+// import { ChannelType } from "../../../types/enums";
 // import { ChannelBase } from "../../channel.base";
 // import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";
 // import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";

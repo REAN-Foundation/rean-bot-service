@@ -1,7 +1,7 @@
 import { FindManyOptions, Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { uuid } from '../../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../../types/miscellaneous/system.types';
 import { BaseService } from './base.service';
 import {
     SupportMessageCreateModel,
@@ -9,7 +9,7 @@ import {
     SupportMessageSearchFilters,
     // SupportMessageSearchResults,
     SupportMessageUpdateModel,
-} from '../../../domain.types/domain.models/support.message.domain.models';
+} from '../../../types/domain.models/support.message.domain.models';
 import { SupportMessageMapper } from '../mappers/support.message.mapper';
 import { SupportMessage } from '../models/support.message.entity';
 import { Lifecycle, inject, scoped } from 'tsyringe';

@@ -3,8 +3,8 @@ import {
     ChannelType,
     MessageContentType,
     MessageDirection
-} from "../../../domain.types/enums";
-import { IncomingMessage } from "../../../domain.types/common.types";
+} from "../../../types/enums";
+import { IncomingMessage } from "../../../types/common.types";
 
 ////////////////////////////////////////////////////////////////////////////////
 

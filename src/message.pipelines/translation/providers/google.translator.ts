@@ -1,6 +1,6 @@
 import { v2, TranslationServiceClient } from '@google-cloud/translate';
 import { ITranslator } from '../translator.interface';
-import { LanguageCode } from '../../../domain.types/language';
+import { LanguageCode } from '../../../types/language';
 import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
 import { Lifecycle, inject, scoped } from 'tsyringe';
 import { logger } from '../../../logger/logger';

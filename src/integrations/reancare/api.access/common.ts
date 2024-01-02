@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { logger } from "../../../logger/logger";
 import { ApiError } from "../../../common/handlers/error.handler";
-import { uuid } from '../../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../../types/miscellaneous/system.types';
 import { LoginSessionCache } from "../login.session.cache";
 
 /////////////////////////////////////////////////////////////////////////

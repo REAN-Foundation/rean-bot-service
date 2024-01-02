@@ -1,8 +1,8 @@
 import express from "express";
 import { ChatMessageService } from "../../../database/typeorm/services/chat.message.service";
-import { ChatMessageResponseDto } from "../../../domain.types/domain.models/chat.message.domain.models";
+import { ChatMessageResponseDto } from "../../../types/domain.models/chat.message.domain.models";
 import { logger } from "../../../logger/logger";
-import { Acknowledgement } from "../../../domain.types/common.types";
+import { Acknowledgement } from "../../../types/common.types";
 
 //////////////////////////////////////////////////////////////////////////////
 

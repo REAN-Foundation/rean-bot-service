@@ -18,7 +18,7 @@ import { Helper } from '../../common/helper';
 import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 import { logger } from '../../logger/logger';
 import { TimeUtils } from '../../common/utilities/time.utils';
-import { DurationType } from '../../domain.types/miscellaneous/time.types';
+import { DurationType } from '../../types/miscellaneous/time.types';
 import * as s3Signer from '@aws-sdk/s3-request-presigner';
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
-import { LanguageCode } from '../../domain.types/language';
+import { LanguageCode } from '../../types/language';
 import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 import { inject, Lifecycle, scoped } from 'tsyringe';
-import { MessageContentType } from '../../domain.types/enums';
+import { MessageContentType } from '../../types/enums';
 import { ITranslator } from './translator.interface';
 import { UserLanguage } from './user.language';
 

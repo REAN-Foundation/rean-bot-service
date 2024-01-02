@@ -1,6 +1,6 @@
 import { logger } from "../../../logger/logger";
 import { ApiError } from "../../../common/handlers/error.handler";
-import { Tenant } from '../../../domain.types/tenant.types';
+import { Tenant } from '../../../types/tenant.types';
 
 //////////////////////////////////////////////////////////////////////////////////////
 

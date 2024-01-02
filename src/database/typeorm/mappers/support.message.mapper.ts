@@ -1,5 +1,5 @@
 import { SupportMessage } from '../models/support.message.entity';
-import { SupportMessageCreateModel, SupportMessageResponseDto } from '../../../domain.types/domain.models/support.message.domain.models';
+import { SupportMessageCreateModel, SupportMessageResponseDto } from '../../../types/domain.models/support.message.domain.models';
 import { StringUtils } from '../../../common/utilities/string.utils';
 
 ///////////////////////////////////////////////////////////////////////////////////

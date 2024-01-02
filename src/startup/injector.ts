@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import 'reflect-metadata';
-import { ChannelType } from '../domain.types/enums';
-// import { MessageHandlerType } from '../domain.types/enums';
+import { ChannelType } from '../types/enums';
+// import { MessageHandlerType } from '../types/enums';
 import { DependencyContainer, container } from 'tsyringe';
 
 import { WhatsAppAuthenticator } from '../auth/webhook.authenticator/providers/whatsapp.authenticator';

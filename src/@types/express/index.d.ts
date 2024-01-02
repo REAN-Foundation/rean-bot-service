@@ -1,6 +1,6 @@
 import { DependencyContainer } from "tsyringe";
-// import { CurrentClient } from '../../domain.types/miscellaneous/current.client';
-// import { CurrentUser } from '../../domain.types/miscellaneous/current.user';
+// import { CurrentClient } from '../../types/miscellaneous/current.client';
+// import { CurrentUser } from '../../types/miscellaneous/current.user';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,4 +1,4 @@
-import { SerializableMessage } from "../../domain.types/common.types";
+import { SerializableMessage } from "../../types/common.types";
 
 ///////////////////////////////////////////////////////////////////////
 

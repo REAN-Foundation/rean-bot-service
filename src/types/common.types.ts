@@ -44,7 +44,7 @@ export interface ChannelUser {
 }
 
 export interface SupportChannel {
-    TicketId               ?: string;  // TicketId of the support event
+    SupportTicketId        ?: string;  // TicketId of the support event
     SupportChannelType     ?: ChannelType;
     MessageDirection       ?: SupportMessageDirection;
     SupportChannelTaskId   ?: string;  // TaskId of the support task in support's channel system
@@ -186,7 +186,7 @@ export interface ChatSession {
     Language        ?: string;
 }
 
-export interface SupportMessage {
+export interface HumanSupportMessage {
     UserId                    : uuid;
     TenantId                 ?: uuid;
     SupportChannel           ?: ChannelType;
@@ -205,7 +205,7 @@ export interface SupportMessage {
     IsExitMessage            ?: boolean;  // Message from support agent to exit the support session
 }
 
-export interface OutgoingSupportMessage extends SupportMessage {
+export interface OutgoingSupportMessage extends HumanSupportMessage {
     Feedback           ?: Feedback;
     HumanHandoff       ?: HumanHandoff;
     MainChannelMessage ?: Message;

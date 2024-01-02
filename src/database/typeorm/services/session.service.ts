@@ -1,7 +1,7 @@
 import { FindManyOptions, Like, Repository, MoreThanOrEqual } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { uuid } from '../../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../../types/miscellaneous/system.types';
 import { BaseService } from './base.service';
 import { SessionMapper } from '../mappers/session.mapper';
 import { User } from '../models/user.entity';
@@ -14,7 +14,7 @@ import {
     SessionSearchFilters,
     SessionSearchResults,
     SessionUpdateModel,
-} from '../../../domain.types/domain.models/session.domain.models';
+} from '../../../types/domain.models/session.domain.models';
 
 ///////////////////////////////////////////////////////////////////////
 

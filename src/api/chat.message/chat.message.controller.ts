@@ -1,10 +1,10 @@
 import express from 'express';
 import { ResponseHandler } from '../../common/handlers/response.handler';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../types/miscellaneous/system.types';
 import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
 import {
     ChatMessageSearchFilters,
-} from '../../domain.types/domain.models/chat.message.domain.models';
+} from '../../types/domain.models/chat.message.domain.models';
 import { ChatMessageValidator } from '../channel.webhooks/channel.webhooks.validator';
 
 ///////////////////////////////////////////////////////////////////////////////////////

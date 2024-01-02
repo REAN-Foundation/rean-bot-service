@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { delete_, get_, post_, put_ } from "./common";
 import { logger } from "../../../logger/logger";
 import { ApiError } from "../../../common/handlers/error.handler";
-import { uuid } from "../../../domain.types/miscellaneous/system.types";
+import { uuid } from "../../../types/miscellaneous/system.types";
 
 //////////////////////////////////////////////////////////////////////////////////////
 

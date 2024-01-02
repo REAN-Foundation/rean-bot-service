@@ -10,7 +10,7 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 import { IsEmail, Max, Min } from 'class-validator';
-import { Gender } from '../../../domain.types/enums';
+import { Gender } from '../../../types/enums';
 
 ////////////////////////////////////////////////////////////////////////
 

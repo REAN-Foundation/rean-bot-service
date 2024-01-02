@@ -8,7 +8,7 @@ import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import weekday from 'dayjs/plugin/weekday';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
-import { DateStringFormat, DurationType } from '../../domain.types/miscellaneous/time.types';
+import { DateStringFormat, DurationType } from '../../types/miscellaneous/time.types';
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 

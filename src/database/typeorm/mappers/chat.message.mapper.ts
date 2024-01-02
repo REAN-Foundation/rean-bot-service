@@ -1,6 +1,6 @@
 import { ChatMessage } from '../models/chat.message.entity';
-import { ChatMessageCreateModel, ChatMessageResponseDto } from '../../../domain.types/domain.models/chat.message.domain.models';
-import { getLanguage } from '../../../domain.types/language';
+import { ChatMessageCreateModel, ChatMessageResponseDto } from '../../../types/domain.models/chat.message.domain.models';
+import { getLanguage } from '../../../types/language';
 import {
     QnADetails,
     HumanHandoff,
@@ -8,7 +8,8 @@ import {
     AssessmentDetails,
     IntentDetails,
     MessageChannelDetails,
-} from '../../../domain.types/common.types';
+} from '../../../types/common.types';
+import { SupportMessage } from '../models/support.message.entity';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +24,7 @@ export class ChatMessageMapper {
             TenantName            : model.TenantName ?? null,
             UserId                : model.UserId,
             SessionId             : model.SessionId,
-            Channel               : model.Channel,
+            ChannelType           : model.ChannelType,
             ChannelUserId         : model.ChannelUserId,
             ChannelMessageId      : model.ChannelMessageId ?? null,
             MessageType           : model.MessageType,
@@ -36,9 +37,8 @@ export class ChatMessageMapper {
             PrimaryMessageHandler : model.PrimaryMessageHandler ?? null,
             GeoLocation           : model.GeoLocation ?? null,
             SupportChannelType    : model.SupportChannel?.SupportChannelType ?? null,
-            IsSupportResponse     : model.SupportChannel?.IsSupportResponse ?? false,
-            SupportTaskId         : model.SupportChannel?.SupportTaskId ?? null,
-            SupportExitMessage    : model.SupportChannel?.SupportExitMessage ?? false,
+            SupportTicketId       : model.SupportChannel?.SupportTicketId ?? null,
+            IsExitMessage         : model.SupportChannel?.IsExitMessage ?? false,
             ChannelSpecifics      : model.ChannelSpecifics ?? null,
             Metadata              : model.Metadata ?? null,
             Intent                : model.Intent ?? null,
@@ -50,7 +50,7 @@ export class ChatMessageMapper {
         return entity;
     };
 
-    static toResponseDto = (m: ChatMessage): ChatMessageResponseDto => {
+    static toResponseDto = (m: ChatMessage, supportMessage: SupportMessage = null): ChatMessageResponseDto => {
         if (m == null) {
             return null;
         }
@@ -60,7 +60,7 @@ export class ChatMessageMapper {
             TenantName            : m.TenantName,
             UserId                : m.UserId,
             SessionId             : m.SessionId,
-            Channel               : m.Channel,
+            ChannelType           : m.ChannelType,
             ChannelUserId         : m.ChannelUserId,
             ChannelMessageId      : m.ChannelMessageId,
             MessageType           : m.MessageType,
@@ -70,11 +70,16 @@ export class ChatMessageMapper {
             Timestamp             : m.Timestamp,
             PrevMessageId         : m.PrevMessageId,
             PrimaryMessageHandler : m.PrimaryMessageHandler ?? null,
-            SupportChannel        : m.SupportChannelType ? {
-                SupportChannelType : m.SupportChannelType,
-                IsSupportResponse  : m.IsSupportResponse,
-                SupportTaskId      : m.SupportTaskId,
-                SupportExitMessage : m.SupportExitMessage,
+            SupportChannel        : supportMessage ? {
+                SupportChannelType      : supportMessage.SupportChannelType,
+                MessageDirection        : supportMessage.Direction,
+                SupportTicketId         : supportMessage.SupportTicketId,
+                IsExitMessage           : supportMessage.IsExitMessage,
+                SupportChannelMessageId : supportMessage.SupportChannelMessageId,
+                SupportChannelUserId    : supportMessage.SupportChannelUserId,
+                SupportChannelTaskId    : supportMessage.SupportTicketId,
+                ChatMessageId           : supportMessage.ChatMessageId,
+                SupportChannelAgentId   : supportMessage.SupportChannelUserId,
             } : null,
             GeoLocation      : m.GeoLocation ? JSON.parse(m.GeoLocation) : null,
             ChannelSpecifics : m.ChannelSpecifics ? JSON.parse(m.ChannelSpecifics) as MessageChannelDetails : null,

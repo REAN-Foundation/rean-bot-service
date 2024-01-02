@@ -1,5 +1,5 @@
 import { Lifecycle, inject, scoped } from 'tsyringe';
-import { ProcessableMessage, SerializableMessage } from '../../../domain.types/common.types';
+import { ProcessableMessage, SerializableMessage } from '../../../types/common.types';
 import { logger } from '../../../logger/logger';
 import { INLPHandler } from '../nlp.handler.interface';
 import { Intent } from '../../../intent/intent.emitter';
@@ -99,7 +99,7 @@ export class DialogFlowHandler implements INLPHandler {
         return intentDto;
     }
 
-    private getReqBody(sessionPath: any, message: SerializableMessage, dialogflowLanguage: string, userId: string, userName: string, messagePayload: { TenantId: string; TenantName: string; UserId: string; ChannelUser: string; Channel: import("d:/current_projects/rean/code/rean-bot-service/src/domain.types/enums/channel.type.enum").ChannelType; ChannelMessageId: string; MessageType: import("d:/current_projects/rean/code/rean-bot-service/src/domain.types/enums/message.content.type.enum").MessageContentType; Direction: import("d:/current_projects/rean/code/rean-bot-service/src/domain.types/enums/message.direction.enum").MessageDirection; SessionId: string; Content: string; Timestamp: string; PrevContextMessageId: string; }) {
+    private getReqBody(sessionPath: any, message: SerializableMessage, dialogflowLanguage: string, userId: string, userName: string, messagePayload: { TenantId: string; TenantName: string; UserId: string; ChannelUser: string; Channel: import("d:/current_projects/rean/code/rean-bot-service/src/types/enums/channel.type.enum").ChannelType; ChannelMessageId: string; MessageType: import("d:/current_projects/rean/code/rean-bot-service/src/types/enums/message.content.type.enum").MessageContentType; Direction: import("d:/current_projects/rean/code/rean-bot-service/src/types/enums/message.direction.enum").MessageDirection; SessionId: string; Content: string; Timestamp: string; PrevContextMessageId: string; }) {
         return {
             session    : sessionPath,
             queryInput : {

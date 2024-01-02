@@ -1,8 +1,8 @@
 import { inject, Lifecycle, scoped } from 'tsyringe';
 import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
 import { SessionService } from '../../database/typeorm/services/session.service';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
-import { LanguageCode } from '../../domain.types/language';
+import { uuid } from '../../types/miscellaneous/system.types';
+import { LanguageCode } from '../../types/language';
 
 //////////////////////////////////////////////////////////////////////////////
 

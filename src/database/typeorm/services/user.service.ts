@@ -1,7 +1,7 @@
 import { FindManyOptions, Like, Repository } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { uuid } from '../../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../../types/miscellaneous/system.types';
 import { BaseService } from './base.service';
 import {
     UserCreateModel,
@@ -9,7 +9,7 @@ import {
     UserSearchFilters,
     UserSearchResults,
     UserUpdateModel,
-} from '../../../domain.types/domain.models/user.domain.models';
+} from '../../../types/domain.models/user.domain.models';
 import { UserMapper } from '../mappers/user.mapper';
 import { User } from '../models/user.entity';
 import { Lifecycle, inject, scoped } from 'tsyringe';

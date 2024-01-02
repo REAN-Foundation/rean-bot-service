@@ -1,5 +1,5 @@
-import { OutgoingMessage } from "../../domain.types/common.types";
-import { ChannelType } from "../../domain.types/enums";
+import { OutgoingMessage } from "../../types/common.types";
+import { ChannelType } from "../../types/enums";
 import { logger } from "../../logger/logger";
 import { IChannel } from "../channel.interface";
 

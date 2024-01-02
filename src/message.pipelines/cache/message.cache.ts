@@ -1,7 +1,7 @@
 import LocalMemoryMessageCache from "./providers/local.memory.message.cache";
 import RedisMessageCache  from "./providers/redis.message.cache";
 import { IMessageCache } from "./message.cache.interface";
-import { SerializableMessage } from "../../domain.types/common.types";
+import { SerializableMessage } from "../../types/common.types";
 
 ///////////////////////////////////////////////////////////////////////
 

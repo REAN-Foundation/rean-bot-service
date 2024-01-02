@@ -1,4 +1,4 @@
-import { LanguageCode } from "../../domain.types/language";
+import { LanguageCode } from "../../types/language";
 
 export interface ILLMServiceProvider {
 

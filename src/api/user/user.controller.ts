@@ -1,10 +1,10 @@
 import express from 'express';
 import { ResponseHandler } from '../../common/handlers/response.handler';
 import { ErrorHandler } from '../../common/handlers/error.handler';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../types/miscellaneous/system.types';
 import { UserValidator } from './user.validator';
 import { UserService } from '../../database/typeorm/services/user.service';
-import { UserCreateModel, UserSearchFilters, UserUpdateModel } from '../../domain.types/domain.models/user.domain.models';
+import { UserCreateModel, UserSearchFilters, UserUpdateModel } from '../../types/domain.models/user.domain.models';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

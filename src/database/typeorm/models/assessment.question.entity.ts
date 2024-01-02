@@ -20,14 +20,17 @@ export class AssessmentQuestion {
     id: string; // This id is the same as AssessmentQuestionId in rean-care-assessment module
 
     @Column({ type: 'uuid', nullable: false })
-    AssessmentId: string;
+    UserId: string;
 
-    @Column({ type: 'uuid', nullable: true })
-    QuestionId: string;
+    @Column({ type: 'uuid', nullable: false })
+    SessionId: string;
+
+    @Column({ type: 'uuid', nullable: false })
+    AssessmentId: string;
 
     @Column({ type: 'varchar', nullable: true })
     @Max(512)
-    CurrentQuestion: string;
+    Question: string;
 
     @Column({ type: 'varchar', nullable: true })
     @Max(64)

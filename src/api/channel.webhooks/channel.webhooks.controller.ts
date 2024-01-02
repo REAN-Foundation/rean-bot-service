@@ -8,7 +8,7 @@ import { ChatMessageService } from '../../database/typeorm/services/chat.message
 import { SessionService } from '../../database/typeorm/services/session.service';
 import { UserService } from '../../database/typeorm/services/user.service';
 import MessageProcessQueue from '../../message.pipelines/process.queue/message.process.queue';
-import { InMessageMetadata } from '../../domain.types/intermediate.types';
+import { InMessageMetadata } from '../../types/intermediate.types';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

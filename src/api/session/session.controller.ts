@@ -1,10 +1,10 @@
 import express from 'express';
 import { ResponseHandler } from '../../common/handlers/response.handler';
 import { ErrorHandler } from '../../common/handlers/error.handler';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../types/miscellaneous/system.types';
 import { SessionValidator } from './session.validator';
 import { SessionService } from '../../database/typeorm/services/session.service';
-import { SessionCreateModel, SessionSearchFilters, SessionUpdateModel } from '../../domain.types/domain.models/session.domain.models';
+import { SessionCreateModel, SessionSearchFilters, SessionUpdateModel } from '../../types/domain.models/session.domain.models';
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

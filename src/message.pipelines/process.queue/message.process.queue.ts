@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import PQueue from 'p-queue';
 import { logger } from '../../logger/logger';
-import { uuid } from '../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../types/miscellaneous/system.types';
 import { Lifecycle, inject, scoped } from 'tsyringe';
 import { IChannel } from '../../channels/channel.interface';
 import { ChatMessageService } from '../../database/typeorm/services/chat.message.service';
 import { SessionService } from '../../database/typeorm/services/session.service';
 import { UserService } from '../../database/typeorm/services/user.service';
-import { ChatMessageCreateModel, incomingMessageToCreateModel } from '../../domain.types/domain.models/chat.message.domain.models';
-import { ChannelUser, IncomingMessage,  ProcessableMessage } from '../../domain.types/common.types';
-import { SessionCreateModel, sessionDtoToChatSession } from '../../domain.types/domain.models/session.domain.models';
-import { UserCreateModel } from '../../domain.types/domain.models/user.domain.models';
+import { ChatMessageCreateModel, incomingMessageToCreateModel } from '../../types/domain.models/chat.message.domain.models';
+import { ChannelUser, IncomingMessage,  ProcessableMessage } from '../../types/common.types';
+import { SessionCreateModel, sessionDtoToChatSession } from '../../types/domain.models/session.domain.models';
+import { UserCreateModel } from '../../types/domain.models/user.domain.models';
 import { registerUser } from '../../integrations/reancare/api.access/user';
 import { CoreTypesStore } from '../../integrations/reancare/core.types.store';
-import { Tenant } from '../../domain.types/tenant.types';
-import { ChannelType } from '../../domain.types/enums';
+import { Tenant } from '../../types/tenant.types';
+import { ChannelType } from '../../types/enums';
 import MessageHandlerRouter from '../../message.handlers/message.handler.router';
 import MessageCache from '../../message.pipelines/cache/message.cache';
 import { OutMessageProcessor } from './outmessage.processor';
-import { InMessageMetadata } from '../../domain.types/intermediate.types';
+import { InMessageMetadata } from '../../types/intermediate.types';
 import { FeedbackHandler } from '../../message.handlers/feedback/feedback.handler';
 import { HumanHandoffHandler } from '../../message.handlers/human.handoff/human.handoff.handler';
 

@@ -1,4 +1,4 @@
-import { BaseSearchFilters } from '../../../domain.types/miscellaneous/base.search.types';
+import { BaseSearchFilters } from '../../../types/miscellaneous/base.search.types';
 import { DataSource, FindManyOptions, Repository } from 'typeorm';
 import { DatabaseConnector } from '../../database.connector';
 

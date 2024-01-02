@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { inject } from "tsyringe";
-import { LanguageCode } from "../../../../domain.types/language";
+import { LanguageCode } from "../../../../types/language";
 import { ILLMServiceProvider } from "../../llm.provider.interface";
 import OpenAI from 'openai';
 import { TenantEnvironmentProvider } from "../../../../auth/tenant.environment/tenant.environment.provider";

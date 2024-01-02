@@ -3,8 +3,8 @@ import joi from 'joi';
 import { ErrorHandler } from '../../common/handlers/error.handler';
 import BaseValidator from '../base.validator';
 import { TypeUtils } from '../../common/utilities/type.utils';
-import { UserCreateModel, UserUpdateModel, UserSearchFilters } from '../../domain.types/domain.models/user.domain.models';
-import { Gender } from '../../domain.types/enums';
+import { UserCreateModel, UserUpdateModel, UserSearchFilters } from '../../types/domain.models/user.domain.models';
+import { Gender } from '../../types/enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

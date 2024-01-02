@@ -1,5 +1,5 @@
 import { User } from '../models/user.entity';
-import { UserResponseDto } from '../../../domain.types/domain.models/user.domain.models';
+import { UserResponseDto } from '../../../types/domain.models/user.domain.models';
 
 ///////////////////////////////////////////////////////////////////////////////////
 

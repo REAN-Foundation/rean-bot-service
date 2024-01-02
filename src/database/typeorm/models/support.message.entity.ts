@@ -11,7 +11,7 @@ import { Max, Min } from 'class-validator';
 import {
     ChannelType,
     SupportMessageDirection,
-} from '../../../domain.types/enums';
+} from '../../../types/enums';
 
 ////////////////////////////////////////////////////////////////////////
 

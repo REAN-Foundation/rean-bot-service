@@ -1,4 +1,4 @@
-import { PersonRole } from "../../domain.types/domain.models/user.domain.models";
+import { PersonRole } from "../../types/domain.models/user.domain.models";
 import { getPersonRoles } from "./api.access/types";
 
 export class CoreTypesStore {

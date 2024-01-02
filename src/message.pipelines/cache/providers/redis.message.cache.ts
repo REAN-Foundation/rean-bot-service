@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { IMessageCache } from "../message.cache.interface";
-import { SerializableMessage } from "../../../domain.types/common.types";
+import { SerializableMessage } from "../../../types/common.types";
 
 ///////////////////////////////////////////////////////////////////////
 

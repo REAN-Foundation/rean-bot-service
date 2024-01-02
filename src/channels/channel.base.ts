@@ -1,9 +1,9 @@
 import express from 'express';
-import { Acknowledgement, IncomingMessage, OutgoingMessage } from '../domain.types/common.types';
+import { Acknowledgement, IncomingMessage, OutgoingMessage } from '../types/common.types';
 import { IChannel } from './channel.interface';
 import { IWebhookAuthenticator } from '../auth/webhook.authenticator/webhook.authenticator.interface';
 import { IChannelMessageConverter } from './channel.message.converter.interface';
-import { ChannelType } from '../domain.types/enums';
+import { ChannelType } from '../types/enums';
 import { logger } from '../logger/logger';
 import { ResponseHandler } from '../common/handlers/response.handler';
 

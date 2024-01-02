@@ -2,7 +2,7 @@
 import { TenantEnvironmentProvider } from "../../auth/tenant.environment/tenant.environment.provider";
 import { scoped, Lifecycle, inject } from "tsyringe";
 import { ILLMServiceProvider } from "./llm.provider.interface";
-import { LanguageCode } from "../../domain.types/language";
+import { LanguageCode } from "../../types/language";
 
 //////////////////////////////////////////////////////////////////////////////
 

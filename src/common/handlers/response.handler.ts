@@ -1,5 +1,5 @@
 import express from 'express';
-import { ResponseDto } from '../../domain.types/miscellaneous/response.dto';
+import { ResponseDto } from '../../types/miscellaneous/response.dto';
 import { ActivityRecordingHandler } from './activity.recording.handler';
 import { InputValidationError, ApiError } from './error.handler';
 import { logger } from '../../logger/logger';

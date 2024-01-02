@@ -27,7 +27,7 @@ export interface ChatMessageCreateModel {
     TenantName           ?: string;
     UserId                : uuid;
     SessionId             : uuid;
-    Channel              ?: ChannelType;
+    ChannelType          ?: ChannelType;
     ChannelUserId        ?: string;
     ChannelMessageId     ?: string;
     LanguageCode         ?: LangCode;
@@ -58,7 +58,9 @@ export interface ChatMessageUpdateModel {
     GeoLocation          ?: JsonString;
     ChannelSpecifics     ?: JsonString;
     PrimaryMessageHandler?: MessageHandlerType;
-    SupportChannel       ?: SupportChannel;
+    SupportChannelType   ?: ChannelType;
+    SupportTicketId      ?: string;
+    IsExitMessage        ?: boolean;
     Metadata             ?: JsonString;
     Intent               ?: JsonString;
     Assessment           ?: JsonString;
@@ -72,7 +74,7 @@ export interface ChatMessageBaseDto {
     TenantId             ?: uuid;
     TenantName            : string;
     UserId                : uuid;
-    Channel               : ChannelType;
+    ChannelType           : ChannelType;
     ChannelUserId         : string;
     ChannelMessageId     ?: string;
     MessageType           : MessageContentType;
@@ -104,7 +106,7 @@ export interface ChatMessageSearchFilters extends BaseSearchFilters {
     UserId        ?: uuid;
     ChannelUserId ?: string;
     SessionId     ?: uuid;
-    Channel       ?: string;
+    ChannelType   ?: string;
     LanguageCode  ?: string;
     TimestampAfter?: Date;
     Direction     ?: MessageDirection;
@@ -127,7 +129,7 @@ export const incomingMessageToCreateModel = (m: IncomingMessage): ChatMessageCre
         TenantName            : m.TenantName,
         UserId                : m.UserId,
         SessionId             : m.SessionId,
-        Channel               : m.Channel,
+        ChannelType               : m.Channel,
         ChannelUserId         : m.ChannelUser?.ChannelUserId,
         ChannelMessageId      : m.ChannelMessageId,
         MessageType           : m.MessageType,
@@ -159,7 +161,7 @@ export const outgoingMessageToCreateModel = (m: OutgoingMessage): ChatMessageCre
         TenantName            : m.TenantName,
         UserId                : m.UserId,
         SessionId             : m.SessionId,
-        Channel               : m.Channel,
+        ChannelType               : m.Channel,
         ChannelUserId         : m.ChannelUser?.ChannelUserId,
         ChannelMessageId      : m.ChannelMessageId,
         MessageType           : m.MessageType,

@@ -14,7 +14,7 @@ import {
     MessageDirection,
     MessageHandlerType,
     MessageContentType,
-} from '../../../domain.types/enums';
+} from '../../../types/enums';
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -39,7 +39,7 @@ export class ChatMessage {
     SessionId: string;
 
     @Column({ type: 'enum', enum: ChannelType, default: ChannelType.Mock })
-    Channel: ChannelType;
+    ChannelType: ChannelType;
 
     @Column({ type: 'varchar', nullable: false })
     @Max(256)
@@ -76,6 +76,9 @@ export class ChatMessage {
 
     @Column({ type: 'uuid', nullable: true })
     SupportMessageId: string;
+
+    @Column({ type: 'enum', enum: ChannelType, default: ChannelType.Mock })
+    SupportChannelType: ChannelType;
 
     @Column({ type: 'enum', enum: MessageHandlerType, default: MessageHandlerType.Unhandled })
     PrimaryMessageHandler: MessageHandlerType;

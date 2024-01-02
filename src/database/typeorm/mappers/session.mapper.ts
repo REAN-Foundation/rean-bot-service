@@ -1,6 +1,6 @@
 import { Session } from '../models/session.entity';
-import { SessionResponseDto } from '../../../domain.types/domain.models/session.domain.models';
-import { ChannelType } from '../../../domain.types/enums';
+import { SessionResponseDto } from '../../../types/domain.models/session.domain.models';
+import { ChannelType } from '../../../types/enums';
 import { User } from '../models/user.entity';
 
 ///////////////////////////////////////////////////////////////////////////////////

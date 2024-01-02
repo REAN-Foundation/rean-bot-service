@@ -7,7 +7,7 @@ import { FeedbackHandler } from '../../message.handlers/feedback/feedback.handle
 import { ChatMessage } from "../../models/chat.message.model";
 import { EntityManagerProvider } from "../entity.manager.provider.service";
 const dialogflow = require('@google-cloud/dialogflow');
-import { MessageHandlerType, NlpProviderType, UserFeedbackType, ChannelType } from "../../domain.types/enums";
+import { MessageHandlerType, NlpProviderType, UserFeedbackType, ChannelType } from "../../types/enums";
 import { EmojiFilter } from "../filter.message.for.emoji.service";
 import { DialogflowResponseService } from '../dialogflow.response.service';
 import { logger } from '../../logger/logger';

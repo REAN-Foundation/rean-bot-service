@@ -52,7 +52,7 @@ export class Assessment {
     CurrentQuestionType: string;
 
     @Column({ type: 'json', nullable: true })
-    QuestionOptions: string;
+    CurrentQuestionOptions: string;
 
     @Column({ type: 'boolean', nullable: false, default: false })
     IsCompleted: boolean;

@@ -5,7 +5,7 @@ import cors from 'cors';
 import { HttpLogger } from '../logger/http.logger';
 import { logger } from '../logger/logger';
 import { Injector } from './injector';
-import { getChannelType } from '../domain.types/enums';
+import { getChannelType } from '../types/enums';
 
 ////////////////////////////////////////////////////////////////////////////////////
 

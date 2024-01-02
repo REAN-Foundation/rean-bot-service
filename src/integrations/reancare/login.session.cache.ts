@@ -1,5 +1,5 @@
 import { logger } from "../../logger/logger";
-import { uuid } from "../../domain.types/miscellaneous/system.types";
+import { uuid } from "../../types/miscellaneous/system.types";
 import { EnvVariableCache } from "../../auth/tenant.environment/env.variable.cache";
 import { loginWithPassword } from "./api.access/user";
 

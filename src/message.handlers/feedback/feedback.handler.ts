@@ -1,6 +1,6 @@
 import { Lifecycle, scoped, inject } from 'tsyringe';
-import { UserFeedbackType } from '../../domain.types/enums';
-import { ProcessableMessage } from '../../domain.types/common.types';
+import { UserFeedbackType } from '../../types/enums';
+import { ProcessableMessage } from '../../types/common.types';
 import { logger } from '../../logger/logger';
 import { IMessageHandler } from '../message.handler.interface';
 import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';

@@ -3,8 +3,8 @@ import obj from "uuid-apikey";
 import {
     MessageContentType,
     MessageDirection
-} from "../../../domain.types/enums";
-import { IncomingMessage, OptionButtonType, OutgoingMessage } from "../../../domain.types/common.types";
+} from "../../../types/enums";
+import { IncomingMessage, OptionButtonType, OutgoingMessage } from "../../../types/common.types";
 
 ////////////////////////////////////////////////////////////////////////////////
 

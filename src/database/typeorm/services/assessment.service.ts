@@ -1,7 +1,7 @@
-import { FindManyOptions, Like, Repository } from 'typeorm';
+import { FindManyOptions, Like, MoreThanOrEqual, Repository } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { uuid } from '../../../domain.types/miscellaneous/system.types';
+import { uuid } from '../../../types/miscellaneous/system.types';
 import { BaseService } from './base.service';
 import { AssessmentMapper } from '../mappers/assessment.mapper';
 import { Assessment } from '../models/assessment.entity';
@@ -14,11 +14,12 @@ import {
     AssessmentSearchFilters,
     AssessmentSearchResults,
     AssessmentUpdateModel,
-} from '../../../domain.types/assessment.types';
+} from '../../../types/domain.models/assessment.domain.models';
 import {
+    AssessmentQuestionCreateModel,
     AssessmentQuestionResponseDto,
     AssessmentQuestionUpdateModel
-} from '../../../domain.types/assessment.question.types';
+} from '../../../types/domain.models/assessment.domain.models';
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -35,12 +36,19 @@ export class AssessmentService extends BaseService {
         const assessmentRepo: Repository<Assessment> = await this.getRepository(this._envProvider, Assessment);
         const assessmentQuestionRepo: Repository<AssessmentQuestion> =
             await this.getRepository(this._envProvider, AssessmentQuestion);
-        const entity = AssessmentMapper.toEntity(createModel);
-        const assessment = assessmentRepo.create(entity);
-        const currentQuestion = AssessmentMapper.toQuestionEntity(createModel.CurrentQuestion);
-        const currentQuestionRecord = await assessmentQuestionRepo.save(currentQuestion);
+        const entity: Assessment = AssessmentMapper.toEntity(createModel);
+        const assessment = await assessmentRepo.create(entity);
+        if (createModel.FirstQuestion) {
+            const currentQuestionEntity = AssessmentMapper.toQuestionEntity(createModel.FirstQuestion);
+            const currentQuestion = await assessmentQuestionRepo.save(currentQuestionEntity);
+            assessment.CurrentQuestionId = currentQuestion.id;
+            assessment.CurrentQuestion = currentQuestion.Question;
+            assessment.CurrentQuestionType = currentQuestion.QuestionType;
+            assessment.CurrentQuestionOptions = currentQuestion.QuestionOptions;
+            await assessmentRepo.save(assessment);
+        }
         var record = await assessmentRepo.save(assessment);
-        return AssessmentMapper.toResponseDto(record, currentQuestionRecord);
+        return AssessmentMapper.toResponseDto(record);
     };
 
     public getAssessmentById = async (id: uuid): Promise<AssessmentResponseDto> => {
@@ -166,8 +174,8 @@ export class AssessmentService extends BaseService {
             if (model.CurrentQuestionId !== undefined && model.CurrentQuestionId != null) {
                 assessment.CurrentQuestionId = model.CurrentQuestionId;
             }
-            if (model.QuestionOptions !== undefined && model.QuestionOptions != null) {
-                assessment.QuestionOptions = model.QuestionOptions;
+            if (model.CurrentQuestionOptions !== undefined && model.CurrentQuestionOptions != null) {
+                assessment.CurrentQuestionOptions = model.CurrentQuestionOptions;
             }
             if (model.CurrentQuestionType !== undefined && model.CurrentQuestionType != null) {
                 assessment.CurrentQuestionType = model.CurrentQuestionType;
@@ -224,6 +232,20 @@ export class AssessmentService extends BaseService {
         }
     };
 
+    public createAssessmentQuestion = async (createModel: AssessmentQuestionCreateModel)
+        : Promise<AssessmentQuestionResponseDto> => {
+        try {
+            const repo: Repository<AssessmentQuestion> =
+                await this.getRepository(this._envProvider, AssessmentQuestion);
+            const entity = AssessmentMapper.toQuestionEntity(createModel);
+            const record = await repo.save(entity);
+            return AssessmentMapper.toQuestionResponseDto(record);
+        } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
     public getCurrentQuestion = async (assessmentId: uuid): Promise<AssessmentQuestionResponseDto> => {
         try {
             const repo: Repository<AssessmentQuestion> =
@@ -259,9 +281,17 @@ export class AssessmentService extends BaseService {
             search.where['Channel'] = Like(`%${filters.Channel}%`);
         }
 
-        // if (filters.TimestampAfter) {
-        //     search.where['AnsweredTimestamp'] = MoreThanOrEqual(filters.AnsweredTimestamp);
-        // }
+        if (filters.IsCompleted) {
+            search.where['IsCompleted'] = filters.IsCompleted;
+        }
+
+        if (filters.Channel) {
+            search.where['Channel'] = Like(`%${filters.Channel}%`);
+        }
+
+        if (filters.TimestampAfter) {
+            search.where['UpdatedAt'] = MoreThanOrEqual(filters.TimestampAfter);
+        }
 
         return search;
     };
