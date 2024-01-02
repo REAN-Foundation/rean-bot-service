@@ -13,8 +13,8 @@ export class SpeechService {
         @inject('ISpeechService') private _converter?: ISpeechService,
     ) {}
 
-    public async speechToText(audio: Buffer): Promise<string> {
-        return await this._converter.speechToText(audio);
+    public async speechToText(audio: Buffer, mimeType: string, preferrableLanguage: string): Promise<string> {
+        return await this._converter.speechToText(audio, mimeType, preferrableLanguage);
     }
 
     public async textToSpeech(text: string): Promise<string> {

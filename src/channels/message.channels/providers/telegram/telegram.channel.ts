@@ -3,20 +3,19 @@ import express from "express";
 import http from 'https';
 import needle from "needle";
 import { scoped, Lifecycle, inject, injectable } from "tsyringe";
-import { Acknowledgement, Message, OutgoingMessage } from "../../../types/common.types";
-import { ChannelType } from "../../../types/enums";
-import { ChannelBase } from "../../channel.base";
-import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";
-import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";
-import { logger } from "../../../logger/logger";
-import { IChannelMessageConverter } from "../../channel.message.converter.interface";
-import { updateAcknowledgement } from "./whatsapp.channel.common";
+import { Acknowledgement, Message, OutgoingMessage } from "../../../../types/common.types";
+import { ChannelType } from "../../../../types/enums";
+import { ChannelBase } from "../../../channel.base";
+import { TenantEnvironmentProvider } from "../../../../auth/tenant.environment/tenant.environment.provider";
+import { IWebhookAuthenticator } from "../../../../auth/webhook.authenticator/webhook.authenticator.interface";
+import { logger } from "../../../../logger/logger";
+import { IChannelMessageConverter } from "../../../channel.message.converter.interface";
 
 //////////////////////////////////////////////////////////////////////////////
 
 @scoped(Lifecycle.ContainerScoped)
 @injectable()
-export class WhatsAppChannel extends ChannelBase {
+export class TelegramChannel extends ChannelBase {
 
     constructor(
         @inject('TenantName') private _tenantName?: string,
@@ -25,7 +24,7 @@ export class WhatsAppChannel extends ChannelBase {
         @inject(TenantEnvironmentProvider) private _tenantEnvProvider?: TenantEnvironmentProvider
     ) {
         super();
-        this._channelType = ChannelType.WhatsApp;
+        this._channelType = ChannelType.Telegram;
     }
 
     async init(): Promise<void> {
@@ -48,7 +47,7 @@ export class WhatsAppChannel extends ChannelBase {
         };
         const statuses = request.body.entry[0].changes[0].value.statuses;
         if (statuses) {
-            ack = await updateAcknowledgement(statuses, ack, request);
+            ack = await this.updateAcknowledgement(statuses, ack, request);
         }
         return ack;
     };
@@ -113,6 +112,7 @@ export class WhatsAppChannel extends ChannelBase {
                 },
                 compressed : true,
             };
+
             const response = await needle('post', url, postData, options);
             if (response.statusCode !== 201 && response.statusCode !== 200) {
                 logger.error(`Error occurred while sending message to Whatsapp: ${response.body}`);
@@ -125,7 +125,30 @@ export class WhatsAppChannel extends ChannelBase {
         }
     };
 
+    public processIncoming = async (message: Message): Promise<Message> => {
+        throw new Error("Method not implemented.");
+    };
+
+    public processOutgoing = async (message: Message): Promise<OutgoingMessage> => {
+        throw new Error("Method not implemented.");
+    };
+
+    public acknowledge = async (
+        request: express.Request,
+        response: express.Response,
+        ack: Acknowledgement): Promise<void> => {
+        throw new Error("Method not implemented.");
+    };
+
     //#region  Private Methods
+
+    private updateAcknowledgement = async (
+        statuses: any,
+        ack: Acknowledgement,
+        request): Promise<Acknowledgement> => {
+
+        return ack;
+    };
 
     //#endregion
 

@@ -262,20 +262,12 @@ export class ChatMessageService extends BaseService {
             search.where['Channel'] = Like(`%${filters.ChannelType}%`);
         }
 
-        if (filters.LanguageCode) {
-            search.where['LanguageCode'] = Like(`%${filters.LanguageCode}%`);
-        }
-
         if (filters.Direction) {
             search.where['Direction'] = filters.Direction;
         }
 
         if (filters.ContentType) {
             search.where['ContentType'] = filters.ContentType;
-        }
-
-        if (filters.PrimaryHandler) {
-            search.where['PrimaryHandler'] = filters.PrimaryHandler;
         }
 
         if (filters.TimestampAfter) {

@@ -3,16 +3,16 @@ import express from "express";
 import { WebClient } from '@slack/web-api';
 import { createEventAdapter, SlackEventAdapter } from '@slack/events-api';
 import { scoped, Lifecycle, inject, injectable } from "tsyringe";
-import { Acknowledgement, OutgoingMessage } from "../../../types/common.types";
-import { ChannelType } from "../../../types/enums";
-import { ChannelBase } from "../../channel.base";
-import { TenantEnvironmentProvider } from "../../../auth/tenant.environment/tenant.environment.provider";
-import { IWebhookAuthenticator } from "../../../auth/webhook.authenticator/webhook.authenticator.interface";
-import { logger } from "../../../logger/logger";
-import { IChannelMessageConverter } from "../../channel.message.converter.interface";
-import { ISupportChannel } from "../../support.channels/support.channel.interface";
-import { IChannel } from "../../channel.interface";
-import { SupportChannelCommonUtilities } from "../../support.channels/support.channel.common.utilities";
+import { Acknowledgement, OutgoingMessage } from "../../../../types/common.types";
+import { ChannelType } from "../../../../types/enums";
+import { ChannelBase } from "../../../channel.base";
+import { TenantEnvironmentProvider } from "../../../../auth/tenant.environment/tenant.environment.provider";
+import { IWebhookAuthenticator } from "../../../../auth/webhook.authenticator/webhook.authenticator.interface";
+import { logger } from "../../../../logger/logger";
+import { IChannelMessageConverter } from "../../../channel.message.converter.interface";
+import { ISupportChannel } from "../../../support.channels/support.channel.interface";
+import { IChannel } from "../../../channel.interface";
+import { SupportChannelCommonUtilities } from "../../../support.channels/support.channel.common.utilities";
 
 //////////////////////////////////////////////////////////////////////////////
 

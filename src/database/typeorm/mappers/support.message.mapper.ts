@@ -47,7 +47,6 @@ export class SupportMessageMapper {
             Content                 : m.Content,
             TranslatedContent       : m.TranslatedContent ?? null,
             Timestamp               : m.Timestamp,
-            IsSupportResponse       : m.IsSupportResponse,
             IsExitMessage           : m.IsExitMessage,
             SupportTicketId         : m.SupportTicketId,
             ChatMessageId           : m.ChatMessageId,

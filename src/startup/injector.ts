@@ -12,9 +12,9 @@ import { MobileAppAuthenticator } from '../auth/webhook.authenticator/providers/
 import { ClickUpAuthenticator } from '../auth/webhook.authenticator/providers/clickup.authenticator';
 import { SlackAuthenticator } from '../auth/webhook.authenticator/providers/slack.authenticator';
 
-import { WhatsAppChannel } from '../channels/providers/whatsapp/whatsapp.channel';
+import { WhatsAppChannel } from '../channels/message.channels/providers/whatsapp/whatsapp.channel';
 // import { ClickupChannel } from '../channels/providers/clickup/clickup.channel';
-import { SlackSupportChannel } from '../channels/providers/slack.support/slack.support.channel';
+import { SlackSupportChannel } from '../channels/support.channels/providers/slack.support/slack.support.channel';
 
 // import { TelegramChannel } from '../channels/providers/telegram/telegram.channel';
 // import { WebChannel } from '../channels/providers/web/web.channel';
@@ -22,7 +22,7 @@ import { SlackSupportChannel } from '../channels/providers/slack.support/slack.s
 
 import { DialogFlowHandler } from '../message.handlers/nlp/dialogflow/dialogflow.handler';
 
-import WhatsAppMessageConverter from '../channels/providers/whatsapp/whatsapp.message.converter';
+import WhatsAppMessageConverter from '../channels/message.channels/providers/whatsapp/whatsapp.message.converter';
 import { UserLanguage } from '../message.pipelines/translation/user.language';
 import { GoogleTranslator } from '../message.pipelines/translation/providers/google.translator';
 
@@ -30,7 +30,7 @@ import { ModuleInjector } from '../modules/module.injector';
 import { DatabaseInjector } from '../database/database.injector';
 import { OpenAIProvider } from '../integrations/llm/providers/openai/openai.provider';
 import { AwsSpeechService } from '../message.pipelines/speech/providers/aws.speech.service';
-import SlackMessageConverter from '../channels/providers/slack.support/slack.support.message.converter';
+import SlackMessageConverter from '../channels/support.channels/providers/slack.support/slack.support.message.converter';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
