@@ -1,7 +1,19 @@
-import { BaseSearchFilters } from '../../../domain.types/miscellaneous/base.search.types';
-import { FindManyOptions } from 'typeorm';
+import { BaseSearchFilters } from '../../../types/miscellaneous/base.search.types';
+import { DataSource, FindManyOptions, Repository } from 'typeorm';
+import { DatabaseConnector } from '../../database.connector';
+
+///////////////////////////////////////////////////////////////////////////////////////////
 
 export class BaseService {
+
+    protected getRepository = async <T>(envProvider: any, T): Promise<Repository<T>> => {
+        const source: DataSource = await DatabaseConnector.getDataSource(envProvider);
+        if (!source) {
+            throw new Error('Database connection not found');
+        }
+        var repository = source.getRepository<T>(T);
+        return repository;
+    };
 
     protected addSortingAndPagination = <T>(search: FindManyOptions<T>, filters: BaseSearchFilters) => {
         //Sorting

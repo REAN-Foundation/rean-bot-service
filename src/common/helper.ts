@@ -1,5 +1,5 @@
 import child_process from 'child_process';
-import { Gender } from '../domain.types/miscellaneous/system.types';
+import { Gender } from '../types/miscellaneous/system.types';
 import Countries from './miscellaneous/country.codes';
 import { TypeUtils } from './utilities/type.utils';
 import mime = require('mime-types');

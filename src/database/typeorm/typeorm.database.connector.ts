@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import 'reflect-metadata';
-import path from 'path';
-import fs from 'fs';
 import { DataSource } from 'typeorm';
 import { logger } from '../../logger/logger';
 import { Injector } from '../../startup/injector';
 import { DatabaseClient } from '../clients/database.client';
-import { DatabaseDialect, DatabaseSchema, getDatabaseConfig } from '../database.configs';
+import { DatabaseDialect, getDatabaseConfig } from '../database.configs';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { SqliteConnectionOptions } from 'typeorm/driver/sqlite/SqliteConnectionOptions';
@@ -16,48 +14,48 @@ import { SqliteConnectionOptions } from 'typeorm/driver/sqlite/SqliteConnectionO
 import { ChatMessage } from './models/chat.message.entity';
 import { Session } from './models/session.entity';
 import { User } from './models/user.entity';
+import { TenantEnvironmentProvider } from '../../auth/tenant.environment/tenant.environment.provider';
+import { SupportMessage } from './models/support.message.entity';
 
 // <-- Entities imports
 
 ///////////////////////////////////////////////////////////////////////////////////
 
-class TypeORMDatabaseConnector {
+// const basePath = path.join(__dirname, '../../../entities');
+const entities = [
+    // Entities--->
+    ChatMessage,
+    SupportMessage,
+    Session,
+    User,
+    // <---Entities
+];
 
-    static dialect = process.env.DB_DIALECT as DatabaseDialect;
+type DBOptions = MysqlConnectionOptions | PostgresConnectionOptions | SqliteConnectionOptions;
 
-    static _basePath = path.join(__dirname, '../../../entities');
+///////////////////////////////////////////////////////////////////////////////////
 
-    // static _folders = this.getFoldersRecursively(this._basePath);
+export class TypeORMDatabaseConnector {
 
-    static _entities = [
-        // Entities--->
-        ChatMessage,
-        Session,
-        User,
-        // <---Entities
-    ];
-
-    static _options: MysqlConnectionOptions | PostgresConnectionOptions | SqliteConnectionOptions =
-        this.getDataSourceOptions(this._entities);
-
-    static _source = new DataSource(this._options);
-
-    static setup = async (): Promise<boolean> => {
-        var schemaType: DatabaseSchema = 'primary';
-        const databaseClient: DatabaseClient = Injector.Container.resolve(DatabaseClient);
+    static setup = async (envProvider: TenantEnvironmentProvider): Promise<DataSource> => {
+        //Create the database if it does not exist
+        const dbClient: DatabaseClient = Injector.BaseContainer.resolve(DatabaseClient);
         if (process.env.NODE_ENV === 'test') {
-            //Note: This is only for test environment
-            //Drop all tables in db
-            await databaseClient.dropDb(schemaType);
+            //Note: This is only for test environment -> Drop all tables in db
+            await dbClient.dropDb(envProvider);
         }
-        await databaseClient.createDb(schemaType);
-        await this.initialize();
-        return true;
+        await dbClient.createDb(envProvider);
+
+        //Initialize TypeORM data source
+        const options: DBOptions = this.getDataSourceOptions(envProvider);
+        const source = new DataSource(options);
+        await this.initialize(source);
+        return source;
     };
 
-    private static initialize = (): Promise<boolean> => {
+    private static initialize = (source: DataSource): Promise<boolean> => {
         return new Promise((resolve, reject) => {
-            this._source
+            source
                 .initialize()
                 .then(() => {
                     logger.info('Database connection has been established successfully.');
@@ -70,9 +68,9 @@ class TypeORMDatabaseConnector {
         });
     };
 
-    public static close = (): Promise<boolean> => {
+    public static close = (source: DataSource): Promise<boolean> => {
         return new Promise((resolve, reject) => {
-            this._source
+            source
                 .destroy()
                 .then(() => {
                     logger.info('Database connection has been closed successfully.');
@@ -85,11 +83,9 @@ class TypeORMDatabaseConnector {
         });
     };
 
-    private static getDataSourceOptions(
-        entities: any[]
-    ): MysqlConnectionOptions | PostgresConnectionOptions | SqliteConnectionOptions {
+    private static getDataSourceOptions(envProvider: TenantEnvironmentProvider): DBOptions {
         const dialect = process.env.DB_DIALECT as DatabaseDialect;
-        const config = getDatabaseConfig('primary');
+        const config = getDatabaseConfig(envProvider);
         var tempOptions = {
             name        : config.DatabaseName,
             host        : config.Host,
@@ -132,34 +128,4 @@ class TypeORMDatabaseConnector {
         throw new Error('Unsupported database dialect!');
     }
 
-    // private static getFoldersRecursively(location: string) {
-    //     const recursiveFolders = (location: string) => {
-    //         const items = fs.readdirSync(location, { withFileTypes: true });
-    //         let paths: string[] = [];
-    //         for (const item of items) {
-    //             if (item.isDirectory()) {
-    //                 const fullPath = path.join(location, item.name);
-    //                 const childrenPaths = recursiveFolders(fullPath);
-    //                 paths = [
-    //                     ...paths,
-    //                     fullPath,
-    //                     ...childrenPaths,
-    //                 ];
-    //             }
-    //         }
-    //         return paths;
-    //     };
-    //     const paths = recursiveFolders(location);
-    //     var folders = paths
-    //         .map(y => y.replace(/\\/g, '/'))
-    //         .map(x => '"' + x + '/*.js"');
-    //     return folders;
-    // }
-
 }
-
-///////////////////////////////////////////////////////////////////////////////////
-
-const Source = TypeORMDatabaseConnector._source;
-
-export { TypeORMDatabaseConnector, Source };

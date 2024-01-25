@@ -1,34 +1,33 @@
 import { Session } from '../models/session.entity';
-import { SessionResponseDto } from '../../../domain.types/session.types';
+import { SessionResponseDto } from '../../../types/domain.models/session.domain.models';
+import { ChannelType } from '../../../types/enums';
+import { User } from '../models/user.entity';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class SessionMapper {
 
-    static toResponseDto = (session: Session): SessionResponseDto => {
+    static toResponseDto = (session: Session, user?: User): SessionResponseDto => {
         if (session == null) {
             return null;
         }
         const dto: SessionResponseDto = {
             id              : session.id,
             UserId          : session.UserId,
-            Platform        : session.Platform,
+            Channel         : session.Channel as ChannelType,
             LastMessageDate : session.LastMessageDate,
-
-            /*
-            User: session.User ? {
-                id: session.User.id,
-                TenantId: session.User.TenantId,
-                Prefix: session.User.Prefix,
-                FirstName: session.User.FirstName,
-                LastName: session.User.LastName,
-                Phone: session.User.Phone,
-                Email: session.User.Email,
-                Gender: session.User.Gender,
-                BirthDate: session.User.BirthDate,
-                PreferredLanguage: session.User.PreferredLanguage
+            User            : user ? {
+                id                : user.id,
+                TenantId          : user.TenantId,
+                Prefix            : user.Prefix,
+                FirstName         : user.FirstName,
+                LastName          : user.LastName,
+                Phone             : user.Phone,
+                Email             : user.Email,
+                Gender            : user.Gender,
+                BirthDate         : user.BirthDate,
+                PreferredLanguage : user.PreferredLanguage
             } : null
-            */
         };
         return dto;
     };

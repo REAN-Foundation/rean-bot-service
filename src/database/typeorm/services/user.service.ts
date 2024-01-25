@@ -1,8 +1,7 @@
 import { FindManyOptions, Like, Repository } from 'typeorm';
 import { logger } from '../../../logger/logger';
 import { ErrorHandler } from '../../../common/handlers/error.handler';
-import { uuid } from '../../../domain.types/miscellaneous/system.types';
-import { Source } from '../typeorm.database.connector';
+import { uuid } from '../../../types/miscellaneous/system.types';
 import { BaseService } from './base.service';
 import {
     UserCreateModel,
@@ -10,28 +9,27 @@ import {
     UserSearchFilters,
     UserSearchResults,
     UserUpdateModel,
-} from '../../../domain.types/user.types';
+} from '../../../types/domain.models/user.domain.models';
 import { UserMapper } from '../mappers/user.mapper';
-import { Session } from '../models/session.entity';
-import { ChatMessage } from '../models/chat.message.entity';
 import { User } from '../models/user.entity';
+import { Lifecycle, inject, scoped } from 'tsyringe';
+import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
+import { Session } from '../models/session.entity';
 
 ///////////////////////////////////////////////////////////////////////
 
+@scoped(Lifecycle.ContainerScoped)
 export class UserService extends BaseService {
 
-    //#region Repositories
-
-    _sessionRepository: Repository<Session> = Source.getRepository(Session);
-
-    _chatMessageRepository: Repository<ChatMessage> = Source.getRepository(ChatMessage);
-
-    _userRepository: Repository<User> = Source.getRepository(User);
-
-    //#endregion
+    constructor(
+        @inject(TenantEnvironmentProvider) private _envProvider: TenantEnvironmentProvider
+    ) {
+        super();
+    }
 
     public create = async (createModel: UserCreateModel): Promise<UserResponseDto> => {
-        const user = this._userRepository.create({
+        const repo: Repository<User> = await this.getRepository(this._envProvider, User);
+        const user = repo.create({
             TenantId          : createModel.TenantId,
             Prefix            : createModel.Prefix,
             FirstName         : createModel.FirstName,
@@ -42,13 +40,14 @@ export class UserService extends BaseService {
             BirthDate         : createModel.BirthDate,
             PreferredLanguage : createModel.PreferredLanguage,
         });
-        var record = await this._userRepository.save(user);
+        var record = await repo.save(user);
         return UserMapper.toResponseDto(record);
     };
 
     public getById = async (id: uuid): Promise<UserResponseDto> => {
         try {
-            var user = await this._userRepository.findOne({
+            const repo: Repository<User> = await this.getRepository(this._envProvider, User);
+            var user = await repo.findOne({
                 where : {
                     id : id,
                 },
@@ -62,12 +61,35 @@ export class UserService extends BaseService {
                     Gender            : true,
                     BirthDate         : true,
                     PreferredLanguage : true,
-                },
-                relations : {
-                },
+                }
             });
             return UserMapper.toResponseDto(user);
         } catch (error) {
+            logger.error(error.message);
+            ErrorHandler.throwInternalServerError(error.message, 500);
+        }
+    };
+
+    public getByChannelUserId = async (channelUserId: string): Promise<UserResponseDto> => {
+        try {
+            const userRepo: Repository<User> = await this.getRepository(this._envProvider, User);
+            const sessionRepo: Repository<Session> = await this.getRepository(this._envProvider, Session);
+            var session = await sessionRepo.findOne({
+                where : {
+                    ChannelUserId : channelUserId,
+                }
+            });
+            if (!session) {
+                ErrorHandler.throwNotFoundError('User not found!');
+            }
+            const user = await userRepo.findOne({
+                where : {
+                    id : session.UserId,
+                }
+            });
+            return UserMapper.toResponseDto(user);
+        }
+        catch (error) {
             logger.error(error.message);
             ErrorHandler.throwInternalServerError(error.message, 500);
         }
@@ -77,7 +99,8 @@ export class UserService extends BaseService {
         try {
             var search = this.getSearchObject(filters);
             var { search, pageIndex, limit, order, orderByColumn } = this.addSortingAndPagination(search, filters);
-            const [list, count] = await this._userRepository.findAndCount(search);
+            const repo: Repository<User> = await this.getRepository(this._envProvider, User);
+            const [list, count] = await repo.findAndCount(search);
             const searchResults = {
                 TotalCount     : count,
                 RetrievedCount : list.length,
@@ -96,7 +119,8 @@ export class UserService extends BaseService {
 
     public update = async (id: uuid, model: UserUpdateModel): Promise<UserResponseDto> => {
         try {
-            const user = await this._userRepository.findOne({
+            const repo: Repository<User> = await this.getRepository(this._envProvider, User);
+            const user = await repo.findOne({
                 where : {
                     id : id,
                 },
@@ -140,7 +164,7 @@ export class UserService extends BaseService {
             if (model.PreferredLanguage !== undefined && model.PreferredLanguage != null) {
                 user.PreferredLanguage = model.PreferredLanguage;
             }
-            var record = await this._userRepository.save(user);
+            var record = await repo.save(user);
             return UserMapper.toResponseDto(record);
         } catch (error) {
             logger.error(error.message);
@@ -150,12 +174,13 @@ export class UserService extends BaseService {
 
     public delete = async (id: string): Promise<boolean> => {
         try {
-            var record = await this._userRepository.findOne({
+            const repo: Repository<User> = await this.getRepository(this._envProvider, User);
+            var record = await repo.findOne({
                 where : {
                     id : id,
                 },
             });
-            var result = await this._userRepository.remove(record);
+            var result = await repo.remove(record);
             return result != null;
         } catch (error) {
             logger.error(error.message);

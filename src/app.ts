@@ -5,8 +5,9 @@ import { logger } from './logger/logger';
 import { Scheduler } from './startup/scheduler';
 import { Seeder } from './startup/seeder';
 import { Injector } from './startup/injector';
-import DatabaseConnector from './database/database.connector';
 import { MiddlewareHandler } from './startup/middleware.handler';
+import { EnvSecretsManager } from './auth/tenant.environment/env.secret.manager';
+import { TenantSessionHandler } from './startup/tenant.session.handler';
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,11 +44,12 @@ export default class Application {
 
     warmUp = async () => {
         try {
-            await Injector.registerInjections();
-            await DatabaseConnector.setup();
             await MiddlewareHandler.setup(this.expressApp());
+            await EnvSecretsManager.populateEnvVariables();
+            await Injector.registerInjections(); //Global injections
             await RouteHandler.setup(this.expressApp());
             await Seeder.seed();
+            await TenantSessionHandler.instance().init();
             await Scheduler.instance().schedule();
         } catch (error) {
             logger.error('An error occurred while warming up.' + error.message);

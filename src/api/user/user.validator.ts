@@ -3,8 +3,8 @@ import joi from 'joi';
 import { ErrorHandler } from '../../common/handlers/error.handler';
 import BaseValidator from '../base.validator';
 import { TypeUtils } from '../../common/utilities/type.utils';
-import { UserCreateModel, UserUpdateModel, UserSearchFilters } from '../../domain.types/user.types';
-import { Gender } from '../../domain.types/enums';
+import { UserCreateModel, UserUpdateModel, UserSearchFilters } from '../../types/domain.models/user.domain.models';
+import { Gender } from '../../types/enums';
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -28,6 +28,7 @@ export class UserValidator extends BaseValidator {
             });
             await schema.validateAsync(request.body);
             const model: UserCreateModel = {
+                id                : request.body.id ? request.body.id : null,
                 TenantId          : request.body.TenantId ? request.body.TenantId : null,
                 Prefix            : request.body.Prefix ? request.body.Prefix : null,
                 FirstName         : request.body.FirstName ? request.body.FirstName : null,

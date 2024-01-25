@@ -1,37 +1,38 @@
 import { Client } from 'pg';
 import { logger } from '../../../logger/logger';
-import { DatabaseSchema, getDatabaseConfig } from '../../database.configs';
+import { getDatabaseConfig } from '../../database.configs';
 import { IDatabaseClient } from '../database.client.interface';
+import { TenantEnvironmentProvider } from '../../../auth/tenant.environment/tenant.environment.provider';
 
 ////////////////////////////////////////////////////////////////
 
 export class PostgresqlClient implements IDatabaseClient {
 
-    public createDb = async (schemaType: DatabaseSchema): Promise<boolean> => {
+    public createDb = async (envProvider: TenantEnvironmentProvider): Promise<boolean> => {
         try {
-            const config = getDatabaseConfig(schemaType);
+            const config = getDatabaseConfig(envProvider);
             const query = `CREATE DATABASE ${config?.DatabaseName}`;
-            return await this.executeQuery(schemaType, query);
+            return await this.executeQuery(envProvider, query);
         } catch (error) {
             logger.error(error.message);
             return false;
         }
     };
 
-    public dropDb = async (schemaType: DatabaseSchema): Promise<boolean> => {
+    public dropDb = async (envProvider: TenantEnvironmentProvider): Promise<boolean> => {
         try {
-            const config = getDatabaseConfig(schemaType);
+            const config = getDatabaseConfig(envProvider);
             const query = `DROP DATABASE IF EXISTS ${config?.DatabaseName}`;
-            return await this.executeQuery(schemaType, query);
+            return await this.executeQuery(envProvider, query);
         } catch (error) {
             logger.error(error.message);
             return false;
         }
     };
 
-    public executeQuery = async (schemaType: DatabaseSchema, query: string): Promise<boolean> => {
+    public executeQuery = async (envProvider: TenantEnvironmentProvider, query: string): Promise<boolean> => {
         try {
-            const config = getDatabaseConfig(schemaType);
+            const config = getDatabaseConfig(envProvider);
             const client = new Client({
                 user     : config?.Username,
                 host     : config?.Host,

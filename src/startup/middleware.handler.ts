@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { HttpLogger } from '../logger/http.logger';
 import { logger } from '../logger/logger';
+import { Injector } from './injector';
+import { getChannelType } from '../types/enums';
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -12,6 +14,17 @@ export class MiddlewareHandler {
     public static setup = async (expressApp: express.Application): Promise<boolean> => {
         return new Promise((resolve, reject) => {
             try {
+
+                //Create child container and register scoped injections
+                expressApp.use((request, _response, next) => {
+                    request.container = Injector.BaseContainer.createChildContainer();
+                    const tenantName = request.params.client ?? null;
+                    const channelName = request.params.channel ?? null;
+                    const channelType = getChannelType(channelName);
+                    Injector.registerScopedInjections(request.container, tenantName, channelType);
+                    next();
+                });
+
                 expressApp.use(express.urlencoded({ extended: true }));
                 expressApp.use(express.json());
                 expressApp.use(helmet());

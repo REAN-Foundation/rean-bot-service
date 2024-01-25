@@ -1,59 +1,94 @@
 import { ChatMessage } from '../models/chat.message.entity';
-import { ChatMessageResponseDto } from '../../../domain.types/chat.message.types';
+import { ChatMessageCreateModel, ChatMessageResponseDto } from '../../../types/domain.models/chat.message.domain.models';
+import { getLanguage } from '../../../types/language';
+import {
+    QnADetails,
+    HumanHandoff,
+    Feedback,
+    AssessmentDetails,
+    IntentDetails,
+    MessageChannelDetails,
+} from '../../../types/common.types';
+import { SupportMessage } from '../models/support.message.entity';
 
 ///////////////////////////////////////////////////////////////////////////////////
 
 export class ChatMessageMapper {
 
-    static toResponseDto = (chatMessage: ChatMessage): ChatMessageResponseDto => {
-        if (chatMessage == null) {
+    static toEntity = (model: ChatMessageCreateModel): any => {
+        if (model == null) {
+            return null;
+        }
+        const entity: any = {
+            TenantId              : model.TenantId,
+            TenantName            : model.TenantName ?? null,
+            UserId                : model.UserId,
+            SessionId             : model.SessionId,
+            ChannelType           : model.ChannelType,
+            ChannelUserId         : model.ChannelUserId,
+            ChannelMessageId      : model.ChannelMessageId ?? null,
+            MessageType           : model.MessageType,
+            LanguageCode          : model.LanguageCode,
+            Direction             : model.Direction,
+            Content               : model.Content,
+            TranslatedContent     : model.TranslatedContent ?? null,
+            Timestamp             : model.Timestamp,
+            PrevMessageId         : model.PrevMessageId,
+            PrimaryMessageHandler : model.PrimaryMessageHandler ?? null,
+            GeoLocation           : model.GeoLocation ?? null,
+            SupportChannelType    : model.SupportChannel?.SupportChannelType ?? null,
+            SupportTicketId       : model.SupportChannel?.SupportTicketId ?? null,
+            IsExitMessage         : model.SupportChannel?.IsExitMessage ?? false,
+            ChannelSpecifics      : model.ChannelSpecifics ?? null,
+            Metadata              : model.Metadata ?? null,
+            Intent                : model.Intent ?? null,
+            Assessment            : model.Assessment ?? null,
+            Feedback              : model.Feedback ?? null,
+            HumanHandoff          : model.HumanHandoff ?? null,
+            QnA                   : model.QnA ?? null,
+        };
+        return entity;
+    };
+
+    static toResponseDto = (m: ChatMessage, supportMessage: SupportMessage = null): ChatMessageResponseDto => {
+        if (m == null) {
             return null;
         }
         const dto: ChatMessageResponseDto = {
-            id                        : chatMessage.id,
-            TenantId                  : chatMessage.TenantId,
-            UserId                    : chatMessage.UserId,
-            SessionId                 : chatMessage.SessionId,
-            Platform                  : chatMessage.Platform,
-            LanguageCode              : chatMessage.LanguageCode,
-            Name                      : chatMessage.Name,
-            MessageContent            : chatMessage.MessageContent,
-            ImageContent              : chatMessage.ImageContent,
-            ImageUrl                  : chatMessage.ImageUrl,
-            PlatformUserId            : chatMessage.PlatformUserId,
-            PlatformMessageId         : chatMessage.PlatformMessageId,
-            PlatformResponseMessageId : chatMessage.PlatformResponseMessageId,
-            SentTimestamp             : chatMessage.SentTimestamp,
-            DeliveredTimestamp        : chatMessage.DeliveredTimestamp,
-            ReadTimestamp             : chatMessage.ReadTimestamp,
-            Direction                 : chatMessage.Direction,
-            ContentType               : chatMessage.ContentType,
-            AssessmentId              : chatMessage.AssessmentId,
-            AssessmentNodeId          : chatMessage.AssessmentNodeId,
-            FeedbackType              : chatMessage.FeedbackType,
-            IdentifiedIntent          : chatMessage.IdentifiedIntent,
-            HumanHandoff              : chatMessage.HumanHandoff,
-
-            /*
-            Session: chatMessage.Session ? {
-                id: chatMessage.Session.id,
-                UserId: chatMessage.Session.UserId,
-                Platform: chatMessage.Session.Platform,
-                LastMessageDate: chatMessage.Session.LastMessageDate,
+            id                    : m.id,
+            TenantId              : m.TenantId,
+            TenantName            : m.TenantName,
+            UserId                : m.UserId,
+            SessionId             : m.SessionId,
+            ChannelType           : m.ChannelType,
+            ChannelUserId         : m.ChannelUserId,
+            ChannelMessageId      : m.ChannelMessageId,
+            MessageType           : m.MessageType,
+            Language              : m.LanguageCode ? getLanguage(m.LanguageCode) : null,
+            Content               : m.Content,
+            TranslatedContent     : m.TranslatedContent ?? null,
+            Timestamp             : m.Timestamp,
+            PrevMessageId         : m.PrevMessageId,
+            PrimaryMessageHandler : m.PrimaryMessageHandler ?? null,
+            SupportChannel        : supportMessage ? {
+                SupportChannelType      : supportMessage.SupportChannelType,
+                MessageDirection        : supportMessage.Direction,
+                SupportTicketId         : supportMessage.SupportTicketId,
+                IsExitMessage           : supportMessage.IsExitMessage,
+                SupportChannelMessageId : supportMessage.SupportChannelMessageId,
+                SupportChannelUserId    : supportMessage.SupportChannelUserId,
+                SupportChannelTaskId    : supportMessage.SupportTicketId,
+                ChatMessageId           : supportMessage.ChatMessageId,
+                SupportChannelAgentId   : supportMessage.SupportChannelUserId,
             } : null,
-            User: chatMessage.User? {
-                id: chatMessage.User.id,
-                TenantId: chatMessage.User.TenantId,
-                Prefix: chatMessage.User.Prefix,
-                FirstName: chatMessage.User.FirstName,
-                LastName: chatMessage.User.LastName,
-                Phone: chatMessage.User.Phone,
-                Email: chatMessage.User.Email,
-                Gender: chatMessage.User.Gender,
-                BirthDate: chatMessage.User.BirthDate,
-                PreferredLanguage: chatMessage.User.PreferredLanguage
-            } : null
-            */
+            GeoLocation      : m.GeoLocation ? JSON.parse(m.GeoLocation) : null,
+            ChannelSpecifics : m.ChannelSpecifics ? JSON.parse(m.ChannelSpecifics) as MessageChannelDetails : null,
+            Metadata         : m.Metadata ? JSON.parse(m.Metadata) : null,
+            Intent           : m.Intent ? JSON.parse(m.Intent) as IntentDetails : null,
+            Assessment       : m.Assessment ? JSON.parse(m.Assessment) as AssessmentDetails : null,
+            Feedback         : m.Feedback ? JSON.parse(m.Feedback) as Feedback : null,
+            HumanHandoff     : m.HumanHandoff ? JSON.parse(m.HumanHandoff) as HumanHandoff : null,
+            QnA              : m.QnA ? JSON.parse(m.QnA) as QnADetails : null,
         };
         return dto;
     };

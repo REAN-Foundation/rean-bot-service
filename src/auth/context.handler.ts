@@ -19,12 +19,7 @@ export class ContextHandler {
                 ResponseHandler.failure(request, response, 'Invalid request context', 400);
                 return;
             }
-            const resourceType = tokens[0];
             request.context = context;
-            request.resourceType = resourceType;
-            if (request.params.id !== undefined && request.params.id !== null) {
-                request.resourceId = request.params.id;
-            }
             next();
         };
         middlewares.push(contextSetter);
