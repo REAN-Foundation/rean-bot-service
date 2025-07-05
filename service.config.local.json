@@ -1,0 +1,28 @@
+{
+    "SystemIdentifier": "Kleo",
+    "BaseUrl": "https://api.kleo.com",
+    "Logging": {
+        "Provider": "Custom",
+        "Level": "Information"
+    },
+    "TemporaryFolders": {
+        "UploadFolder": "./tmp/uploads/",
+        "DownloadFolder": "./tmp/downloads/",
+        "LogFolder": "./tmp/logs/",
+        "CleanupEveryMinutes": 10
+    },
+    "FileStorage": {
+        "Provider": "Custom"
+    },
+    "Sms": {
+        "Provider": "Twilio"
+    },
+    "Email": {
+        "Provider": "SendGrid"
+    },
+    "MobileNotification": {
+        "Provider": "Firebase"
+    },
+    "MaxUploadFileSize": 104857600,
+    "Telemetry": false
+}

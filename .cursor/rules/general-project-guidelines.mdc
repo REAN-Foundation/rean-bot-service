@@ -1,0 +1,95 @@
+---
+description: This is information about the project purpose, functionality, various modules and overall design guidelines of the API service.
+alwaysApply: false
+---
+# Chatbot service
+
+I want to create an a chatbot API service using
+- Typescript,
+- Node/express
+- TypeORM
+- PostGreSQL
+- tsyringe for dependency injection
+- Jest for unit and integration testing
+- Bruno as an API client (Bruno collection in code)
+- Docsify as service documentation ('./docs' folder served on '/api/docs' route)
+
+## General guidelines
+
+1. Multi-tenancy: This service supports multi-tenancy out of the box. So same service will be used by multiple bots from multiple tenants. Each tenant will have a separate database schema of similar structure and tables but containing tenant specific data. At the service startup, each tenant settings are to be pulled in from another service and populated in settings cache in memory.
+
+2. Modularity: Service should be very modular and interaction between modules be strictly through interfaces. Each module will have single responsibility principle and will perform task it is supposed to perform. Every module should be independently testable through unit tests
+
+3. Dependency Injection: Dynamic dependency injection based on tenant specific webhook call will be used to container scope the request execution and database access. Static dependency injection will be used for injection of static provider loading. For example, file upload/download services will have common interface but providers like like AWS S3 provider or Azure blob can be switched based on config file settings.
+
+4. Strict coding conventions and nomenclature guidelines. Please find them at the end of this document.
+
+5. Error handling: All standard error handling practices for the tech-stack chosen.
+
+6. Proper logging
+
+7. Observability using OpenTelemetry (Tracing and metrics) - Keep this non-intrusive. Do not spread span definitions all over the place and conccentrate them in a single file.
+
+8. Extensible architecture: It should be very easy to extend service for new features and capabilities without affecting rest of the service.
+
+## Interaction with other services
+
+This service interacts with other services through REST api. Following are these services
+1. Main user backend service - Stores all user data, options, records.
+2. LLM service - This service handles all LLM model interactions. It provides endpoints to handle any generative AI related tasks.
+    - LLM service also directly integrates with Bot-content service which manages RAG documents and prompts.
+    - Interacts with external MCP servers and tools
+3. Workflow service - Manages user workflows
+4. Assessment service - Assessments and information collection service
+
+## Service features
+
+It provides following modules and features.
+
+1. *Channel module*:
+    - (WhatsApp, Telegram, Slack, Signal. Provides a set of channel specific webhooks to receive messages coming from channel to bot.
+    - There should be a single endpoint to send messages to all the channels and tenants - For example, `/messages/receive/tenants/:tenantId/channels/:channel/:token`.
+    - It converts channel specific messages to the common format to be processed within service. While sending back the message, it converts it again into channel specific messages.
+    - Once the message is received on the webhook, it is not directly processed but queued in the in-memory async queue for processing.
+
+2. *Supported message types*: Text, Multi-option buttons, image, audio, video, feedback emojis and location.
+
+3. *Message Transformation module (Translation and Transcription)*: This module basically converts incoming language into the processable format. Translation, audio-to-text, video-to-text, image-to-text, clicked button to the option text, etc.
+
+3. *Message routing module*: Once the message is converted to the common format by channel module, this module routes the incoming message to the proper handler. This module should provide an interface. This interface can be implemented by in-code logical router implementation currently or in future multi-agentic AI based router. This router pulls in the conversation context/history/summary from 'Context Provider module' and can use it for the routing purpose.
+    Routing may be based multiple types of considerations
+    - current conversation context with the user,
+    - incoming message intent identification,
+    - current mode of conversation, for example within ongoing workflow or assessment interactions
+    - whether the incoming message is small-talk, feedback emoji, etc.
+    - whether the message should be directed to RAG based knowledge base server
+
+    There are following types of handlers to where the router can route the message.
+        1. User consent and welcome handler
+        2. QnA (RAG based knowledge base query handler)
+        3. Current mode handler (Contains- multiple user interactions) with sub handlers like
+            - Assessment handler
+            - Workflow handler
+            - Reminder handler
+            - Task handler
+        4. Intent identifier and listener handler- Intent listeners can be internal or external API/funcationality providers.
+        5. Small-talk handler
+        6. Feedback and Emoji handler
+        7. Fallback handler
+
+4. *Context provider module*: Context provider module reads the context info (conversation history, user info, user settings, ...) from database and/or context cache and provides it to the router or to the LLM service interface called as 'GenAIService' interface. It may summarize or transorm it as per the options set.
+
+5. *Intent recognition and Entity extraction module*: This module performs natural language processing of the transformed incoming message and tries to match any of the intent registered for that particular tenant. There might be some intents which are default for all the tenants. The mapping of the intent, its metadata, and handler mapping is stored in the intents database table. The intent classifier takes help of LLM service interface ('GenAIService') for natural languge processing and context to score the intents. The intent with highest scope is marked as identified intent and corresponding registered intent listeners are fired. Identifies the intent and extracts entities. It keeps asking relevant question to the user till it extracts all the required entities. For example, if an intent is identified as setting 'set_reminder, then this modules keeps creating response questions to the end user to find information like time, frequency, name and purpose of the reminder. In some cases, the after intent is identified, one or more intent listeners handle the intent in asynchronus manner but responds synchronously. (The triggering of the listeners is done asynchronously but their resutls/responses are awaited synchronously.)
+
+6. *RAG (Questions and Answers) handler*: This handler provides an interface to interact with GenAIService for RAG based queries.
+
+7. *Assessment handler, Wokflow handler, Reminder handler and Task handler*: These 4 types of handlers manage the execution of the respective workflows through bot-user interactions.
+
+8. *Small-talk handler*: Manages small-talk conversations.
+
+9. *Feedback and Emoji handler*: This handler basically tries to capture user feedback in terms of emojis or in-line-referenced responses to the bot's outgoing messages.
+
+10. *Fallback handler*: If the router cannot choose a correct handler, it goes to fallback message handler.
+
+## Documentation
+We are using docsify for the service's developer documentaiton and API documentation. It is being stored under /docs folder. Please update the documentation to keep it updated.
