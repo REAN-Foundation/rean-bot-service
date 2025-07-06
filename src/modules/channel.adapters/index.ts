@@ -3,6 +3,7 @@ export { WhatsAppAdapter } from './whatsapp.adapter';
 export { TelegramAdapter } from './telegram.adapter';
 export { SlackAdapter } from './slack.adapter';
 export { SignalAdapter } from './signal.adapter';
+export { WebChatAdapter } from './web.adapter';
 
 // Message Transformers
 export { BaseMessageTransformer } from './transformers/base.message.transformer';
@@ -10,6 +11,7 @@ export { WhatsAppMessageTransformer } from './transformers/whatsapp.message.tran
 export { TelegramMessageTransformer } from './transformers/telegram.message.transformer';
 export { SlackMessageTransformer } from './transformers/slack.message.transformer';
 export { SignalMessageTransformer } from './transformers/signal.message.transformer';
+export { WebMessageTransformer } from './transformers/web.message.transformer';
 
 // Channel Factory
 export { ChannelFactory } from './channel.factory';
@@ -43,6 +45,18 @@ export type {
 } from './signal.adapter';
 
 export type {
+    WebChatConfig,
+    WebChatMessage,
+    WebChatOutgoingMessage,
+    WebChatUser,
+    WebChatSession,
+    WebChatEvent,
+    WebChatTypingIndicator,
+    WebChatDeliveryReceipt,
+    WebChatConnection
+} from './web.adapter';
+
+export type {
     ChannelConfiguration,
     ChannelFactoryOptions
 } from './channel.factory';
@@ -62,7 +76,8 @@ export const SUPPORTED_CHANNEL_TYPES = [
     'whatsapp',
     'telegram',
     'slack',
-    'signal'
+    'signal',
+    'web'
 ] as const;
 
 export const CHANNEL_FEATURES = {
@@ -125,6 +140,26 @@ export const CHANNEL_FEATURES = {
         'message_quotes',
         'group_messaging',
         'end_to_end_encryption'
+    ],
+    web: [
+        'text_messages',
+        'media_messages',
+        'interactive_messages',
+        'location_sharing',
+        'contact_sharing',
+        'file_uploads',
+        'real_time_messaging',
+        'typing_indicators',
+        'read_receipts',
+        'delivery_receipts',
+        'presence_status',
+        'message_history',
+        'session_management',
+        'multi_device_support',
+        'offline_messaging',
+        'message_reactions',
+        'message_editing',
+        'message_deletion'
     ]
 } as const;
 
@@ -179,5 +214,22 @@ export const MESSAGE_TYPE_MAPPINGS = {
         reaction: 'reaction',
         remote_delete: 'deletion',
         group_update: 'system'
+    },
+    web: {
+        text: 'text',
+        media: 'media',
+        image: 'image',
+        audio: 'audio',
+        video: 'video',
+        document: 'document',
+        location: 'location',
+        contact: 'contact',
+        interactive: 'interactive',
+        typing: 'typing',
+        system: 'system',
+        file_upload: 'file',
+        delivery_receipt: 'receipt',
+        read_receipt: 'receipt',
+        presence: 'presence'
     }
 } as const;

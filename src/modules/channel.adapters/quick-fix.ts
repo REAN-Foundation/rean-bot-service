@@ -11,6 +11,7 @@ import {
     ContactMessageContent,
     InteractiveMessageContent
 } from '../../domain.types/message.types';
+import { logger } from '../../logger/logger';
 
 // Corrected DeliveryStatus for adapters
 export interface AdapterDeliveryStatus {
@@ -56,7 +57,6 @@ export function setMetadataField(metadata: MessageMetadata, field: string, value
 
 // Logger wrapper that accepts multiple arguments
 export function safeLog(level: 'info' | 'warn' | 'error', message: string, data?: any): void {
-    const { logger } = require('../../logger/logger');
     if (data) {
         logger[level](`${message} - ${JSON.stringify(data)}`);
     } else {
@@ -72,54 +72,54 @@ export function createUnifiedContent(
     switch (type) {
         case 'text':
             return {
-                text: data.text || '',
-                formatting: data.formatting
+                text       : data.text || '',
+                formatting : data.formatting
             } as TextMessageContent;
 
         case 'media':
             return {
-                mediaType: data.mediaType || 'document',
-                url: data.url || '',
-                caption: data.caption,
-                filename: data.filename,
-                mimeType: data.mimeType,
-                size: data.size,
-                duration: data.duration,
-                dimensions: data.dimensions
+                mediaType  : data.mediaType || 'document',
+                url        : data.url || '',
+                caption    : data.caption,
+                filename   : data.filename,
+                mimeType   : data.mimeType,
+                size       : data.size,
+                duration   : data.duration,
+                dimensions : data.dimensions
             } as MediaMessageContent;
 
         case 'location':
             return {
-                latitude: data.latitude || 0,
-                longitude: data.longitude || 0,
-                name: data.name,
-                address: data.address,
-                url: data.url
+                latitude  : data.latitude || 0,
+                longitude : data.longitude || 0,
+                name      : data.name,
+                address   : data.address,
+                url       : data.url
             } as LocationMessageContent;
 
         case 'contact':
             return {
-                name: data.name || '',
-                phone: data.phone,
-                email: data.email,
-                organization: data.organization,
-                vcard: data.vcard
+                name         : data.name || '',
+                phone        : data.phone,
+                email        : data.email,
+                organization : data.organization,
+                vcard        : data.vcard
             } as ContactMessageContent;
 
         case 'interactive':
             return {
-                type: data.type || 'button',
-                text: data.text,
-                buttons: data.buttons || [],
-                listItems: data.listItems || [],
-                header: data.header,
-                footer: data.footer
+                type      : data.type || 'button',
+                text      : data.text,
+                buttons   : data.buttons || [],
+                listItems : data.listItems || [],
+                header    : data.header,
+                footer    : data.footer
             } as InteractiveMessageContent;
 
         default:
             return {
-                text: 'Unknown message type',
-                formatting: undefined
+                text       : 'Unknown message type',
+                formatting : undefined
             } as TextMessageContent;
     }
 }
@@ -127,15 +127,15 @@ export function createUnifiedContent(
 // Create standardized metadata
 export function createStandardMetadata(platformData: any, platform: string): MessageMetadata {
     return {
-        channelMessageId: platformData.id || platformData.message_id,
-        forwardedFrom: platformData.forwarded_from,
-        isForwarded: Boolean(platformData.forwarded_from),
-        editedAt: platformData.edited ? new Date() : undefined,
-        customData: {
+        channelMessageId : platformData.id || platformData.message_id,
+        forwardedFrom    : platformData.forwarded_from,
+        isForwarded      : Boolean(platformData.forwarded_from),
+        editedAt         : platformData.edited ? new Date() : undefined,
+        customData       : {
             platform,
             platformData,
-            replyTo: platformData.reply_to,
-            timestamp: platformData.timestamp || Date.now()
+            replyTo   : platformData.reply_to,
+            timestamp : platformData.timestamp || Date.now()
         }
     };
 }
@@ -147,80 +147,65 @@ export function formatMessageForPlatform(
     recipientId: string
 ): any {
     const baseMessage = {
-        recipient: recipientId,
-        timestamp: Date.now()
+        recipient : recipientId,
+        timestamp : Date.now()
     };
 
     if (isTextMessage(content)) {
         return {
             ...baseMessage,
-            type: 'text',
-            text: content.text
+            type : 'text',
+            text : content.text
         };
     }
 
     if (isMediaMessage(content)) {
         return {
             ...baseMessage,
-            type: content.mediaType,
-            url: content.url,
-            caption: content.caption,
-            filename: content.filename
+            type     : content.mediaType,
+            url      : content.url,
+            caption  : content.caption,
+            filename : content.filename
         };
     }
 
     if (isLocationMessage(content)) {
         return {
             ...baseMessage,
-            type: 'location',
-            latitude: content.latitude,
-            longitude: content.longitude,
-            name: content.name,
-            address: content.address
+            type      : 'location',
+            latitude  : content.latitude,
+            longitude : content.longitude,
+            name      : content.name,
+            address   : content.address
         };
     }
 
     if (isContactMessage(content)) {
         return {
             ...baseMessage,
-            type: 'contact',
-            name: content.name,
-            phone: content.phone,
-            email: content.email,
-            organization: content.organization
+            type         : 'contact',
+            name         : content.name,
+            phone        : content.phone,
+            email        : content.email,
+            organization : content.organization
         };
     }
 
     if (isInteractiveMessage(content)) {
         return {
             ...baseMessage,
-            type: 'interactive',
-            interactiveType: content.type,
-            text: content.text,
-            buttons: content.buttons,
-            listItems: content.listItems
+            type            : 'interactive',
+            interactiveType : content.type,
+            text            : content.text,
+            buttons         : content.buttons,
+            listItems       : content.listItems
         };
     }
 
     // Fallback
     return {
         ...baseMessage,
-        type: 'text',
-        text: 'Unsupported message type'
+        type : 'text',
+        text : 'Unsupported message type'
     };
 }
-
-export default {
-    AdapterDeliveryStatus,
-    isTextMessage,
-    isMediaMessage,
-    isLocationMessage,
-    isContactMessage,
-    isInteractiveMessage,
-    getMetadataField,
-    setMetadataField,
-    safeLog,
-    createUnifiedContent,
-    createStandardMetadata,
-    formatMessageForPlatform
-};

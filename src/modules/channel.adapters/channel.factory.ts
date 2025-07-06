@@ -5,6 +5,7 @@ import { WhatsAppAdapter } from './whatsapp.adapter';
 import { TelegramAdapter } from './telegram.adapter';
 import { SlackAdapter } from './slack.adapter';
 import { SignalAdapter } from './signal.adapter';
+import { WebChatAdapter } from './web.adapter';
 import { logger } from '../../logger/logger';
 
 export interface ChannelConfiguration {
@@ -247,7 +248,8 @@ export class ChannelFactory {
             ChannelType.WhatsApp,
             ChannelType.Telegram,
             ChannelType.Slack,
-            ChannelType.Signal
+            ChannelType.Signal,
+            ChannelType.Web
         ];
     }
 
@@ -293,6 +295,8 @@ export class ChannelFactory {
                 return [...commonFeatures, 'interactive_components', 'blocks', 'threading', 'reactions'];
             case ChannelType.Signal:
                 return [...commonFeatures, 'disappearing_messages', 'reactions', 'encryption'];
+            case ChannelType.Web:
+                return [...commonFeatures, 'interactive_messages', 'location_sharing', 'contact_sharing', 'file_uploads', 'real_time_messaging', 'typing_indicators', 'read_receipts', 'presence_status'];
             default:
                 return commonFeatures;
         }
@@ -398,6 +402,9 @@ export class ChannelFactory {
                 return container.resolve(SlackAdapter);
             case ChannelType.Signal:
                 return container.resolve(SignalAdapter);
+            case ChannelType.Web:
+                // WebChatAdapter accepts config in constructor but can also be configured via initialize
+                return new WebChatAdapter();
             default:
                 throw new Error(`Unsupported channel type: ${channelType}`);
         }

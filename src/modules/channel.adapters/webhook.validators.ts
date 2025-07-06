@@ -284,6 +284,60 @@ export class WebhookValidators {
         }
     }
 
+    /**
+     * Validate Web Chat authentication
+     */
+    static validateWebChatAuth(
+        payload: any,
+        headers: Record<string, string>,
+        config: WebhookValidationConfig
+    ): WebhookValidationResult {
+        try {
+            // Validate authentication token
+            if (config.token) {
+                const token = headers['authorization']?.replace('Bearer ', '') || payload.token;
+                if (!token) {
+                    return {
+                        isValid: false,
+                        error: 'Missing authentication token',
+                        channelType: ChannelType.Web
+                    };
+                }
+
+                const isTokenValid = this.validateWebChatToken(token, config.token);
+                if (!isTokenValid) {
+                    return {
+                        isValid: false,
+                        error: 'Invalid authentication token',
+                        channelType: ChannelType.Web
+                    };
+                }
+            }
+
+            // Validate payload structure for auth requests
+            if (!this.isValidWebChatPayload(payload)) {
+                return {
+                    isValid: false,
+                    error: 'Invalid payload structure',
+                    channelType: ChannelType.Web
+                };
+            }
+
+            return {
+                isValid: true,
+                channelType: ChannelType.Web
+            };
+
+        } catch (error) {
+            logger.error('Web Chat authentication validation error', { error: error.message });
+            return {
+                isValid: false,
+                error: `Validation error: ${error.message}`,
+                channelType: ChannelType.Web
+            };
+        }
+    }
+
     //#endregion
 
     //#region Signature Validation
@@ -354,6 +408,22 @@ export class WebhookValidators {
             );
         } catch (error) {
             logger.error('Signal signature validation error', { error: error.message });
+            return false;
+        }
+    }
+
+    private static validateWebChatToken(
+        token: string,
+        expectedToken: string
+    ): boolean {
+        try {
+            // Simple token validation - in production, use JWT verification
+            return crypto.timingSafeEqual(
+                Buffer.from(token),
+                Buffer.from(expectedToken)
+            );
+        } catch (error) {
+            logger.error('Web Chat token validation error', { error: error.message });
             return false;
         }
     }
@@ -430,6 +500,29 @@ export class WebhookValidators {
                payload.account;
     }
 
+    private static isValidWebChatPayload(payload: any): boolean {
+        if (!payload || typeof payload !== 'object') {
+            return false;
+        }
+
+        // For authentication requests
+        if (payload.type === 'auth') {
+            return !!(payload.userId && payload.token);
+        }
+
+        // For message payloads
+        if (payload.type === 'message') {
+            return !!(payload.userId && payload.sessionId && payload.content);
+        }
+
+        // For other event types
+        if (payload.type) {
+            return !!(payload.userId && payload.sessionId);
+        }
+
+        return true; // Allow generic payloads
+    }
+
     //#endregion
 
     //#region Generic Validation
@@ -477,6 +570,8 @@ export class WebhookValidators {
                 return this.validateSlackWebhook(payload, headers, config);
             case ChannelType.Signal:
                 return this.validateSignalWebhook(payload, headers, config);
+            case ChannelType.Web:
+                return this.validateWebChatAuth(payload, headers, config);
             default:
                 return {
                     isValid: false,
