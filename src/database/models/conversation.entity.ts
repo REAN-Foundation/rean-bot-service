@@ -8,7 +8,6 @@ import {
     OneToMany,
 } from 'typeorm';
 import { Message } from './message.entity';
-import { ConversationContext as ConversationContextEntity } from './conversation.context.entity';
 
 ////////////////////////////////////////////////////////////////////////
 

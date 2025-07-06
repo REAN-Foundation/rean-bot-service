@@ -1,4 +1,5 @@
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryColumn } from 'typeorm';
+import { TenantConfiguration } from '../../domain.types/common.types';
 
 @Entity('tenants')
 export class Tenant {
@@ -17,6 +18,9 @@ export class Tenant {
 
   @Column({ nullable: false, default: true })
   IsActive!: boolean;
+
+  @Column({ type: 'json', nullable: true })
+  configuration?: TenantConfiguration;
 
   @CreateDateColumn()
   CreatedAt!: Date;

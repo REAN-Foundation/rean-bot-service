@@ -1,50 +1,46 @@
 import { DataSource } from 'typeorm';
-
-const baseOptions = {
-    type        : 'postgres' as const,
-    url         : process.env.DATABASE_URL,
-    synchronize : process.env.NODE_ENV === 'development',
-    logging     : process.env.NODE_ENV === 'development',
-    entities    : ['src/entities/*.entity.ts'],
-    migrations  : ['src/migrations/*.ts'],
-    subscribers : ['src/subscribers/*.ts'],
-};
-
-export const AppDataSource = new DataSource(baseOptions);
+import { Config } from './database.config';
 
 export class TenantConnectionService {
 
-    private static dataSourceCache = new Map<string, DataSource>();
+    private static connections = new Map<string, DataSource>();
 
     static async getTenantDataSource(tenantId: string): Promise<DataSource> {
-        const schemaName = `tenant_${tenantId}`;
-
-        if (!this.dataSourceCache.has(schemaName)) {
-            const dataSource = new DataSource({
-                ...baseOptions,
-                schema : schemaName,
-                extra  : { max: 5 } // Connection pool per tenant
-            });
-
-            await dataSource.initialize();
-            this.dataSourceCache.set(schemaName, dataSource);
+        if (this.connections.has(tenantId)) {
+            return this.connections.get(tenantId)!;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return this.dataSourceCache.get(schemaName)!;
+        // Create new connection for tenant
+        const dataSource = new DataSource({
+            type: 'postgres',
+            host: Config.host,
+            port: Config.port,
+            username: Config.username,
+            password: Config.password,
+            database: `${Config.database}_${tenantId}`,
+            synchronize: false,
+            logging: false,
+            entities: []
+        });
+
+        await dataSource.initialize();
+        this.connections.set(tenantId, dataSource);
+
+        return dataSource;
     }
 
-    static async createTenantSchema(tenantId: string): Promise<void> {
-        const schemaName = `tenant_${tenantId}`;
-        const publicDataSource = await AppDataSource.initialize();
-
-        await publicDataSource.query(`CREATE SCHEMA IF NOT EXISTS "${schemaName}"`);
-        await this.runMigrations(tenantId);
+    static async closeTenantConnection(tenantId: string): Promise<void> {
+        const connection = this.connections.get(tenantId);
+        if (connection) {
+            await connection.destroy();
+            this.connections.delete(tenantId);
+        }
     }
 
-    private static async runMigrations(tenantId: string): Promise<void> {
-        const dataSource = await this.getTenantDataSource(tenantId);
-        await dataSource.runMigrations();
+    static async closeAllConnections(): Promise<void> {
+        for (const [tenantId, connection] of this.connections) {
+            await connection.destroy();
+            this.connections.delete(tenantId);
+        }
     }
-
 }

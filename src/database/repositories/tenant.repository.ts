@@ -1,30 +1,30 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { injectable, inject } from 'tsyringe';
 import { BaseTenantRepository } from './base.repository';
-import { TenantEntity } from '../models/tenant.entity';
+import { Tenant } from '../models/tenant.entity';
 
 @injectable()
-export class TenantRepository extends BaseTenantRepository<TenantEntity> {
+export class TenantRepository extends BaseTenantRepository<Tenant> {
 
     constructor(@inject('REQUEST') request: { tenantId: string }) {
-        super(request, TenantEntity);
+        super(request, Tenant);
     }
 
-    async findByName(name: string): Promise<TenantEntity | null> {
+    async findByName(name: string): Promise<Tenant | null> {
         const repo = await this.getRepository();
         return repo.findOne({
-            where : { name }
+            where : { Name: name }
         });
     }
 
-    async findActive(): Promise<TenantEntity[]> {
+    async findActive(): Promise<Tenant[]> {
         const repo = await this.getRepository();
         return repo.find({
-            where : { isActive: true }
+            where : { IsActive: true }
         });
     }
 
-    async findByFeature(feature: string): Promise<TenantEntity[]> {
+    async findByFeature(feature: string): Promise<Tenant[]> {
         const repo = await this.getRepository();
         return repo.find({
             where : {
@@ -35,7 +35,7 @@ export class TenantRepository extends BaseTenantRepository<TenantEntity> {
         });
     }
 
-    async updateConfiguration(id: string, configuration: Partial<TenantEntity['configuration']>): Promise<TenantEntity | null> {
+    async updateConfiguration(id: string, configuration: Partial<Tenant['configuration']>): Promise<Tenant | null> {
         const repo = await this.getRepository();
         const tenant = await this.findOne({ where: { id } });
         if (!tenant) {
@@ -49,13 +49,13 @@ export class TenantRepository extends BaseTenantRepository<TenantEntity> {
 
     async deactivate(id: string): Promise<boolean> {
         const repo = await this.getRepository();
-        const result = await repo.update(id, { isActive: false });
+        const result = await repo.update(id, { IsActive: false });
         return result.affected! > 0;
     }
 
     async activate(id: string): Promise<boolean> {
         const repo = await this.getRepository();
-        const result = await repo.update(id, { isActive: true });
+        const result = await repo.update(id, { IsActive: true });
         return result.affected! > 0;
     }
 

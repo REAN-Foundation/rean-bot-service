@@ -1,6 +1,7 @@
 import { injectable, inject } from 'tsyringe';
 import { MessageRepository } from '../../database/repositories/message.repository';
 import { ConversationRepository } from '../../database/repositories/conversation.repository';
+import { MessageDirection } from '../../database/models/message.entity';
 // import { IntentRecognitionService } from './intent.recognition.service';
 import { IMessageHandler } from '../message.handlers/interfaces/handler.interface';
 import { logger } from '../../logger/logger';
@@ -35,13 +36,14 @@ export class MessageProcessingService {
         try {
             // Save message
             const message = await this.messageRepo.create({
-                externalId : messageData.id,
-                channel    : messageData.channel,
-                from       : messageData.from,
-                to         : messageData.to,
-                type       : messageData.type,
-                content    : messageData.content,
-                status     : 'processing'
+                id               : messageData.id,
+                ConversationId   : '', // Will be set after conversation creation
+                UserId           : messageData.from,
+                Channel          : messageData.channel,
+                MessageType      : messageData.type,
+                Direction        : MessageDirection.Inbound,
+                Content          : messageData.content,
+                Status           : 'processing'
             });
 
             // Get or create conversation
@@ -67,7 +69,7 @@ export class MessageProcessingService {
             await this.updateConversationContext(conversation, messageData, response, intentResult);
 
             // Update message status
-            await this.messageRepo.update(message.id, { status: 'processed' });
+            await this.messageRepo.update(message.id, { Status: 'processed' });
             logger.info(`Message processed successfully, messageId: ${message.id}, intent: ${intentResult.intent}, confidence: ${intentResult.confidence}`);
 
         } catch (error) {
@@ -79,9 +81,9 @@ export class MessageProcessingService {
     private async getOrCreateConversation(messageData: any): Promise<any> {
         const existingConversation = await this.conversationRepo.findOne({
             where : {
-                userId  : messageData.from,
-                channel : messageData.channel,
-                status  : 'active'
+                UserId  : messageData.from,
+                Channel : messageData.channel,
+                Status  : 'active'
             }
         });
 
@@ -90,14 +92,9 @@ export class MessageProcessingService {
         }
 
         return this.conversationRepo.create({
-            userId  : messageData.from,
-            channel : messageData.channel,
-            context : {
-                entities : {},
-                intent   : null,
-                history  : []
-            },
-            status : 'active'
+            UserId  : messageData.from,
+            Channel : messageData.channel,
+            Status  : 'active'
         });
     }
 
@@ -121,8 +118,7 @@ export class MessageProcessingService {
         }
 
         await this.conversationRepo.update(conversation.id, {
-            context      : conversation.context,
-            lastActivity : new Date()
+            Status : 'active'
         });
     }
 

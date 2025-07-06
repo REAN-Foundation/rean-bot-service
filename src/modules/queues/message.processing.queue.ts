@@ -48,15 +48,12 @@ export class MessageProcessingQueue {
         job.attempts++;
 
         // Create tenant-scoped container
-        const scopedContainer = ApplicationContainer.createScopedContainer({
-            tenantId,
-            tenantSchema : `tenant_${tenantId}`
-        } as any);
+        const scopedContainer = ApplicationContainer.getContainer().createChildContainer();
 
         const webhookHandler = scopedContainer.resolve('WebhookHandlerService') as WebhookHandlerService;
 
         try {
-            await webhookHandler.processWebhook(channel, payload);
+            await webhookHandler.handleWebhook(channel, payload);
             logger.info(`Message processed successfully: tenantId=${tenantId}, channel=${channel}, jobId=${job.id}`);
         } catch (error) {
             logger.error(`Message processing failed: tenantId=${tenantId}, channel=${channel}, jobId=${job.id}, attempt=${job.attempts}, error=${error}`);

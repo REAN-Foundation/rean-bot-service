@@ -1,23 +1,22 @@
 import 'reflect-metadata';
 import { container, Lifecycle } from 'tsyringe';
-import { Request } from 'express';
-import { TenantConnectionService } from '../../database/tenant.db.connection.service';
-import { WebhookHandlerService } from '../services/webhook.handler.service';
-import { MessageProcessingService } from '../services/message.processing.service';
+import { Request, Response, NextFunction } from 'express';
+import { WebhookHandlerService } from '../modules/services/webhook.handler.service';
+import { MessageProcessingService } from '../modules/services/message.processing.service';
 // import { IntentRecognitionService } from '../services/intent.recognition.service';
 // import { RAGQAService } from '../services/rag.service';
-import { AssessmentHandler } from '../message.handlers/assessment.handler';
-import { WorkflowHandler } from '../message.handlers/workflow.handler';
-import { ReminderHandler } from '../message.handlers/reminder.handler';
-import { TaskHandler } from '../message.handlers/task.handler';
-import { SmallTalkHandler } from '../message.handlers/smalltalk.handler';
-import { FeedbackHandler } from '../message.handlers/feedback.handler';
-import { FallbackHandler } from '../message.handlers/fallback.handler';
+import { AssessmentHandler } from '../modules/message.handlers/assessment.handler';
+import { WorkflowHandler } from '../modules/message.handlers/workflow.handler';
+import { ReminderHandler } from '../modules/message.handlers/reminder.handler';
+import { TaskHandler } from '../modules/message.handlers/task.handler';
+import { SmallTalkHandler } from '../modules/message.handlers/smalltalk.handler';
+import { FeedbackHandler } from '../modules/message.handlers/feedback.handler';
+import { FallbackHandler } from '../modules/message.handlers/fallback.handler';
 
 // Register core services
-container.register('TenantConnectionService', {
-    useClass : TenantConnectionService
-}, { lifecycle: Lifecycle.Singleton });
+// container.register('TenantConnectionService', {
+//     useClass : TenantConnectionService
+// }, { lifecycle: Lifecycle.Singleton });
 
 container.register('WebhookHandlerService', {
     useClass : WebhookHandlerService
@@ -58,5 +57,28 @@ export class ApplicationContainer {
     }
 
 }
+
+export const requestScopeInjector = (req: Request, res: Response, next: NextFunction): void => {
+    // Create a child container for this request
+    const childContainer = container.createChildContainer();
+
+    // Register request-scoped services
+    childContainer.registerSingleton('MessageProcessingService', MessageProcessingService);
+    childContainer.registerSingleton('WebhookHandlerService', WebhookHandlerService);
+
+    // Register message handlers
+    childContainer.registerSingleton('AssessmentHandler', AssessmentHandler);
+    childContainer.registerSingleton('WorkflowHandler', WorkflowHandler);
+    childContainer.registerSingleton('ReminderHandler', ReminderHandler);
+    childContainer.registerSingleton('TaskHandler', TaskHandler);
+    childContainer.registerSingleton('SmallTalkHandler', SmallTalkHandler);
+    childContainer.registerSingleton('FeedbackHandler', FeedbackHandler);
+    childContainer.registerSingleton('FallbackHandler', FallbackHandler);
+
+    // Store the container in the request for later use
+    (req as any).container = childContainer;
+
+    next();
+};
 
 export { container };
