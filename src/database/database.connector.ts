@@ -4,8 +4,8 @@ import { Config } from './database.config';
 import { logger } from '../logger/logger';
 import { DataSource } from "typeorm";
 import path from "path";
-import { Condition } from './models/condition.model';
-import { Rule } from './models/rule.model';
+import { Condition } from './models/condition.entity';
+import { Rule } from './models/rule.entity';
 import { DBLogger } from "./database.logger";
 import { DbClient } from "./db.clients/db.client";
 

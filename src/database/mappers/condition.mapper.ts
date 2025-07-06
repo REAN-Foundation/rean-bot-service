@@ -1,4 +1,4 @@
-import { Condition } from '../models/condition.model';
+import { Condition } from '../models/condition.entity';
 import {
     ConditionResponseDto
 } from '../../domain.types/condition.types';

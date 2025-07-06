@@ -1,3 +1,7 @@
+---
+description: This is information about the project purpose, functionality, various modules and overall design guidelines of the API service.
+alwaysApply: false
+---
 # Chatbot REST API Service - Project Requirements Document
 
 ## 1. Project Overview
@@ -91,10 +95,16 @@ CREATE TABLE conversations (
 CREATE TABLE messages (
   id VARCHAR(36) PRIMARY KEY,
   ConversationId VARCHAR(36) NOT NULL,
-  MessageType VARCHAR(50) NOT NULL,
+  UserId VARCHAR(36) NOT NULL,
+  Channel VARCHAR(64) NOT NULL,
+  ChannelMessageId VARCHAR(128) NULL,
+  ReferenceChannelMessageId VARCHAR(128) NULL,
+  MessageType VARCHAR(64) NOT NULL,
   Direction ENUM('inbound', 'outbound'),
   Content JSON NOT NULL,
+  Metadata JSON NULL,
   ProcessedContent JSON,
+  Status VARCHAR(64) NOT NULL,
   CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (ConversationId) REFERENCES conversations(id)
 );
@@ -110,6 +120,7 @@ CREATE TABLE intents (
   RequiredEntities JSON,
   HandlerType VARCHAR(100),
   HandlerConfig JSON,
+  ThresholdScore FLOAT default 0.8,
   Priority INT DEFAULT 0,
   IsActive BOOLEAN DEFAULT true,
   CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -243,17 +254,134 @@ interface IWorkflowService {
 ## 6. Project Structure
 
 ```
-chatbot-service/
+rean-bot-service/
 ├── src/
+│   ├── @types/
+│   │   └── express/
+│   │       └── index.d.ts
 │   ├── api/
+│   │   ├── base.validator.ts
+│   │   ├── request.scope.injector.ts
+│   │   ├── condition/
+│   │   │   ├── condition.controller.ts
+│   │   │   ├── condition.routes.ts
+│   │   │   └── condition.validator.ts
 │   │   ├── message/
 │   │   │   ├── message.controller.ts
 │   │   │   ├── message.routes.ts
 │   │   │   └── message.validator.ts
-│   │   └── health/
-│   │       ├── health.controller.ts
-│   │       ├── health.routes.ts
-│   │       └── health.validator.ts
+│   │   ├── health/
+│   │   │   ├── health.controller.ts
+│   │   │   ├── health.routes.ts
+│   │   │   └── health.validator.ts
+│   │   ├── rule/
+│   │   │   ├── rule.controller.ts
+│   │   │   ├── rule.routes.ts
+│   │   │   └── rule.validator.ts
+│   │   ├── types/
+│   │   │   ├── types.controller.ts
+│   │   │   └── types.routes.ts
+│   │   └── webhooks/
+│   │       └── webhook.controller.ts
+│   ├── auth/
+│   │   ├── auth.types.ts
+│   │   ├── client.app.auth.middleware.ts
+│   │   ├── client.app.cache.ts
+│   │   ├── context.handler.ts
+│   │   ├── role.cache.ts
+│   │   ├── role.permissions.cache.ts
+│   │   ├── user.authentication.middleware.ts
+│   │   └── user.authorization.middleware.ts
+│   ├── common/
+│   │   ├── cache/
+│   │   │   ├── cache.interface.ts
+│   │   │   └── cache.map.ts
+│   │   ├── dictionary.ts
+│   │   ├── error.handling/
+│   │   │   ├── app.error.ts
+│   │   │   ├── error.handler.ts
+│   │   │   ├── http.status.codes.ts
+│   │   │   └── input.validation.error.ts
+│   │   ├── handlers/
+│   │   │   ├── activity.recording.handler.ts
+│   │   │   └── response.handler.ts
+│   │   ├── helper.ts
+│   │   ├── miscellaneous/
+│   │   │   └── country.codes.ts
+│   │   └── utilities/
+│   │       ├── file.utils.ts
+│   │       ├── string.utils.ts
+│   │       ├── system.utils.ts
+│   │       ├── time.utils.ts
+│   │       └── type.utils.ts
+│   ├── config/
+│   │   ├── configuration.manager.ts
+│   │   └── configuration.types.ts
+│   ├── database/
+│   │   ├── database.config.ts
+│   │   ├── database.connector.ts
+│   │   ├── database.logger.ts
+│   │   ├── db.clients/
+│   │   │   ├── db.client.interface.ts
+│   │   │   ├── db.client.ts
+│   │   │   ├── mysql.client.ts
+│   │   │   └── postgresql.client.ts
+│   │   ├── mappers/
+│   │   │   ├── condition.mapper.ts
+│   │   │   └── rule.mapper.ts
+│   │   ├── models/
+│   │   │   ├── condition.model.ts
+│   │   │   ├── conversation.entity.ts
+│   │   │   ├── message.entity.ts
+│   │   │   ├── rule.model.ts
+│   │   │   └── tenant.entity.ts
+│   │   └── repositories/
+│   │       ├── base.repository.ts
+│   │       ├── conversation.repository.ts
+│   │       ├── message.repository.ts
+│   │       └── tenant.repository.ts
+│   ├── domain.types/
+│   │   ├── common.types.ts
+│   │   ├── condition.types.ts
+│   │   ├── miscellaneous/
+│   │   │   ├── base.search.types.ts
+│   │   │   ├── current.client.ts
+│   │   │   ├── current.user.ts
+│   │   │   ├── request.dto.ts
+│   │   │   ├── response.dto.ts
+│   │   │   ├── rule.node.operation.type.ts
+│   │   │   ├── system.types.ts
+│   │   │   └── time.types.ts
+│   │   ├── operator.types.ts
+│   │   ├── rule.domain.types.ts
+│   │   └── rule.types.ts
+│   ├── logger/
+│   │   ├── abstract.logger.ts
+│   │   ├── bunyan/
+│   │   │   ├── abstract.bunyan.logger.ts
+│   │   │   ├── bunyan.debug.logger.ts
+│   │   │   └── bunyan.prod.logger.ts
+│   │   ├── custom/
+│   │   │   ├── abstract.custom.logger.ts
+│   │   │   ├── custom.debug.logger.ts
+│   │   │   └── custom.prod.logger.ts
+│   │   ├── http.logger.ts
+│   │   ├── logger.interface.ts
+│   │   ├── logger.ts
+│   │   ├── pino/
+│   │   │   ├── abstract.pino.logger.ts
+│   │   │   ├── pino.debug.logger.ts
+│   │   │   └── pino.prod.logger.ts
+│   │   └── winston/
+│   │       ├── abstract.winston.logger.ts
+│   │       ├── winston.debug.logger.ts
+│   │       └── winston.prod.logger.ts
+│   ├── master.data/
+│   │   ├── intents.ts
+│   │   ├── navigation.permissions.ts
+│   │   ├── navigation.role.permissions.ts
+│   │   ├── role.permissions.ts
+│   │   └── roles.ts
 │   ├── modules/
 │   │   ├── channel/
 │   │   │   ├── channel.adapter.interface.ts
@@ -265,6 +393,7 @@ chatbot-service/
 │   │   │   └── channel.factory.ts
 │   │   ├── queue/
 │   │   │   ├── message.queue.interface.ts
+│   │   │   ├── message.processing.service.ts
 │   │   │   └── message.processing.queue.ts
 │   │   ├── transformation/
 │   │   │   ├── message.transformer.interface.ts
@@ -278,85 +407,128 @@ chatbot-service/
 │   │   ├── intent/
 │   │   │   ├── intent.recognizer.interface.ts
 │   │   │   └── intent.recognizer.service.ts
-│   │   └── handlers/
-│   │       ├── handler.interface.ts
-│   │       ├── consent.handler.ts
-│   │       ├── qna.handler.ts
-│   │       ├── assessment.handler.ts
-│   │       ├── workflow.handler.ts
-│   │       ├── reminder.handler.ts
-│   │       ├── task.handler.ts
-│   │       ├── intent.handler.ts
-│   │       ├── small-talk.handler.ts
-│   │       ├── feedback.handler.ts
-│   │       └── fallback.handler.ts
-│   ├── database/
-│   │   ├── entities/
-│   │   │   ├── conversation.entity.ts
-│   │   │   ├── message.entity.ts
-│   │   │   ├── intent.entity.ts
-│   │   │   └── conversation-context.entity.ts
-│   │   ├── repositories/
-│   │   │   ├── conversation.repo.interface.ts
-│   │   │   ├── conversation.repo.ts
-│   │   │   └── message.repo.ts
-│   │   └── connection.manager.ts
+│   │   ├── handlers/
+│   │   │   ├── handler.interface.ts
+│   │   │   ├── consent/
+│   │   │   │   ├── consent.handler.ts
+│   │   │   ├── qna/
+│   │   │   │   ├── qna.handler.ts
+│   │   │   │   └── rag.service.ts
+│   │   │   ├── assessment/
+│   │   │   │   ├── assessment.handler.ts
+│   │   │   ├── workflow/
+│   │   │   │   ├── workflow.handler.ts
+│   │   │   ├── reminder/
+│   │   │   │   ├── reminder.handler.ts
+│   │   │   ├── task/
+│   │   │   │   ├── task.handler.ts
+│   │   │   ├── intent/
+│   │   │   │   ├── intent.recognition.service.ts
+│   │   │   │   ├── intent.handler.ts
+│   │   │   ├── smalltalk/
+│   │   │   │   ├── smalltalk.handler.ts
+│   │   │   ├── feedback/
+│   │   │   │   ├── feedback.handler.ts
+│   │   │   ├── fallback/
+│   │   │   │   └── fallback.handler.ts
+│   │   ├── general/
+│   │   │   ├── email/
+│   │   │   │   ├── email.details.ts
+│   │   │   │   ├── email.service.interface.ts
+│   │   │   │   ├── email.service.ts
+│   │   │   │   └── providers/
+│   │   │   │       ├── sendgrid.email.service.ts
+│   │   │   │       └── smtp.email.service.ts
+│   │   │   ├── sms/
+│   │   │   │   ├── messaging.service.interface.ts
+│   │   │   │   ├── messaging.service.ts
+│   │   │   │   └── providers/
+│   │   │   │       ├── mock.messaging.service.ts
+│   │   │   │       └── twilio.messaging.service.ts
+│   │   │   └── storage/
+│   │   │       ├── interfaces/
+│   │   │       │   └── file.storage.service.interface.ts
+│   │   │       └── providers/
+│   │   │           ├── aws.s3.file.storage.service.ts
+│   │   │           └── custom.file.storage.service.ts
+│   │   └── module.injector.ts
 │   ├── services/
 │   │   ├── external/
-│   │   │   ├── gen-ai.service.interface.ts
-│   │   │   ├── llm.service.ts
-│   │   │   ├── assessment.service.ts
-│   │   │   └── workflow.service.ts
+│   │   │   ├── gen.ai.interface.service.ts //interface to llm-service
+│   │   │   ├── tenant.settings.interface.service.ts
+│   │   │   ├── healthcare.data.interface.service.ts
+│   │   │   ├── content.interface.service.ts
+│   │   │   ├── assessment.interface.service.ts
+│   │   │   └── workflow.interface.service.ts
 │   │   └── internal/
 │   │       ├── tenant.service.ts
 │   │       ├── message.service.ts
 │   │       ├── conversation.service.ts
 │   │       └── intent.service.ts
-│   ├── common/
-│   │   ├── types/
-│   │   │   ├── message.types.ts
-│   │   │   ├── intent.types.ts
-│   │   │   └── context.types.ts
-│   │   ├── error.handling/
-│   │       ├── app.error.ts
-│   │       └── error.handler.ts
 │   ├── startup/
-│   │   ├── middlewares/
-│   │   │   ├── tenant.middleware.ts
-│   │   │   └── error.middleware.ts
 │   │   ├── injector.ts
-│   │   ├── request.router.ts
+│   │   ├── middleware.handler.ts
+│   │   ├── middlewares/
+│   │   │   ├── error.handler.ts
+│   │   │   ├── not.found.handler.ts
+│   │   │   ├── rate.limit.middleware.ts
+│   │   │   ├── request.logger.ts
+│   │   │   └── tenant.middleware.ts
+│   │   ├── route.handler.ts
 │   │   ├── scheduler.ts
 │   │   ├── seeder.ts
-│   │   ├── test.data.seeder.ts
-│   │   ├── seeder.ts
-│   ├── logger/
-│   │   └── logger.ts
-│   │   └── telemetry/
-│   │       └── telemetry.service.ts
-│   ├── config/
-│   │   ├── database.config.ts
-│   │   ├── app.config.ts
-│   │   └── container.config.ts
-│   └── app.ts
+│   │   └── test.data.seeder.ts
+│   ├── telemetry/
+│   │   └── instrumenter.ts
+│   ├── app.ts
 │   └── index.ts
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── fixtures/
+├── assets/
+│   └── images/
+│       └── icons8-accounting-94.png
 ├── bruno/
-│   └── chatbot-api/
-│       ├── messages/
-│       └── health/
+│   └── readme.md
 ├── docs/
+│   ├── about/
+│   │   ├── quickstart.md
+│   │   ├── rest-api.md
+│   │   └── sdk.md
+│   ├── api/
+│   │   └── tenants.md
+│   ├── examples/
+│   │   ├── emergency-incident-handling.md
+│   │   └── vitals-triggered-assessment.md
+│   ├── migration/
+│   │   └── v2.0.md
+│   ├── other/
+│   │   └── roadmap.md
+│   ├── schema/
+│   │   └── schema.md
+│   ├── .nojekyll
+│   ├── _sidebar.md
 │   ├── index.html
-│   ├── README.md
-│   └── api/
-├── .env.example
-├── tsconfig.json
-├── jest.config.js
+│   └── README.md
+├── seed.data/
+│   ├── cron.schedules.json
+│   ├── default.users.seed.sample.json
+│   ├── internal.clients.seed.sample.json
+│   └── role.privileges.json
+├── .env.sample
+├── .eslintignore
+├── .eslintrc.json
+├── .gitattributes
+├── .gitignore
+├── .prettierrc
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── Dockerfile
+├── entrypoint.sh
+├── LICENSE
+├── package-lock.json
 ├── package.json
-└── README.md
+├── README.md
+├── service.config.json
+├── service.config.local.json
+└── tsconfig.json
 ```
 
 ## 7. Implementation Guidelines
@@ -503,22 +675,8 @@ QUEUE_PROCESS_INTERVAL=100
 
 ## 10. Deployment Considerations
 
-### 10.1 Docker Configuration
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["node", "dist/app.js"]
-```
-
-### 10.2 Health Checks
+### 10.1 Health Checks
 - Database connectivity
 - External service availability
 - Queue status
 - Memory usage
-
-This document provides the complete specification for building the chatbot REST API service. Follow the coding guidelines provided in the original document for implementation details.

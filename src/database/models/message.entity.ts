@@ -1,37 +1,84 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import "reflect-metadata";
+import {
+    Column,
+    Entity,
+    PrimaryColumn,
+    CreateDateColumn,
+    ManyToOne,
+    JoinColumn,
+} from 'typeorm';
+import { Conversation } from './conversation.entity';
 
-@Entity('messages')
-export class MessageEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+////////////////////////////////////////////////////////////////////////
 
-  @Column()
-  externalId!: string;
+export enum MessageDirection {
+    Inbound = 'inbound',
+    Outbound = 'outbound'
+}
 
-  @Column()
-  channel!: string;
+export interface MessageContent {
+    text?: string;
+    attachments?: any[];
+    [key: string]: any;
+}
 
-  @Column()
-  from!: string;
+export interface MessageMetadata {
+    [key: string]: any;
+}
 
-  @Column()
-  to!: string;
+export interface ProcessedMessageContent {
+    intent?: string;
+    entities?: any[];
+    confidence?: number;
+    [key: string]: any;
+}
 
-  @Column()
-  type!: 'text' | 'image' | 'audio' | 'video' | 'document' | 'location' | 'button_reply';
+////////////////////////////////////////////////////////////////////////
 
-  @Column({ type: 'jsonb' })
-  content!: Record<string, any>;
+@Entity({ name: 'messages' })
+export class Message {
 
-  @Column({ type: 'jsonb', nullable: true })
-  metadata?: Record<string, any>;
+    @PrimaryColumn('uuid')
+    id!: string;
 
-  @Column({ default: 'received' })
-  status!: 'received' | 'processing' | 'processed' | 'failed';
+    @Column({ type: 'uuid', nullable: false })
+    ConversationId!: string;
 
-  @Column({ nullable: true })
-  conversationId?: string;
+    @Column({ type: 'uuid', nullable: false })
+    UserId!: string;
 
-  @CreateDateColumn()
-  timestamp!: Date;
+    @Column({ type: 'varchar', length: 64, nullable: false })
+    Channel!: string;
+
+    @Column({ type: 'varchar', length: 128, nullable: true })
+    ChannelMessageId?: string;
+
+    @Column({ type: 'varchar', length: 128, nullable: true })
+    ReferenceChannelMessageId?: string;
+
+    @Column({ type: 'varchar', length: 64, nullable: false })
+    MessageType!: string;
+
+    @Column({ type: 'enum', enum: MessageDirection, nullable: false })
+    Direction!: MessageDirection;
+
+    @Column({ type: 'json', nullable: false })
+    Content!: MessageContent;
+
+    @Column({ type: 'json', nullable: true })
+    Metadata?: MessageMetadata;
+
+    @Column({ type: 'json', nullable: true })
+    ProcessedContent?: ProcessedMessageContent;
+
+    @Column({ type: 'varchar', length: 64, nullable: false })
+    Status!: string;
+
+    @CreateDateColumn()
+    CreatedAt!: Date;
+
+    @ManyToOne(() => Conversation, conversation => conversation.messages)
+    @JoinColumn({ name: 'ConversationId' })
+    conversation?: Conversation;
+
 }

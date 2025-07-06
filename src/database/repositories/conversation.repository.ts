@@ -1,6 +1,6 @@
 import { injectable, inject } from 'tsyringe';
 import { BaseTenantRepository } from './base.repository';
-import { ConversationEntity } from '../../database/models/conversation.entity';
+import { ConversationEntity } from '../models/conversation.model';
 
 @injectable()
 export class ConversationRepository extends BaseTenantRepository<ConversationEntity> {

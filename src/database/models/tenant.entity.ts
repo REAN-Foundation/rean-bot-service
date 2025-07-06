@@ -1,29 +1,27 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryColumn } from 'typeorm';
 
 @Entity('tenants')
-export class TenantEntity {
-  @PrimaryGeneratedColumn('uuid')
+export class Tenant {
+
+  @PrimaryColumn('uuid')
   id!: string;
 
-  @Column({ unique: true })
-  name!: string;
+  @Column({ nullable: false })
+  Name!: string;
 
-  @Column({ type: 'jsonb' })
-  configuration!: {
-    webhookTokens: Record<string, string>;
-    features: string[];
-    limits: {
-      messagesPerDay: number;
-      apiCallsPerHour: number;
-    };
-  };
+  @Column({ nullable: false })
+  Code!: string;
 
-  @Column({ default: true })
-  isActive!: boolean;
+  @Column({ nullable: false })
+  Description!: string;
+
+  @Column({ nullable: false, default: true })
+  IsActive!: boolean;
 
   @CreateDateColumn()
-  createdAt!: Date;
+  CreatedAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  UpdatedAt!: Date;
+
 }

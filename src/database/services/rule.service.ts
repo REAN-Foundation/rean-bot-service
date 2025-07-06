@@ -1,5 +1,5 @@
-import { Rule } from '../models/rule.model';
-import { Condition } from '../models/condition.model';
+import { Rule } from '../models/rule.entity';
+import { Condition } from '../models/condition.entity';
 import { logger } from '../../logger/logger';
 import { ErrorHandler } from '../../common/error.handling/error.handler';
 import { Source } from '../database.connector';

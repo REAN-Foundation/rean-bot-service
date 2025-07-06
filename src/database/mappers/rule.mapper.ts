@@ -1,4 +1,4 @@
-import { Rule } from '../models/rule.model';
+import { Rule } from '../models/rule.entity';
 import {
     RuleResponseDto
 } from '../../domain.types/rule.domain.types';

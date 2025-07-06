@@ -1,33 +1,39 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import "reflect-metadata";
+import {
+    Column,
+    Entity,
+    PrimaryColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+    OneToMany,
+} from 'typeorm';
+import { Message } from './message.entity';
+import { ConversationContext as ConversationContextEntity } from './conversation.context.entity';
 
-@Entity('conversations')
-export class ConversationEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+////////////////////////////////////////////////////////////////////////
 
-  @Column()
-  userId!: string;
+@Entity({ name: 'conversations' })
+export class Conversation {
 
-  @Column()
-  channel!: string;
+    @PrimaryColumn('uuid')
+    id!: string;
 
-  @Column({ type: 'jsonb' })
-  context!: {
-    entities: Record<string, any>;
-    intent: string | null;
-    history: Array<{
-      message: string;
-      response: string;
-      timestamp: Date;
-    }>;
-  };
+    @Column({ type: 'varchar', length: 255, nullable: false })
+    UserId!: string;
 
-  @Column({ default: 'active' })
-  status!: 'active' | 'closed' | 'transferred';
+    @Column({ type: 'varchar', length: 50, nullable: false })
+    Channel!: string;
 
-  @CreateDateColumn()
-  startedAt!: Date;
+    @Column({ type: 'varchar', length: 50, nullable: false, default: 'active' })
+    Status!: string;
 
-  @UpdateDateColumn()
-  lastActivity!: Date;
+    @CreateDateColumn()
+    CreatedAt!: Date;
+
+    @UpdateDateColumn()
+    UpdatedAt!: Date;
+
+    @OneToMany(() => Message, message => message.conversation)
+    messages?: Message[];
+
 }
