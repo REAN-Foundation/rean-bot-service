@@ -1,12 +1,12 @@
 import "reflect-metadata";
 import express from 'express';
-import { RouteHandler } from './startup/route.handler';
+import { RequestRouter } from './startup/request.router';
 import { logger } from './logger/logger';
 import { Scheduler } from './startup/scheduler';
 import { Seeder } from './startup/seeder';
 import { DatabaseConnector } from "./database/database.connector";
 import { Injector } from "./startup/injector";
-import { MiddlewareHandler } from "./startup/middleware.handler";
+import { MiddlewareHandler } from "./startup/middlewares/middleware.handler";
 import { notFoundHandler } from "./startup/middlewares/not.found.handler";
 import { errorHandler } from "./startup/middlewares/error.handler";
 
@@ -48,7 +48,7 @@ export default class Application {
         await Injector.registerInjections();
         await DatabaseConnector.setup();
         await MiddlewareHandler.setup(this.app());
-        await RouteHandler.setup(this.app());
+        await RequestRouter.setup(this.app());
         await this.initializeErrorHandlerMiddlewares();
         await Seeder.seed();
         await Scheduler.instance().schedule();

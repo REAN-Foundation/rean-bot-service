@@ -3,11 +3,11 @@ import express from "express";
 import helmet from 'helmet';
 import compression from 'compression';
 import cors from 'cors';
-import { HttpLogger } from "../logger/http.logger";
-import { logger } from "../logger/logger";
+import { HttpLogger } from "../../logger/http.logger";
+import { logger } from "../../logger/logger";
 import path from "path";
 import morgan from "morgan";
-import { requestLogger } from "./middlewares/request.logger";
+import { requestLogger } from "./request.logger";
 
 ////////////////////////////////////////////////////////////////////////////////////
 

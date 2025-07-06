@@ -7,7 +7,7 @@ import path from "path";
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-export class RouteHandler {
+export class RequestRouter {
 
     public static setup = async (expressApp: express.Application): Promise<boolean> => {
         return new Promise((resolve, reject) => {
