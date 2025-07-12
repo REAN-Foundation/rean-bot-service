@@ -1,9 +1,10 @@
 import {
     MessageContent,
-    MessageType,
     MessageMetadata
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
+
+/////////////////////////////////////////////////////////////////////////////
 
 export interface WhatsAppWebhookMessage {
     id: string;

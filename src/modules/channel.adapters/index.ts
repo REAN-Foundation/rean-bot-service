@@ -22,39 +22,46 @@ export { WebhookValidators } from './webhook.validators';
 // Types and Interfaces
 export type {
     WhatsAppConfig,
+} from './whatsapp.adapter';
+export type {
     WhatsAppWebhookMessage,
     WhatsAppOutgoingMessage
-} from './whatsapp.adapter';
+} from './transformers/whatsapp.message.transformer';
 
 export type {
     TelegramConfig,
+} from './telegram.adapter';
+export type {
     TelegramMessage,
     TelegramOutgoingMessage
-} from './telegram.adapter';
+} from './transformers/telegram.message.transformer';
 
 export type {
     SlackConfig,
+} from './slack.adapter';
+export type {
     SlackMessage,
     SlackOutgoingMessage
-} from './slack.adapter';
+} from './transformers/slack.message.transformer';
 
 export type {
     SignalConfig,
+} from './signal.adapter';
+export type {
     SignalMessage,
     SignalOutgoingMessage
-} from './signal.adapter';
+} from './transformers/signal.message.transformer';
 
 export type {
     WebChatConfig,
-    WebChatMessage,
-    WebChatOutgoingMessage,
+} from './web.adapter';
+export type {
     WebChatUser,
     WebChatSession,
     WebChatEvent,
     WebChatTypingIndicator,
-    WebChatDeliveryReceipt,
-    WebChatConnection
-} from './web.adapter';
+    WebChatDeliveryReceipt
+} from './transformers/web.message.transformer';
 
 export type {
     ChannelConfiguration,
@@ -81,7 +88,7 @@ export const SUPPORTED_CHANNEL_TYPES = [
 ] as const;
 
 export const CHANNEL_FEATURES = {
-    whatsapp: [
+    whatsapp : [
         'text_messages',
         'media_messages',
         'interactive_messages',
@@ -94,7 +101,7 @@ export const CHANNEL_FEATURES = {
         'message_reactions',
         'quoted_replies'
     ],
-    telegram: [
+    telegram : [
         'text_messages',
         'media_messages',
         'inline_keyboards',
@@ -108,7 +115,7 @@ export const CHANNEL_FEATURES = {
         'group_management',
         'channel_management'
     ],
-    slack: [
+    slack : [
         'text_messages',
         'media_messages',
         'interactive_messages',
@@ -125,7 +132,7 @@ export const CHANNEL_FEATURES = {
         'modals',
         'shortcuts'
     ],
-    signal: [
+    signal : [
         'text_messages',
         'media_messages',
         'contact_sharing',
@@ -141,7 +148,7 @@ export const CHANNEL_FEATURES = {
         'group_messaging',
         'end_to_end_encryption'
     ],
-    web: [
+    web : [
         'text_messages',
         'media_messages',
         'interactive_messages',
@@ -164,72 +171,72 @@ export const CHANNEL_FEATURES = {
 } as const;
 
 export const MESSAGE_TYPE_MAPPINGS = {
-    whatsapp: {
-        text: 'text',
-        image: 'image',
-        audio: 'audio',
-        video: 'video',
-        document: 'document',
-        location: 'location',
-        contacts: 'contacts',
-        interactive: 'interactive',
-        button: 'button',
-        template: 'template'
+    whatsapp : {
+        text        : 'text',
+        image       : 'image',
+        audio       : 'audio',
+        video       : 'video',
+        document    : 'document',
+        location    : 'location',
+        contacts    : 'contacts',
+        interactive : 'interactive',
+        button      : 'button',
+        template    : 'template'
     },
-    telegram: {
-        text: 'text',
-        photo: 'image',
-        audio: 'audio',
-        voice: 'audio',
-        video: 'video',
-        video_note: 'video',
-        document: 'document',
-        location: 'location',
-        contact: 'contact',
-        sticker: 'sticker',
-        animation: 'animation',
-        poll: 'poll'
+    telegram : {
+        text       : 'text',
+        photo      : 'image',
+        audio      : 'audio',
+        voice      : 'audio',
+        video      : 'video',
+        video_note : 'video',
+        document   : 'document',
+        location   : 'location',
+        contact    : 'contact',
+        sticker    : 'sticker',
+        animation  : 'animation',
+        poll       : 'poll'
     },
-    slack: {
-        message: 'text',
-        file_share: 'file',
-        app_mention: 'mention',
-        channel_join: 'system',
-        channel_leave: 'system',
-        channel_topic: 'system',
-        channel_purpose: 'system',
-        channel_name: 'system',
-        file_comment: 'comment',
-        reaction_added: 'reaction',
-        reaction_removed: 'reaction'
+    slack : {
+        message          : 'text',
+        file_share       : 'file',
+        app_mention      : 'mention',
+        channel_join     : 'system',
+        channel_leave    : 'system',
+        channel_topic    : 'system',
+        channel_purpose  : 'system',
+        channel_name     : 'system',
+        file_comment     : 'comment',
+        reaction_added   : 'reaction',
+        reaction_removed : 'reaction'
     },
-    signal: {
-        text: 'text',
-        image: 'image',
-        audio: 'audio',
-        video: 'video',
-        document: 'document',
-        contact: 'contact',
-        sticker: 'sticker',
-        reaction: 'reaction',
-        remote_delete: 'deletion',
-        group_update: 'system'
+    signal : {
+        text          : 'text',
+        image         : 'image',
+        audio         : 'audio',
+        video         : 'video',
+        document      : 'document',
+        contact       : 'contact',
+        sticker       : 'sticker',
+        reaction      : 'reaction',
+        remote_delete : 'deletion',
+        group_update  : 'system'
     },
-    web: {
-        text: 'text',
-        media: 'media',
-        image: 'image',
-        audio: 'audio',
-        video: 'video',
-        document: 'document',
-        location: 'location',
-        contact: 'contact',
-        interactive: 'interactive',
-        typing: 'typing',
-        system: 'system',
-        file_upload: 'file',
-        delivery_receipt: 'receipt',
-        read_receipt: 'receipt',
-        presence: 'presence'
+    web : {
+        text             : 'text',
+        media            : 'media',
+        image            : 'image',
+        audio            : 'audio',
+        video            : 'video',
+        document         : 'document',
+        location         : 'location',
+        contact          : 'contact',
+        interactive      : 'interactive',
+        typing           : 'typing',
+        system           : 'system',
+        file_upload      : 'file',
+        delivery_receipt : 'receipt',
+        read_receipt     : 'receipt',
+        presence         : 'presence'
     }
 } as const;

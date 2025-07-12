@@ -58,9 +58,13 @@ export interface SignalApiResponse {
 export class SignalAdapter implements IChannelAdapter {
 
     private config: SignalConfig | null = null;
+
     private transformer: SignalMessageTransformer;
+
     private isInitialized = false;
+
     private lastHealthCheck = new Date();
+
     private healthStatus: 'healthy' | 'degraded' | 'unhealthy' = 'unhealthy';
 
     constructor() {
@@ -84,15 +88,11 @@ export class SignalAdapter implements IChannelAdapter {
             this.healthStatus = 'healthy';
             this.lastHealthCheck = new Date();
 
-            logger.info('Signal adapter initialized successfully', {
-                phoneNumber: this.config.phoneNumber,
-                deviceId: this.config.deviceId,
-                apiUrl: this.config.apiUrl
-            });
+            logger.info(`Signal adapter initialized successfully: ${this.config.phoneNumber} ${this.config.deviceId} ${this.config.apiUrl}`);
 
         } catch (error) {
             this.healthStatus = 'unhealthy';
-            logger.error('Failed to initialize Signal adapter', { error });
+            logger.error(`Failed to initialize Signal adapter: ${error}`);
             throw new Error(`Signal adapter initialization failed: ${error}`);
         }
     }
@@ -118,25 +118,21 @@ export class SignalAdapter implements IChannelAdapter {
             }
 
             return {
-                messageId: response.timestamp?.toString() || Date.now().toString(),
-                status: 'sent',
-                timestamp: new Date(),
-                platformResponse: response
+                messageId        : response.timestamp?.toString() || Date.now().toString(),
+                status           : 'sent',
+                timestamp        : new Date(),
+                platformResponse : response
             };
 
         } catch (error) {
-            logger.error('Failed to send Signal message', {
-                channelUserId,
-                error: error.message,
-                content
-            });
+            logger.error(`Failed to send Signal message: ${channelUserId} ${error.message} ${content}`);
 
             return {
-                messageId: metadata?.messageId || '',
-                status: 'failed',
-                timestamp: new Date(),
-                error: error.message,
-                platformResponse: error.response?.data
+                messageId        : metadata?.messageId || '',
+                status           : 'failed',
+                timestamp        : new Date(),
+                error            : error.message,
+                platformResponse : error.response?.data
             };
         }
     }
@@ -148,7 +144,7 @@ export class SignalAdapter implements IChannelAdapter {
         try {
             // Validate webhook signature if secret is configured
             if (this.config?.webhookSecret && !this.validateWebhookSignature(payload, headers)) {
-                logger.warn('Invalid Signal webhook signature');
+                logger.warn(`Invalid Signal webhook signature: ${payload} ${headers}`);
                 return { messages: [], isValid: false };
             }
 
@@ -156,22 +152,18 @@ export class SignalAdapter implements IChannelAdapter {
 
             // Validate payload structure
             if (!this.isValidSignalPayload(webhookPayload)) {
-                logger.warn('Invalid Signal webhook payload structure');
+                logger.warn(`Invalid Signal webhook payload structure: ${webhookPayload}`);
                 return { messages: [], isValid: false };
             }
 
             const messages = this.extractMessagesFromWebhook(webhookPayload);
 
-            logger.info('Processed Signal webhook', {
-                messagesCount: messages.length,
-                source: webhookPayload.envelope.source,
-                timestamp: webhookPayload.envelope.timestamp
-            });
+            logger.info(`Processed Signal webhook: ${messages.length} ${webhookPayload.envelope.source} ${webhookPayload.envelope.timestamp}`);
 
             return { messages, isValid: true };
 
         } catch (error) {
-            logger.error('Error processing Signal webhook', { error: error.message });
+            logger.error(`Error processing Signal webhook: ${error.message}`);
             return { messages: [], isValid: false };
         }
     }
@@ -242,9 +234,9 @@ export class SignalAdapter implements IChannelAdapter {
     }> {
         if (!this.isInitialized) {
             return {
-                status: 'unhealthy',
-                lastCheck: new Date(),
-                details: 'Adapter not initialized'
+                status    : 'unhealthy',
+                lastCheck : new Date(),
+                details   : 'Adapter not initialized'
             };
         }
 
@@ -260,8 +252,8 @@ export class SignalAdapter implements IChannelAdapter {
             this.lastHealthCheck = new Date();
 
             return {
-                status: this.healthStatus,
-                lastCheck: this.lastHealthCheck
+                status    : this.healthStatus,
+                lastCheck : this.lastHealthCheck
             };
 
         } catch (error) {
@@ -269,9 +261,9 @@ export class SignalAdapter implements IChannelAdapter {
             this.lastHealthCheck = new Date();
 
             return {
-                status: this.healthStatus,
-                lastCheck: this.lastHealthCheck,
-                details: `Health check failed: ${error.message}`
+                status    : this.healthStatus,
+                lastCheck : this.lastHealthCheck,
+                details   : `Health check failed: ${error.message}`
             };
         }
     }
@@ -295,10 +287,10 @@ export class SignalAdapter implements IChannelAdapter {
     } {
         const transformed = this.transformer.parseIncomingMessage(rawMessage);
         return {
-            userId: transformed.userId,
-            content: transformed.content,
-            metadata: transformed.metadata,
-            timestamp: transformed.timestamp
+            userId    : transformed.userId,
+            content   : transformed.content,
+            metadata  : transformed.metadata,
+            timestamp : transformed.timestamp
         };
     }
 
@@ -351,8 +343,8 @@ export class SignalAdapter implements IChannelAdapter {
         const url = `${this.config!.apiUrl}${endpoint}`;
 
         const options = {
-            headers: {
-                'Content-Type': 'application/json'
+            headers : {
+                'Content-Type' : 'application/json'
             } as Record<string, string>
         };
 
@@ -377,28 +369,24 @@ export class SignalAdapter implements IChannelAdapter {
             // Handle different response formats
             if (response.body && typeof response.body === 'object') {
                 return {
-                    success: true,
-                    data: response.body,
-                    timestamp: Date.now()
+                    success   : true,
+                    data      : response.body,
+                    timestamp : Date.now()
                 };
             }
 
             return {
-                success: true,
-                data: response.body,
-                timestamp: Date.now()
+                success   : true,
+                data      : response.body,
+                timestamp : Date.now()
             };
 
         } catch (error) {
-            logger.error('Signal API call failed', {
-                method,
-                endpoint,
-                error: error.message
-            });
+            logger.error(`Signal API call failed: ${method} ${endpoint} ${error.message}`);
 
             return {
-                success: false,
-                error: error.message
+                success : false,
+                error   : error.message
             };
         }
     }
@@ -411,20 +399,20 @@ export class SignalAdapter implements IChannelAdapter {
         const recipientNumber = recipient.includes(':') ? recipient.split(':')[1] : recipient;
 
         const payload = {
-            number: this.config!.phoneNumber,
-            recipients: [recipientNumber],
-            message: message.message,
-            attachments: message.attachments,
-            quote: message.quote,
-            contacts: message.contacts,
-            sticker: message.sticker,
-            reaction: message.reaction,
-            remoteDelete: message.remoteDelete,
-            mentions: message.mentions,
-            bodyRanges: message.bodyRanges,
-            preview: message.preview,
-            isViewOnce: message.isViewOnce,
-            expireTimer: message.expireTimer
+            number       : this.config!.phoneNumber,
+            recipients   : [recipientNumber],
+            message      : message.message,
+            attachments  : message.attachments,
+            quote        : message.quote,
+            contacts     : message.contacts,
+            sticker      : message.sticker,
+            reaction     : message.reaction,
+            remoteDelete : message.remoteDelete,
+            mentions     : message.mentions,
+            bodyRanges   : message.bodyRanges,
+            preview      : message.preview,
+            isViewOnce   : message.isViewOnce,
+            expireTimer  : message.expireTimer
         };
 
         return this.makeApiCall('POST', '/v2/send', payload);
@@ -464,12 +452,12 @@ export class SignalAdapter implements IChannelAdapter {
         try {
             // Create a Signal message from the envelope
             const signalMessage: SignalMessage = {
-                timestamp: envelope.timestamp,
-                source: envelope.source,
-                sourceUuid: envelope.sourceUuid,
-                sourceDevice: envelope.sourceDevice,
-                dataMessage: envelope.dataMessage,
-                isIncoming: true
+                timestamp    : envelope.timestamp,
+                source       : envelope.source,
+                sourceUuid   : envelope.sourceUuid,
+                sourceDevice : envelope.sourceDevice,
+                dataMessage  : envelope.dataMessage,
+                isIncoming   : true
             };
 
             // Add message content from dataMessage if present
@@ -491,17 +479,13 @@ export class SignalAdapter implements IChannelAdapter {
             const transformed = this.transformer.parseIncomingMessage(signalMessage);
             messages.push({
                 ...transformed,
-                account: payload.account,
-                sourceDevice: envelope.sourceDevice,
-                messageType: 'message'
+                account      : payload.account,
+                sourceDevice : envelope.sourceDevice,
+                messageType  : 'message'
             });
 
         } catch (error) {
-            logger.warn('Failed to transform Signal message', {
-                timestamp: envelope.timestamp,
-                source: envelope.source,
-                error: error.message
-            });
+            logger.warn(`Failed to transform Signal message: ${envelope.timestamp} ${envelope.source} ${error.message}`);
         }
 
         return messages;
@@ -523,13 +507,13 @@ export class SignalAdapter implements IChannelAdapter {
     ): Promise<boolean> {
         try {
             const payload = {
-                number: this.config!.phoneNumber,
-                recipients: [recipient],
-                reaction: {
+                number     : this.config!.phoneNumber,
+                recipients : [recipient],
+                reaction   : {
                     emoji,
                     remove,
                     targetAuthor,
-                    targetSentTimestamp: targetTimestamp
+                    targetSentTimestamp : targetTimestamp
                 }
             };
 
@@ -537,7 +521,7 @@ export class SignalAdapter implements IChannelAdapter {
             return response.success;
 
         } catch (error) {
-            logger.error('Failed to send Signal reaction', { error, recipient, emoji });
+            logger.error(`Failed to send Signal reaction: ${error.message} ${recipient} ${emoji}`);
             return false;
         }
     }
@@ -548,10 +532,10 @@ export class SignalAdapter implements IChannelAdapter {
     async deleteMessage(recipient: string, targetTimestamp: number): Promise<boolean> {
         try {
             const payload = {
-                number: this.config!.phoneNumber,
-                recipients: [recipient],
-                remoteDelete: {
-                    targetSentTimestamp: targetTimestamp
+                number       : this.config!.phoneNumber,
+                recipients   : [recipient],
+                remoteDelete : {
+                    targetSentTimestamp : targetTimestamp
                 }
             };
 
@@ -559,7 +543,7 @@ export class SignalAdapter implements IChannelAdapter {
             return response.success;
 
         } catch (error) {
-            logger.error('Failed to delete Signal message', { error, recipient, targetTimestamp });
+            logger.error(`Failed to delete Signal message: ${error.message} ${recipient} ${targetTimestamp}`);
             return false;
         }
     }
@@ -570,7 +554,7 @@ export class SignalAdapter implements IChannelAdapter {
     async sendTypingIndicator(recipient: string, typing = true): Promise<boolean> {
         try {
             const payload = {
-                number: this.config!.phoneNumber,
+                number : this.config!.phoneNumber,
                 recipient,
                 typing
             };
@@ -579,7 +563,7 @@ export class SignalAdapter implements IChannelAdapter {
             return response.success;
 
         } catch (error) {
-            logger.error('Failed to send typing indicator', { error, recipient });
+            logger.error(`Failed to send typing indicator: ${error.message} ${recipient}`);
             return false;
         }
     }
@@ -593,7 +577,7 @@ export class SignalAdapter implements IChannelAdapter {
             return response.success ? response.data : null;
 
         } catch (error) {
-            logger.error('Failed to get Signal profile', { error, number });
+            logger.error(`Failed to get Signal profile: ${error.message} ${number}`);
             return null;
         }
     }
@@ -604,7 +588,7 @@ export class SignalAdapter implements IChannelAdapter {
     async joinGroup(groupId: string): Promise<boolean> {
         try {
             const payload = {
-                number: this.config!.phoneNumber,
+                number : this.config!.phoneNumber,
                 groupId
             };
 
@@ -612,7 +596,7 @@ export class SignalAdapter implements IChannelAdapter {
             return response.success;
 
         } catch (error) {
-            logger.error('Failed to join Signal group', { error, groupId });
+            logger.error(`Failed to join Signal group: ${error.message} ${groupId}`);
             return false;
         }
     }
@@ -623,7 +607,7 @@ export class SignalAdapter implements IChannelAdapter {
     async leaveGroup(groupId: string): Promise<boolean> {
         try {
             const payload = {
-                number: this.config!.phoneNumber,
+                number : this.config!.phoneNumber,
                 groupId
             };
 
@@ -631,7 +615,7 @@ export class SignalAdapter implements IChannelAdapter {
             return response.success;
 
         } catch (error) {
-            logger.error('Failed to leave Signal group', { error, groupId });
+            logger.error(`Failed to leave Signal group: ${error.message} ${groupId}`);
             return false;
         }
     }

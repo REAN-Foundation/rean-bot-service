@@ -29,18 +29,22 @@ export interface ChannelFactoryOptions {
 export class ChannelFactory {
 
     private static instance: ChannelFactory;
+
     private adapters: Map<string, IChannelAdapter> = new Map();
+
     private configurations: Map<string, ChannelConfiguration> = new Map();
+
     private healthCheckInterval?: NodeJS.Timeout;
+
     private options: ChannelFactoryOptions;
 
     private constructor(options: ChannelFactoryOptions = {}) {
         this.options = {
-            enableHealthChecks: true,
-            healthCheckInterval: 60000, // 1 minute
-            maxRetries: 3,
-            retryDelay: 1000,
-            shutdownTimeout: 30000,
+            enableHealthChecks  : true,
+            healthCheckInterval : 60000, // 1 minute
+            maxRetries          : 3,
+            retryDelay          : 1000,
+            shutdownTimeout     : 30000,
             ...options
         };
 
@@ -83,8 +87,8 @@ export class ChannelFactory {
 
         // Check if adapter already exists
         if (this.adapters.has(adapterKey)) {
-            logger.warn('Channel adapter already exists', { channelType, tenantId });
-            return this.adapters.get(adapterKey)!;
+            logger.warn(`Channel adapter already exists: ${channelType} - ${tenantId}`);
+            return this.adapters?.get(adapterKey) as IChannelAdapter;
         }
 
         try {
@@ -99,27 +103,19 @@ export class ChannelFactory {
             this.configurations.set(adapterKey, {
                 channelType,
                 tenantId,
-                isActive: true,
+                isActive  : true,
                 config,
                 metadata,
-                createdAt: new Date(),
-                updatedAt: new Date()
+                createdAt : new Date(),
+                updatedAt : new Date()
             });
 
-            logger.info('Channel adapter created successfully', {
-                channelType,
-                tenantId,
-                adapterKey
-            });
+            logger.info(`Channel adapter created successfully: ${channelType} - ${tenantId}`);
 
             return adapter;
 
         } catch (error) {
-            logger.error('Failed to create channel adapter', {
-                channelType,
-                tenantId,
-                error: error.message
-            });
+            logger.error(`Failed to create channel adapter: ${channelType} - ${tenantId} ${error.message}`);
             throw new Error(`Failed to create ${channelType} adapter: ${error.message}`);
         }
     }
@@ -145,7 +141,7 @@ export class ChannelFactory {
         const configuration = this.configurations.get(adapterKey);
 
         if (!adapter || !configuration) {
-            logger.warn('Adapter not found for config update', { channelType, tenantId });
+            logger.warn(`Adapter not found for config update: ${channelType} - ${tenantId}`);
             return false;
         }
 
@@ -161,19 +157,15 @@ export class ChannelFactory {
             this.adapters.set(adapterKey, newAdapter);
             this.configurations.set(adapterKey, {
                 ...configuration,
-                config: newConfig,
-                updatedAt: new Date()
+                config    : newConfig,
+                updatedAt : new Date()
             });
 
-            logger.info('Adapter configuration updated', { channelType, tenantId });
+            logger.info(`Adapter configuration updated: ${channelType} - ${tenantId}`);
             return true;
 
         } catch (error) {
-            logger.error('Failed to update adapter configuration', {
-                channelType,
-                tenantId,
-                error: error.message
-            });
+            logger.error(`Failed to update adapter configuration: ${channelType} - ${tenantId} ${error.message}`);
             return false;
         }
     }
@@ -186,7 +178,7 @@ export class ChannelFactory {
         const adapter = this.adapters.get(adapterKey);
 
         if (!adapter) {
-            logger.warn('Adapter not found for removal', { channelType, tenantId });
+            logger.warn(`Adapter not found for removal: ${channelType} - ${tenantId}`);
             return false;
         }
 
@@ -195,15 +187,11 @@ export class ChannelFactory {
             this.adapters.delete(adapterKey);
             this.configurations.delete(adapterKey);
 
-            logger.info('Adapter removed successfully', { channelType, tenantId });
+            logger.info(`Adapter removed successfully: ${channelType} - ${tenantId}`);
             return true;
 
         } catch (error) {
-            logger.error('Failed to remove adapter', {
-                channelType,
-                tenantId,
-                error: error.message
-            });
+            logger.error(`Failed to remove adapter: ${channelType} - ${tenantId} ${error.message}`);
             return false;
         }
     }
@@ -224,10 +212,10 @@ export class ChannelFactory {
             const configuration = this.configurations.get(adapterKey);
             if (configuration) {
                 adapters.push({
-                    channelType: configuration.channelType,
-                    tenantId: configuration.tenantId,
-                    isActive: adapter.isActive(),
-                    isHealthy: this.isAdapterHealthy(adapter),
+                    channelType : configuration.channelType,
+                    tenantId    : configuration.tenantId,
+                    isActive    : adapter.isActive(),
+                    isHealthy   : this.isAdapterHealthy(adapter),
                     configuration
                 });
             }
@@ -271,14 +259,14 @@ export class ChannelFactory {
         try {
             const adapter = this.instantiateAdapter(channelType);
             return {
-                supportedMessageTypes: adapter.getSupportedMessageTypes(),
-                supportedFeatures: this.getChannelFeatures(channelType)
+                supportedMessageTypes : adapter.getSupportedMessageTypes(),
+                supportedFeatures     : this.getChannelFeatures(channelType)
             };
         } catch (error) {
-            logger.warn('Failed to get channel capabilities', { channelType, error });
+            logger.warn(`Failed to get channel capabilities: ${channelType}, { error }`);
             return {
-                supportedMessageTypes: [],
-                supportedFeatures: []
+                supportedMessageTypes : [],
+                supportedFeatures     : []
             };
         }
     }
@@ -315,9 +303,7 @@ export class ChannelFactory {
             await this.performHealthChecks();
         }, this.options.healthCheckInterval);
 
-        logger.info('Health checks started', {
-            interval: this.options.healthCheckInterval
-        });
+        logger.info(`Health checks started: ${this.options.healthCheckInterval}ms`);
     }
 
     private async performHealthChecks(): Promise<void> {
@@ -337,10 +323,10 @@ export class ChannelFactory {
                 const healthStatus = await adapter.getHealthStatus();
                 healthStatuses.push({
                     adapterKey,
-                    channelType: configuration.channelType,
-                    tenantId: configuration.tenantId,
-                    status: healthStatus.status,
-                    details: healthStatus.details
+                    channelType : configuration.channelType,
+                    tenantId    : configuration.tenantId,
+                    status      : healthStatus.status,
+                    details     : healthStatus.details
                 });
 
                 // Mark configuration as inactive if unhealthy
@@ -350,19 +336,14 @@ export class ChannelFactory {
                 }
 
             } catch (error) {
-                logger.error('Health check failed', {
-                    adapterKey,
-                    channelType: configuration.channelType,
-                    tenantId: configuration.tenantId,
-                    error: error.message
-                });
+                logger.error(`Health check failed: ${adapterKey}-${configuration.channelType}-${configuration.tenantId}, ${error.message}`);
 
                 healthStatuses.push({
                     adapterKey,
-                    channelType: configuration.channelType,
-                    tenantId: configuration.tenantId,
-                    status: 'unhealthy',
-                    details: error.message
+                    channelType : configuration.channelType,
+                    tenantId    : configuration.tenantId,
+                    status      : 'unhealthy',
+                    details     : error.message
                 });
             }
         }
@@ -371,16 +352,10 @@ export class ChannelFactory {
         const healthySummary = healthStatuses.filter(h => h.status === 'healthy').length;
         const unhealthySummary = healthStatuses.filter(h => h.status === 'unhealthy').length;
 
-        logger.info('Health check completed', {
-            totalAdapters: healthStatuses.length,
-            healthy: healthySummary,
-            unhealthy: unhealthySummary
-        });
+        logger.info(`Health check completed: ${healthStatuses.length} adapters, ${healthySummary} healthy, ${unhealthySummary} unhealthy`);
 
         if (unhealthySummary > 0) {
-            logger.warn('Unhealthy adapters detected', {
-                unhealthyAdapters: healthStatuses.filter(h => h.status === 'unhealthy')
-            });
+            logger.warn(`Unhealthy adapters detected: ${healthStatuses.filter(h => h.status === 'unhealthy').length}`);
         }
     }
 
@@ -395,16 +370,16 @@ export class ChannelFactory {
     private instantiateAdapter(channelType: ChannelType): IChannelAdapter {
         switch (channelType) {
             case ChannelType.WhatsApp:
-                return container.resolve(WhatsAppAdapter);
+                return container.resolve(WhatsAppAdapter) as IChannelAdapter;
             case ChannelType.Telegram:
-                return container.resolve(TelegramAdapter);
+                return container.resolve(TelegramAdapter) as IChannelAdapter;
             case ChannelType.Slack:
-                return container.resolve(SlackAdapter);
+                return container.resolve(SlackAdapter) as IChannelAdapter;
             case ChannelType.Signal:
-                return container.resolve(SignalAdapter);
+                return container.resolve(SignalAdapter) as IChannelAdapter;
             case ChannelType.Web:
                 // WebChatAdapter accepts config in constructor but can also be configured via initialize
-                return new WebChatAdapter();
+                return new WebChatAdapter() as IChannelAdapter;
             default:
                 throw new Error(`Unsupported channel type: ${channelType}`);
         }
@@ -416,19 +391,18 @@ export class ChannelFactory {
     ): Promise<void> {
         let lastError: Error | null = null;
 
-        for (let attempt = 1; attempt <= this.options.maxRetries!; attempt++) {
+        for (let attempt = 1; attempt <= this.options?.maxRetries; attempt++) {
             try {
                 await adapter.initialize(config);
                 return; // Success
             } catch (error) {
                 lastError = error as Error;
 
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 if (attempt < this.options.maxRetries!) {
-                    logger.warn(`Adapter initialization failed, retrying (${attempt}/${this.options.maxRetries})`, {
-                        error: error.message,
-                        nextRetryIn: this.options.retryDelay
-                    });
+                    logger.warn(`Adapter initialization failed, retrying (${attempt}/${this.options.maxRetries}) ${error.message}, nextRetryIn ${this.options.retryDelay}`);
 
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     await this.delay(this.options.retryDelay!);
                 }
             }
@@ -469,16 +443,13 @@ export class ChannelFactory {
                         adapter.shutdown(),
                         new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('Shutdown timeout')),
-                            this.options.shutdownTimeout)
+                                this.options.shutdownTimeout)
                         )
                     ]);
 
-                    logger.info('Adapter shut down successfully', { adapterKey });
+                    logger.info(`Adapter shut down successfully: ${adapterKey}`);
                 } catch (error) {
-                    logger.error('Failed to shutdown adapter', {
-                        adapterKey,
-                        error: error.message
-                    });
+                    logger.error(`Failed to shutdown adapter: ${adapterKey} ${error.message}`);
                 }
             }
         );
@@ -500,7 +471,7 @@ export class ChannelFactory {
         const configuration = this.configurations.get(adapterKey);
 
         if (!configuration) {
-            logger.warn('Configuration not found for adapter restart', { channelType, tenantId });
+            logger.warn(`Configuration not found for adapter restart: ${channelType} - ${tenantId}`);
             return false;
         }
 
@@ -511,15 +482,11 @@ export class ChannelFactory {
             // Create new adapter
             await this.createAdapter(channelType, tenantId, configuration.config, configuration.metadata);
 
-            logger.info('Adapter restarted successfully', { channelType, tenantId });
+            logger.info(`Adapter restarted successfully: ${channelType} - ${tenantId}`);
             return true;
 
         } catch (error) {
-            logger.error('Failed to restart adapter', {
-                channelType,
-                tenantId,
-                error: error.message
-            });
+            logger.error(`Failed to restart adapter: ${channelType} - ${tenantId} ${error.message}`);
             return false;
         }
     }
@@ -533,7 +500,7 @@ export class ChannelFactory {
         adaptersByType: Record<ChannelType, number>;
         oldestAdapter: Date | null;
         newestAdapter: Date | null;
-    } {
+        } {
         const configurations = Array.from(this.configurations.values());
         const adaptersByType: Record<ChannelType, number> = {} as any;
 
@@ -548,8 +515,8 @@ export class ChannelFactory {
         const newestAdapter = creationTimes.length > 0 ? new Date(Math.max(...creationTimes.map(d => d.getTime()))) : null;
 
         return {
-            totalAdapters: this.adapters.size,
-            activeAdapters: configurations.filter(c => c.isActive).length,
+            totalAdapters  : this.adapters.size,
+            activeAdapters : configurations.filter(c => c.isActive).length,
             adaptersByType,
             oldestAdapter,
             newestAdapter

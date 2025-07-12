@@ -77,10 +77,15 @@ export interface SlackApiResponse {
 export class SlackAdapter implements IChannelAdapter {
 
     private config: SlackConfig | null = null;
+
     private transformer: SlackMessageTransformer;
+
     private isInitialized = false;
+
     private lastHealthCheck = new Date();
+
     private healthStatus: 'healthy' | 'degraded' | 'unhealthy' = 'unhealthy';
+
     private botInfo: any = null;
 
     constructor() {
@@ -104,15 +109,11 @@ export class SlackAdapter implements IChannelAdapter {
             this.healthStatus = 'healthy';
             this.lastHealthCheck = new Date();
 
-            logger.info('Slack adapter initialized successfully', {
-                botId: this.botInfo?.user_id,
-                teamId: this.botInfo?.team_id,
-                appId: this.botInfo?.app_id
-            });
+            logger.info(`Slack adapter initialized successfully: ${this.botInfo?.user_id} ${this.botInfo?.team_id} ${this.botInfo?.app_id}`);
 
         } catch (error) {
             this.healthStatus = 'unhealthy';
-            logger.error('Failed to initialize Slack adapter', { error });
+            logger.error(`Failed to initialize Slack adapter: ${error}`);
             throw new Error(`Slack adapter initialization failed: ${error}`);
         }
     }
@@ -138,25 +139,25 @@ export class SlackAdapter implements IChannelAdapter {
             }
 
             return {
-                messageId: response.ts,
-                status: 'sent',
-                timestamp: new Date(),
-                platformResponse: response
+                messageId        : response.ts,
+                status           : 'sent',
+                timestamp        : new Date(),
+                platformResponse : response
             };
 
         } catch (error) {
             logger.error('Failed to send Slack message', {
                 channelUserId,
-                error: error.message,
+                error : error.message,
                 content
             });
 
             return {
-                messageId: metadata?.messageId || '',
-                status: 'failed',
-                timestamp: new Date(),
-                error: error.message,
-                platformResponse: error.response?.data
+                messageId        : metadata?.messageId || '',
+                status           : 'failed',
+                timestamp        : new Date(),
+                error            : error.message,
+                platformResponse : error.response?.data
             };
         }
     }
@@ -188,16 +189,12 @@ export class SlackAdapter implements IChannelAdapter {
             // Handle regular events
             const messages = this.processEventPayload(payload);
 
-            logger.info('Processed Slack webhook', {
-                messagesCount: messages.length,
-                eventType: payload.type,
-                eventId: payload.event_id
-            });
+            logger.info(`Processed Slack webhook: ${messages.length} ${payload.type} ${payload.event_id}`);
 
             return { messages, isValid: true };
 
         } catch (error) {
-            logger.error('Error processing Slack webhook', { error: error.message });
+            logger.error(`Error processing Slack webhook: ${error.message}`);
             return { messages: [], isValid: false };
         }
     }
@@ -270,9 +267,9 @@ export class SlackAdapter implements IChannelAdapter {
     }> {
         if (!this.isInitialized) {
             return {
-                status: 'unhealthy',
-                lastCheck: new Date(),
-                details: 'Adapter not initialized'
+                status    : 'unhealthy',
+                lastCheck : new Date(),
+                details   : 'Adapter not initialized'
             };
         }
 
@@ -288,8 +285,8 @@ export class SlackAdapter implements IChannelAdapter {
             this.lastHealthCheck = new Date();
 
             return {
-                status: this.healthStatus,
-                lastCheck: this.lastHealthCheck
+                status    : this.healthStatus,
+                lastCheck : this.lastHealthCheck
             };
 
         } catch (error) {
@@ -297,9 +294,9 @@ export class SlackAdapter implements IChannelAdapter {
             this.lastHealthCheck = new Date();
 
             return {
-                status: this.healthStatus,
-                lastCheck: this.lastHealthCheck,
-                details: `Health check failed: ${error.message}`
+                status    : this.healthStatus,
+                lastCheck : this.lastHealthCheck,
+                details   : `Health check failed: ${error.message}`
             };
         }
     }
@@ -324,10 +321,10 @@ export class SlackAdapter implements IChannelAdapter {
     } {
         const transformed = this.transformer.parseIncomingMessage(rawMessage);
         return {
-            userId: transformed.userId,
-            content: transformed.content,
-            metadata: transformed.metadata,
-            timestamp: transformed.timestamp
+            userId    : transformed.userId,
+            content   : transformed.content,
+            metadata  : transformed.metadata,
+            timestamp : transformed.timestamp
         };
     }
 
@@ -374,12 +371,12 @@ export class SlackAdapter implements IChannelAdapter {
     }
 
     private async makeApiCall(method: string, data?: any): Promise<SlackApiResponse> {
-        const url = `${this.config!.apiBaseUrl}/${method}`;
+        const url = `${this.config?.apiBaseUrl}/${method}`;
 
         const options = {
-            headers: {
-                'Authorization': `Bearer ${this.config!.botToken}`,
-                'Content-Type': 'application/json; charset=utf-8'
+            headers : {
+                'Authorization' : `Bearer ${this.config?.botToken}`,
+                'Content-Type'  : 'application/json; charset=utf-8'
             }
         };
 
@@ -393,10 +390,7 @@ export class SlackAdapter implements IChannelAdapter {
             return response.body;
 
         } catch (error) {
-            logger.error('Slack API call failed', {
-                method,
-                error: error.message
-            });
+            logger.error(`Slack API call failed: ${method} ${error.message}`);
             throw error;
         }
     }
@@ -423,7 +417,7 @@ export class SlackAdapter implements IChannelAdapter {
 
         // Generate the expected signature
         const expectedSignature = 'v0=' + crypto
-            .createHmac('sha256', this.config!.signingSecret)
+            .createHmac('sha256', this.config?.signingSecret)
             .update(sigBaseString, 'utf8')
             .digest('hex');
 
@@ -454,16 +448,13 @@ export class SlackAdapter implements IChannelAdapter {
                 const transformed = this.transformer.parseIncomingMessage(payload.event);
                 messages.push({
                     ...transformed,
-                    eventId: payload.event_id,
-                    eventTime: payload.event_time,
-                    teamId: payload.team_id,
-                    messageType: 'event'
+                    eventId     : payload.event_id,
+                    eventTime   : payload.event_time,
+                    teamId      : payload.team_id,
+                    messageType : 'event'
                 });
             } catch (error) {
-                logger.warn('Failed to transform Slack event', {
-                    eventId: payload.event_id,
-                    error: error.message
-                });
+                logger.warn(`Failed to transform Slack event: ${payload.event_id} ${error.message}`);
             }
         }
 
@@ -475,17 +466,14 @@ export class SlackAdapter implements IChannelAdapter {
             const transformed = this.transformer.parseIncomingMessage(payload);
             return {
                 ...transformed,
-                actionTs: payload.action_ts,
-                triggerId: payload.trigger_id,
-                responseUrl: payload.response_url,
-                teamId: payload.team.id,
-                messageType: 'interactive'
+                actionTs    : payload.action_ts,
+                triggerId   : payload.trigger_id,
+                responseUrl : payload.response_url,
+                teamId      : payload.team.id,
+                messageType : 'interactive'
             };
         } catch (error) {
-            logger.warn('Failed to transform Slack interactive payload', {
-                actionTs: payload.action_ts,
-                error: error.message
-            });
+            logger.warn(`Failed to transform Slack interactive payload: ${payload.action_ts} ${error.message}`);
             throw error;
         }
     }
@@ -512,12 +500,12 @@ export class SlackAdapter implements IChannelAdapter {
 
             const response = await this.makeApiCall('chat.update', {
                 ...slackMessage,
-                ts: messageTs
+                ts : messageTs
             });
 
             return response.ok;
         } catch (error) {
-            logger.error('Failed to update Slack message', { error, channel, messageTs });
+            logger.error(`Failed to update Slack message: ${error.message} ${channel} ${messageTs}`);
             return false;
         }
     }
@@ -529,12 +517,12 @@ export class SlackAdapter implements IChannelAdapter {
         try {
             const response = await this.makeApiCall('chat.delete', {
                 channel,
-                ts: messageTs
+                ts : messageTs
             });
 
             return response.ok;
         } catch (error) {
-            logger.error('Failed to delete Slack message', { error, channel, messageTs });
+            logger.error(`Failed to delete Slack message: ${error.message} ${channel} ${messageTs}`);
             return false;
         }
     }
@@ -546,13 +534,13 @@ export class SlackAdapter implements IChannelAdapter {
         try {
             const response = await this.makeApiCall('reactions.add', {
                 channel,
-                timestamp: messageTs,
-                name: emoji
+                timestamp : messageTs,
+                name      : emoji
             });
 
             return response.ok;
         } catch (error) {
-            logger.error('Failed to add reaction', { error, channel, messageTs, emoji });
+            logger.error(`Failed to add reaction: ${error.message} ${channel} ${messageTs} ${emoji}`);
             return false;
         }
     }
@@ -564,13 +552,13 @@ export class SlackAdapter implements IChannelAdapter {
         try {
             const response = await this.makeApiCall('reactions.remove', {
                 channel,
-                timestamp: messageTs,
-                name: emoji
+                timestamp : messageTs,
+                name      : emoji
             });
 
             return response.ok;
         } catch (error) {
-            logger.error('Failed to remove reaction', { error, channel, messageTs, emoji });
+            logger.error(`Failed to remove reaction: ${error.message} ${channel} ${messageTs} ${emoji}`);
             return false;
         }
     }
@@ -581,12 +569,12 @@ export class SlackAdapter implements IChannelAdapter {
     async getChannelInfo(channelId: string): Promise<any> {
         try {
             const response = await this.makeApiCall('conversations.info', {
-                channel: channelId
+                channel : channelId
             });
 
             return response.ok ? response.channel : null;
         } catch (error) {
-            logger.error('Failed to get channel info', { error, channelId });
+            logger.error(`Failed to get channel info: ${error.message} ${channelId}`);
             return null;
         }
     }
@@ -597,12 +585,12 @@ export class SlackAdapter implements IChannelAdapter {
     async getUserInfo(userId: string): Promise<any> {
         try {
             const response = await this.makeApiCall('users.info', {
-                user: userId
+                user : userId
             });
 
             return response.ok ? response.user : null;
         } catch (error) {
-            logger.error('Failed to get user info', { error, userId });
+            logger.error(`Failed to get user info: ${error.message} ${userId}`);
             return null;
         }
     }
@@ -623,12 +611,12 @@ export class SlackAdapter implements IChannelAdapter {
 
             const response = await this.makeApiCall('chat.postEphemeral', {
                 ...slackMessage,
-                user: userId
+                user : userId
             });
 
             return response.ok;
         } catch (error) {
-            logger.error('Failed to send ephemeral message', { error, channel, userId });
+            logger.error(`Failed to send ephemeral message: ${error.message} ${channel} ${userId}`);
             return false;
         }
     }
@@ -639,13 +627,13 @@ export class SlackAdapter implements IChannelAdapter {
     async openModal(triggerId: string, view: any): Promise<boolean> {
         try {
             const response = await this.makeApiCall('views.open', {
-                trigger_id: triggerId,
+                trigger_id : triggerId,
                 view
             });
 
             return response.ok;
         } catch (error) {
-            logger.error('Failed to open modal', { error, triggerId });
+            logger.error(`Failed to open modal: ${error.message} ${triggerId}`);
             return false;
         }
     }
