@@ -1,6 +1,13 @@
 import {
     MessageContent,
-    MessageMetadata
+    MessageMetadata,
+    isTextMessageContent,
+    isMediaMessageContent,
+    isLocationMessageContent,
+    isContactMessageContent,
+    isInteractiveMessageContent,
+    MediaMessageContent,
+    InteractiveMessageContent
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
@@ -479,8 +486,8 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
         };
 
         // Add reply information
-        if (metadata?.replyTo) {
-            baseMessage.reply_to_message_id = parseInt(metadata.replyTo);
+        if (metadata?.ReplyTo) {
+            baseMessage.reply_to_message_id = parseInt(metadata.ReplyTo);
         }
 
         return this.addContentToMessage(baseMessage, content);
@@ -490,7 +497,7 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
         message: TelegramOutgoingMessage,
         content: MessageContent
     ): TelegramOutgoingMessage | TelegramOutgoingMessage[] {
-        if (content.text) {
+        if (isTextMessageContent(content)) {
             message.text = content.text;
 
             // Add formatting if available
@@ -498,31 +505,28 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
                 message.entities = this.formatTextEntities(content.formatting);
             }
 
-            // Disable web page preview for certain types
+            // Disable web preview for URLs
             message.disable_web_page_preview = !this.shouldShowWebPreview(content.text);
 
-        } else if (content.type) {
-            return this.createMediaMessage(message, content);
-
-        } else if (content.latitude !== undefined) {
+        } else if (isMediaMessageContent(content)) {
+            return this.createMediaMessage(message, content as MediaMessageContent);
+        } else if (isLocationMessageContent(content)) {
             message.latitude = content.latitude;
             message.longitude = content.longitude!;
 
+            // Add location name/address if available
             if (content.name || content.address) {
-                // For venue messages, we need additional venue data
-                // This would require a separate sendVenue method
+                message.text = `${content.name || content.address}`;
             }
-
-        } else if (content.contacts && content.contacts.length > 0) {
-            const contact = content.contacts[0]; // Telegram supports one contact per message
-            message.phone_number = contact.phones?.[0] || '';
-            message.first_name = this.extractFirstName(contact.name);
-            message.last_name = this.extractLastName(contact.name);
-            message.vcard = (contact as any).vcard;
-
-        } else if (content.interactive) {
-            message.text = content.interactive.body || '';
-            message.reply_markup = this.formatInlineKeyboard(content.interactive);
+        } else if (isContactMessageContent(content)) {
+            const contact = content; // Telegram supports one contact per message
+            message.phone_number = contact.phone || '';
+            message.first_name = contact.name.split(' ')[0];
+            message.last_name = contact.name.split(' ').slice(1).join(' ') || undefined;
+            message.vcard = content.vcard;
+        } else if (isInteractiveMessageContent(content)) {
+            message.text = content.text || '';
+            message.reply_markup = this.formatInlineKeyboard(content);
         }
 
         return message;
@@ -530,33 +534,35 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
 
     private createMediaMessage(
         baseMessage: TelegramOutgoingMessage,
-        content: any
+        content: MediaMessageContent
     ): TelegramOutgoingMessage {
         const message = { ...baseMessage };
 
-        switch (content.type) {
+        switch (content.mediaType) {
             case 'image':
                 message.photo = content.url;
+                if (content.caption) {
+                    message.caption = content.caption;
+                }
                 break;
             case 'audio':
                 message.audio = content.url;
-                if (content.duration) message.duration = content.duration;
+                if (content.caption) {
+                    message.caption = content.caption;
+                }
                 break;
             case 'video':
                 message.video = content.url;
-                if (content.duration) message.duration = content.duration;
-                if (content.dimensions) {
-                    message.width = content.dimensions.width;
-                    message.height = content.dimensions.height;
+                if (content.caption) {
+                    message.caption = content.caption;
                 }
                 break;
             case 'document':
                 message.document = content.url;
+                if (content.caption) {
+                    message.caption = content.caption;
+                }
                 break;
-        }
-
-        if (content.caption) {
-            message.caption = content.caption;
         }
 
         return message;
@@ -593,19 +599,18 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
         return entities;
     }
 
-    private formatInlineKeyboard(interactive: any): TelegramInlineKeyboardMarkup {
+    private formatInlineKeyboard(interactive: InteractiveMessageContent): TelegramInlineKeyboardMarkup {
         const keyboard: TelegramInlineKeyboardButton[][] = [];
 
         if (interactive.buttons) {
-            // Create rows of buttons (max 8 buttons per row recommended)
-            const buttonsPerRow = 2;
-            for (let i = 0; i < interactive.buttons.length; i += buttonsPerRow) {
-                const row = interactive.buttons.slice(i, i + buttonsPerRow).map((btn: any) => ({
-                    text          : btn.title,
-                    callback_data : btn.id
-                }));
-                keyboard.push(row);
+            const row: TelegramInlineKeyboardButton[] = [];
+            for (const button of interactive.buttons) {
+                row.push({
+                    text: button.title,
+                    callback_data: button.payload || button.id
+                });
             }
+            keyboard.push(row);
         }
 
         return { inline_keyboard: keyboard };
@@ -642,36 +647,26 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
 
     private createTelegramMetadata(message: TelegramMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            telegramMessageId : message.message_id,
-            chatType          : message.chat.type,
-            chatId            : message.chat.id,
-            userId            : message.from?.id,
-            username          : message.from?.username,
-            firstName         : message.from?.first_name,
-            lastName          : message.from?.last_name,
-            isBot             : message.from?.is_bot,
-            languageCode      : message.from?.language_code
+            platform: 'telegram',
+            timestamp: new Date(message.date * 1000)
         });
 
-        // Add forward information
-        if (message.forward_from || message.forward_from_chat) {
-            metadata.ForwardedFrom = {
-                from      : message.forward_from,
-                fromChat  : message.forward_from_chat,
-                messageId : message.forward_from_message_id,
-                date      : message.forward_date
-            };
+        // Add Telegram-specific metadata
+        if (message.forward_from) {
+            metadata.ForwardedFrom = JSON.stringify({
+                from: message.forward_from,
+                fromChat: message.forward_from_chat,
+                messageId: message.forward_from_message_id,
+                date: message.forward_date
+            });
         }
 
-        // Add reply information
         if (message.reply_to_message) {
-            metadata.replyTo = message.reply_to_message.message_id.toString();
+            metadata.ReplyTo = message.reply_to_message.message_id.toString();
         }
 
-        // Add edit information
         if (message.edit_date) {
-            metadata.edited = true;
-            metadata.editDate = new Date(message.edit_date * 1000);
+            metadata.EditedAt = new Date(message.edit_date * 1000);
         }
 
         return metadata;

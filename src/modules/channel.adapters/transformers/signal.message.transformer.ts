@@ -1,6 +1,12 @@
 import {
     MessageContent,
-    MessageMetadata
+    MessageMetadata,
+    isTextMessageContent,
+    isMediaMessageContent,
+    isLocationMessageContent,
+    isContactMessageContent,
+    isInteractiveMessageContent,
+    MediaMessageContent
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
@@ -555,67 +561,61 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         content: MessageContent,
         metadata?: MessageMetadata
     ): SignalOutgoingMessage {
-        const baseMessage: SignalOutgoingMessage = {};
+        const message: SignalOutgoingMessage = {};
 
-        // Add quote information for replies
-        if (metadata?.replyTo) {
-            baseMessage.quote = {
-                id         : parseInt(metadata.replyTo as string),
-                author     : metadata.quotedFrom as string || userId,
-                authorUuid : metadata.quotedFromUuid as string
+        // Add quote information if available
+        if (metadata?.ReplyTo) {
+            message.quote = {
+                id: parseInt(metadata.ReplyTo),
+                author: metadata.QuotedFrom || userId,
+                authorUuid: metadata.QuotedFromUuid
             };
         }
 
-        return this.addContentToMessage(baseMessage, content);
+        return this.addContentToMessage(message, content);
     }
 
     private addContentToMessage(
         message: SignalOutgoingMessage,
         content: MessageContent
     ): SignalOutgoingMessage {
-        if (content.text) {
+        if (isTextMessageContent(content)) {
             message.message = content.text;
-
-            // Add formatting if available
             if (content.formatting) {
                 message.bodyRanges = this.formatSignalRanges(content.formatting);
             }
-
-        } else if (content.type) {
-            message.attachments = [this.createSignalAttachment(content)];
+        } else if (isMediaMessageContent(content)) {
             if (content.caption) {
                 message.message = content.caption;
             }
-
-        } else if (content.contacts && content.contacts.length > 0) {
-            message.contacts = content.contacts.map(contact => ({
-                name : {
-                    displayName : contact.name,
-                    givenName   : this.extractFirstName(contact.name),
-                    familyName  : this.extractLastName(contact.name)
+            message.attachments = [this.createSignalAttachment(content)];
+        } else if (isContactMessageContent(content)) {
+            message.contacts = [{
+                name: {
+                    givenName: content.name.split(' ')[0],
+                    familyName: content.name.split(' ').slice(1).join(' '),
+                    displayName: content.name
                 },
-                number : contact.phones?.map(phone => ({
-                    value : phone,
-                    type  : 'MOBILE'
-                })) || [],
-                email : contact.emails?.map(email => ({
-                    value : email,
-                    type  : 'WORK'
-                })) || [],
-                organization : contact.organization
-            }));
-
-        } else if (content.interactive) {
-            // Signal doesn't support interactive messages like buttons
-            // Convert to text
-            message.message = content.interactive.body || 'Interactive message';
-
-            if (content.interactive.type === 'reaction') {
+                number: content.phone ? [{
+                    value: content.phone,
+                    type: 'CELL',
+                    label: 'Mobile'
+                }] : [],
+                email: content.email ? [{
+                    value: content.email,
+                    type: 'WORK',
+                    label: 'Work'
+                }] : [],
+                organization: content.organization
+            }];
+        } else if (isInteractiveMessageContent(content)) {
+            message.message = content.text || 'Interactive message';
+            if (content.type === 'reaction' as any) {
                 message.reaction = {
-                    emoji               : (content.interactive as any).emoji,
-                    remove              : (content.interactive as any).remove || false,
-                    targetAuthor        : (content.interactive as any).targetAuthor,
-                    targetSentTimestamp : (content.interactive as any).targetTimestamp
+                    emoji: (content as any).emoji,
+                    remove: (content as any).remove || false,
+                    targetAuthor: (content as any).targetAuthor,
+                    targetSentTimestamp: (content as any).targetTimestamp
                 };
             }
         }
@@ -623,36 +623,18 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         return message;
     }
 
-    private createSignalAttachment(content: any): any {
-        const attachment: any = {
-            filename    : content.filename || 'file',
-            contentType : content.mimeType || this.getMimeTypeFromExtension(
-                this.extractFileExtension(content.filename || '')
-            )
+    private createSignalAttachment(content: MediaMessageContent): any {
+        return {
+            filename: content.filename || `file.${this.extractFileExtension(content.url)}`,
+            contentType: content.mimeType || this.getMimeTypeFromExtension(this.extractFileExtension(content.url)),
+            data: content.url, // In real implementation, this would be the actual file data
+            caption: content.caption,
+            width: content.dimensions?.width,
+            height: content.dimensions?.height,
+            voiceNote: content.mediaType === 'audio',
+            gif: content.mimeType === 'image/gif',
+            borderless: false
         };
-
-        if (content.url) {
-            attachment.url = content.url;
-        }
-
-        if (content.caption) {
-            attachment.caption = content.caption;
-        }
-
-        if (content.dimensions) {
-            attachment.width = content.dimensions.width;
-            attachment.height = content.dimensions.height;
-        }
-
-        if (content.type === 'audio' && content.isVoiceNote) {
-            attachment.voiceNote = true;
-        }
-
-        if (content.isViewOnce) {
-            attachment.isViewOnce = true;
-        }
-
-        return attachment;
     }
 
     private formatSignalRanges(formatting: any): any[] {
@@ -737,43 +719,30 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
 
     private createSignalMetadata(message: SignalMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            signalTimestamp              : message.timestamp,
-            sourceNumber                 : message.source,
-            sourceUuid                   : message.sourceUuid,
-            sourceDevice                 : message.sourceDevice,
-            sourceName                   : message.sourceName,
-            isIncoming                   : message.isIncoming,
-            isOutgoing                   : message.isOutgoing,
-            delivered                    : message.delivered,
-            read                         : message.read,
-            profileKey                   : message.profileKey,
-            profileName                  : message.profileName,
-            expiresInSeconds             : message.expiresInSeconds,
-            isViewOnce                   : message.isViewOnce,
-            unidentifiedDeliveryReceived : message.unidentifiedDeliveryReceived
+            platform: 'signal',
+            timestamp: new Date(message.timestamp)
         });
 
-        // Add group information
+        // Add Signal-specific metadata
         if (message.group) {
-            metadata.group = {
-                groupId : message.group.groupId,
-                type    : message.group.type
+            metadata.Group = {
+                groupId: message.group.groupId,
+                type: message.group.type
             };
         }
 
         if (message.groupV2) {
-            metadata.groupV2 = {
-                groupId   : message.groupV2.groupId,
-                revision  : message.groupV2.revision,
-                masterKey : message.groupV2.masterKey
+            metadata.GroupV2 = {
+                groupId: message.groupV2.groupId,
+                masterKey: message.groupV2.masterKey,
+                revision: message.groupV2.revision
             };
         }
 
-        // Add quote information
         if (message.dataMessage?.quote) {
-            metadata.replyTo = message.dataMessage.quote.id.toString();
-            metadata.quotedFrom = message.dataMessage.quote.author;
-            metadata.quotedFromUuid = message.dataMessage.quote.authorUuid;
+            metadata.ReplyTo = message.dataMessage.quote.id.toString();
+            metadata.QuotedFrom = message.dataMessage.quote.author;
+            metadata.QuotedFromUuid = message.dataMessage.quote.authorUuid;
         }
 
         return metadata;

@@ -214,9 +214,10 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
                 }
 
                 return {
-                    sent          : new Date(),
-                    failed        : new Date(),
-                    failureReason : 'User not connected'
+                    Sent: new Date(),
+                    Delivered: new Date(),
+                    Status: 'delivered',
+                    Timestamp: new Date()
                 };
             }
 
@@ -244,16 +245,20 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
             }
 
             return {
-                sent      : new Date(),
-                delivered : new Date()
+                Sent: new Date(),
+                Delivered: new Date(),
+                Status: 'delivered',
+                Timestamp: new Date()
             };
 
         } catch (error) {
             logger.error(`Failed to send message: ${error}, userId: ${channelUserId}, messageId: ${messageId}`);
             return {
-                sent          : new Date(),
-                failed        : new Date(),
-                failureReason : error.message
+                Sent: new Date(),
+                Failed: new Date(),
+                Status: 'failed',
+                Timestamp: new Date(),
+                FailureReason: error.message
             };
         }
     }

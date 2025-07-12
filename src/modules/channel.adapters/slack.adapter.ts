@@ -139,25 +139,23 @@ export class SlackAdapter implements IChannelAdapter {
             }
 
             return {
-                messageId        : response.ts,
-                status           : 'sent',
-                timestamp        : new Date(),
-                platformResponse : response
+                Sent: new Date(),
+                MessageId: response.ts,
+                Status: 'sent',
+                Timestamp: new Date(),
+                PlatformResponse: response
             };
 
         } catch (error) {
-            logger.error('Failed to send Slack message', {
-                channelUserId,
-                error : error.message,
-                content
-            });
+            logger.error('Failed to send Slack message: ' + error.message);
 
             return {
-                messageId        : metadata?.messageId || '',
-                status           : 'failed',
-                timestamp        : new Date(),
-                error            : error.message,
-                platformResponse : error.response?.data
+                Failed: new Date(),
+                MessageId: metadata?.messageId || '',
+                Status: 'failed',
+                Timestamp: new Date(),
+                Error: error,
+                PlatformResponse: null
             };
         }
     }

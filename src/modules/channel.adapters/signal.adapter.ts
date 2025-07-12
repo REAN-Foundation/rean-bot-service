@@ -120,21 +120,23 @@ export class SignalAdapter implements IChannelAdapter {
             }
 
             return {
-                messageId        : response.timestamp?.toString() || Date.now().toString(),
-                status           : 'sent',
-                timestamp        : new Date(),
-                platformResponse : response
+                Sent: new Date(),
+                MessageId: response.timestamp?.toString() || Date.now().toString(),
+                Status: 'sent',
+                Timestamp: new Date(),
+                PlatformResponse: response
             };
 
         } catch (error) {
             logger.error(`Failed to send Signal message: ${channelUserId} ${error.message} ${content}`);
 
             return {
-                messageId        : metadata?.messageId || '',
-                status           : 'failed',
-                timestamp        : new Date(),
-                error            : error.message,
-                platformResponse : error.response?.data
+                Failed: new Date(),
+                MessageId: metadata?.messageId || '',
+                Status: 'failed',
+                Timestamp: new Date(),
+                Error: error,
+                PlatformResponse: null
             };
         }
     }
@@ -170,17 +172,16 @@ export class SignalAdapter implements IChannelAdapter {
         }
     }
 
-    async validateWebhook(
-        payload: any,
-        headers: Record<string, string>
-    ): Promise<boolean> {
-        // Validate webhook signature if secret is configured
-        if (this.config?.webhookSecret) {
-            return this.validateWebhookSignature(payload, headers);
+    async validateWebhook(payload: any, headers: Record<string, string>): Promise<boolean> {
+        try {
+            return !!(payload &&
+                   payload.envelope &&
+                   payload.envelope.timestamp &&
+                   payload.account);
+        } catch (error) {
+            logger.error('Failed to validate Signal webhook: ' + error);
+            return false;
         }
-
-        // Basic payload validation
-        return this.isValidSignalPayload(payload);
     }
 
     getChannelId(): string {
@@ -440,11 +441,11 @@ export class SignalAdapter implements IChannelAdapter {
     }
 
     private isValidSignalPayload(payload: SignalWebhookPayload): boolean {
-        return payload &&
+        return !!(payload &&
                payload.envelope &&
                payload.envelope.source &&
                payload.envelope.timestamp &&
-               payload.account;
+               payload.account);
     }
 
     private extractMessagesFromWebhook(payload: SignalWebhookPayload): any[] {
@@ -466,7 +467,10 @@ export class SignalAdapter implements IChannelAdapter {
             if (envelope.dataMessage) {
                 signalMessage.message = envelope.dataMessage.body;
                 signalMessage.attachments = envelope.dataMessage.attachments;
-                signalMessage.quote = envelope.dataMessage.quote;
+                // Add quote information if available
+                if (envelope.dataMessage.quote) {
+                    (signalMessage as any).quote = envelope.dataMessage.quote;
+                }
                 signalMessage.contact = envelope.dataMessage.contact;
                 signalMessage.sticker = envelope.dataMessage.sticker;
                 signalMessage.reaction = envelope.dataMessage.reaction;

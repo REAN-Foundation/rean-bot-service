@@ -1,6 +1,12 @@
 import {
     MessageContent,
-    MessageMetadata
+    MessageMetadata,
+    isTextMessageContent,
+    isMediaMessageContent,
+    isLocationMessageContent,
+    isContactMessageContent,
+    isInteractiveMessageContent,
+    InteractiveMessageContent
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
@@ -554,12 +560,12 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         metadata?: MessageMetadata
     ): SlackOutgoingMessage {
         const baseMessage: SlackOutgoingMessage = {
-            channel : userId
+            channel: userId
         };
 
-        // Add thread information
-        if (metadata?.replyTo) {
-            baseMessage.thread_ts = metadata.replyTo;
+        // Add thread information for replies
+        if (metadata?.ReplyTo) {
+            baseMessage.thread_ts = metadata.ReplyTo;
         }
 
         return this.addContentToMessage(baseMessage, content);
@@ -569,33 +575,36 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         message: SlackOutgoingMessage,
         content: MessageContent
     ): SlackOutgoingMessage {
-        if (content.text) {
+        if (isTextMessageContent(content)) {
             message.text = this.formatTextForSlack(content.text);
-            message.mrkdwn = true;
-
-        } else if (content.type) {
-            return this.addMediaContent(message, content);
-
-        } else if (content.interactive) {
-            message.text = content.interactive.body || '';
-            message.blocks = this.formatInteractiveBlocks(content.interactive);
-
-        } else if (content.latitude !== undefined) {
-            // Slack doesn't have native location sharing, send as text with link
+        } else if (isMediaMessageContent(content)) {
+            message.text = `📎 ${content.caption || 'Media file'}`;
+            message.attachments = [{
+                fallback: content.caption || 'Media file',
+                title: content.filename || 'File',
+                text: content.caption || '',
+                image_url: content.mediaType === 'image' ? content.url : undefined
+            }];
+        } else if (isInteractiveMessageContent(content)) {
+            message.text = content.text || '';
+            message.blocks = this.formatInteractiveBlocks(content);
+        } else if (isLocationMessageContent(content)) {
             message.text = `📍 Location: ${content.latitude}, ${content.longitude}`;
             if (content.name || content.address) {
                 message.text += `\n${content.name || content.address}`;
             }
             message.text += `\nhttps://maps.google.com/?q=${content.latitude},${content.longitude}`;
-
-        } else if (content.contacts && content.contacts.length > 0) {
-            const contact = content.contacts[0];
+        } else if (isContactMessageContent(content)) {
+            const contact = content;
             message.text = `👤 Contact: ${contact.name}`;
-            if (contact.phones && contact.phones.length > 0) {
-                message.text += `\n📞 ${contact.phones.join(', ')}`;
+            if (contact.phone) {
+                message.text += `\n📞 ${contact.phone}`;
             }
-            if (contact.emails && contact.emails.length > 0) {
-                message.text += `\n📧 ${contact.emails.join(', ')}`;
+            if (contact.email) {
+                message.text += `\n📧 ${contact.email}`;
+            }
+            if (contact.organization) {
+                message.text += `\n🏢 ${contact.organization}`;
             }
         }
 
@@ -647,46 +656,46 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
             .replace(/```([^```]+)```/g, '```$1```'); // Code blocks (same)
     }
 
-    private formatInteractiveBlocks(interactive: any): SlackBlock[] {
+    private formatInteractiveBlocks(interactive: InteractiveMessageContent): SlackBlock[] {
         const blocks: SlackBlock[] = [];
 
-        // Add header if present
+        // Add header if available
         if (interactive.header) {
             blocks.push({
-                type : 'header',
-                text : {
-                    type : 'plain_text',
-                    text : interactive.header.text || interactive.header
+                type: 'header',
+                text: {
+                    type: 'plain_text',
+                    text: interactive.header.content
                 }
             });
         }
 
         // Add body text
-        if (interactive.body) {
+        if (interactive.text) {
             blocks.push({
-                type : 'section',
-                text : {
-                    type : 'mrkdwn',
-                    text : interactive.body
+                type: 'section',
+                text: {
+                    type: 'mrkdwn',
+                    text: interactive.text
                 }
             });
         }
 
-        // Add buttons
+        // Add buttons if available
         if (interactive.buttons && interactive.buttons.length > 0) {
-            const buttonElements = interactive.buttons.map((btn: any) => ({
-                type : 'button',
-                text : {
-                    type : 'plain_text',
-                    text : btn.title
+            const elements = interactive.buttons.map(button => ({
+                type: 'button',
+                text: {
+                    type: 'plain_text',
+                    text: button.title
                 },
-                action_id : btn.id,
-                value     : btn.payload || btn.id
+                value: button.payload || button.id,
+                action_id: button.id
             }));
 
             blocks.push({
-                type     : 'actions',
-                elements : buttonElements
+                type: 'actions',
+                elements
             });
         }
 
@@ -732,34 +741,34 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
 
     private createSlackMetadata(message: SlackMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            slackTs     : message.ts,
-            channelId   : message.channel,
-            userId      : message.user,
-            username    : message.username,
-            botId       : message.bot_id,
-            appId       : message.app_id,
-            teamId      : message.team,
-            subtype     : message.subtype,
-            clientMsgId : message.client_msg_id
+            platform: 'slack',
+            timestamp: new Date(parseFloat(message.ts) * 1000)
         });
 
-        // Add thread information
+        // Add Slack-specific metadata
         if (message.thread_ts) {
-            metadata.threadTs = message.thread_ts;
-            metadata.replyCount = message.reply_count;
-            metadata.replyUsers = message.reply_users;
+            metadata.ThreadTs = message.thread_ts;
         }
 
-        // Add edit information
+        if (message.reply_count) {
+            metadata.ReplyCount = message.reply_count;
+        }
+
+        if (message.reply_users) {
+            metadata.ReplyUsers = message.reply_users;
+        }
+
         if (message.edited) {
-            metadata.edited = true;
-            metadata.editedBy = message.edited.user;
             metadata.EditedAt = new Date(parseFloat(message.edited.ts) * 1000);
+            metadata.EditedBy = message.edited.user;
         }
 
-        // Add reaction information
-        if (message.reactions && message.reactions.length > 0) {
-            metadata.Reactions = message.reactions;
+        if (message.reactions) {
+            metadata.Reactions = message.reactions.map(reaction => ({
+                Emoji: reaction.name,
+                UserId: reaction.users[0], // Take first user
+                Timestamp: new Date(parseFloat(message.ts) * 1000)
+            }));
         }
 
         return metadata;

@@ -139,21 +139,23 @@ export class TelegramAdapter implements IChannelAdapter {
             }
 
             return {
-                messageId        : response.result.message_id.toString(),
-                status           : 'sent',
-                timestamp        : new Date(),
-                platformResponse : response.result
+                Sent: new Date(),
+                MessageId: response.result.message_id.toString(),
+                Status: 'sent',
+                Timestamp: new Date(),
+                PlatformResponse: response
             };
 
         } catch (error) {
             logger.error(`Failed to send Telegram message, channelUserId: ${channelUserId}, error: ${error.message}, content: ${content}`);
 
             return {
-                messageId        : metadata?.messageId || '',
-                status           : 'failed',
-                timestamp        : new Date(),
-                error            : error.message,
-                platformResponse : error.response?.data
+                Failed: new Date(),
+                MessageId: metadata?.messageId || '',
+                Status: 'failed',
+                Timestamp: new Date(),
+                Error: error,
+                PlatformResponse: null
             };
         }
     }
@@ -189,18 +191,23 @@ export class TelegramAdapter implements IChannelAdapter {
         }
     }
 
-    async validateWebhook(
-        payload: any,
-        headers: Record<string, string>
-    ): Promise<boolean> {
-        // Telegram doesn't have a verification challenge like WhatsApp
-        // Just validate the webhook signature if secret is configured
-        if (this.config?.webhookSecret) {
-            return this.validateWebhookSignature(payload, headers);
-        }
+    async validateWebhook(payload: any, headers: Record<string, string>): Promise<boolean> {
+        try {
+            if (!payload || !payload.update_id) {
+                return false;
+            }
 
-        // Basic payload validation
-        return this.isValidTelegramPayload(payload);
+            const update = payload;
+            return !!(update.update_id !== undefined && (
+                update.message ||
+                update.edited_message ||
+                update.channel_post ||
+                update.edited_channel_post
+            ) !== undefined);
+        } catch (error) {
+            logger.warn('Failed to validate Telegram webhook: ' + error.message);
+            return false;
+        }
     }
 
     getChannelId(): string {
@@ -451,13 +458,13 @@ export class TelegramAdapter implements IChannelAdapter {
     }
 
     private isValidUpdate(update: TelegramUpdate): boolean {
-        return update.update_id !== undefined && (
+        return !!(update.update_id !== undefined && (
             update.message ||
             update.edited_message ||
             update.callback_query ||
             update.channel_post ||
             update.edited_channel_post
-        );
+        ));
     }
 
     private processUpdates(updates: TelegramUpdate[]): any[] {
@@ -517,10 +524,7 @@ export class TelegramAdapter implements IChannelAdapter {
                 }
 
             } catch (error) {
-                logger.warn('Failed to transform Telegram update', {
-                    updateId : update.update_id,
-                    error    : error.message
-                });
+                logger.warn('Failed to transform Telegram update: ' + error.message);
             }
         }
 

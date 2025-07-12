@@ -128,21 +128,23 @@ export class WhatsAppAdapter implements IChannelAdapter {
             const response = await this.makeApiCall('POST', 'messages', whatsappMessage);
 
             return {
-                messageId        : response.messages[0].id,
-                status           : 'sent',
-                timestamp        : new Date(),
-                platformResponse : response
+                Sent: new Date(),
+                MessageId: response.messages[0].id,
+                Status: 'sent',
+                Timestamp: new Date(),
+                PlatformResponse: response
             };
 
         } catch (error) {
             logger.error(`Failed to send WhatsApp message, channelUserId: ${channelUserId}, error: ${error.message}, content: ${content}`);
 
             return {
-                messageId        : metadata?.messageId || '',
-                status           : 'failed',
-                timestamp        : new Date(),
-                error            : error.message,
-                platformResponse : error.response?.data
+                Failed: new Date(),
+                MessageId: metadata?.messageId || '',
+                Status: 'failed',
+                Timestamp: new Date(),
+                Error: error,
+                PlatformResponse: null
             };
         }
     }

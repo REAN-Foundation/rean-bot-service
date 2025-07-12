@@ -308,13 +308,13 @@ export class WebMessageTransformer extends BaseMessageTransformer {
 
     private createWebChatMetadata(message: WebChatMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            sessionId   : message.sessionId,
-            messageType : message.type,
-            status      : message.status,
-            userAgent   : message.metadata?.userAgent,
-            ipAddress   : message.metadata?.ipAddress,
-            pageUrl     : message.metadata?.pageUrl,
-            referrer    : message.metadata?.referrer
+            sessionId: message.sessionId,
+            messageType: message.type,
+            status: message.status,
+            userAgent: message.metadata?.userAgent,
+            ipAddress: message.metadata?.ipAddress,
+            pageUrl: message.metadata?.pageUrl,
+            referrer: message.metadata?.referrer
         });
 
         // Add web-specific metadata
@@ -332,8 +332,8 @@ export class WebMessageTransformer extends BaseMessageTransformer {
 
         if (message.metadata?.delivered || message.metadata?.read) {
             metadata.DeliveryStatus = {
-                delivered : message.metadata.delivered ? new Date() : undefined,
-                read      : message.metadata.read ? (message.metadata.readAt || new Date()) : undefined
+                Delivered: message.metadata.delivered ? new Date() : undefined,
+                Read: message.metadata.read ? (message.metadata.readAt || new Date()) : undefined
             };
         }
 
