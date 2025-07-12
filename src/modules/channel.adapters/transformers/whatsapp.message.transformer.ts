@@ -535,8 +535,8 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
 
     private createWhatsAppMetadata(message: WhatsAppWebhookMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            platform: 'whatsapp',
-            timestamp: new Date(parseInt(message.timestamp) * 1000)
+            platform  : 'whatsapp',
+            timestamp : new Date(parseInt(message.timestamp) * 1000)
         });
 
         // Add WhatsApp-specific metadata
