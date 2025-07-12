@@ -199,11 +199,11 @@ export abstract class BaseMessageTransformer {
         additionalData?: Record<string, any>
     ): MessageMetadata {
         return {
-            channelMessageId: platformMessage.id || platformMessage.message_id,
-            forwardedFrom: platformMessage.forwarded_from,
-            isForwarded: Boolean(platformMessage.forwarded_from),
-            editedAt: platformMessage.edited ? this.extractTimestamp(platformMessage) : undefined,
-            customData: {
+            ChannelMessageId: platformMessage.id || platformMessage.message_id,
+            ForwardedFrom: platformMessage.forwarded_from,
+            IsForwarded: Boolean(platformMessage.forwarded_from),
+            EditedAt: platformMessage.edited ? this.extractTimestamp(platformMessage) : undefined,
+            CustomData: {
                 platform: this.getPlatformName(),
                 timestamp: this.extractTimestamp(platformMessage),
                 replyTo: platformMessage.reply_to,

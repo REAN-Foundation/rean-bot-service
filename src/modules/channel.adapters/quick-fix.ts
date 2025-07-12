@@ -45,14 +45,14 @@ export function isInteractiveMessage(content: MessageContent): content is Intera
 
 // Helper function to safely access metadata fields
 export function getMetadataField(metadata: MessageMetadata, field: string): any {
-    return metadata.customData?.[field];
+    return metadata.CustomData?.[field];
 }
 
 export function setMetadataField(metadata: MessageMetadata, field: string, value: any): void {
-    if (!metadata.customData) {
-        metadata.customData = {};
+    if (!metadata.CustomData) {
+        metadata.CustomData = {};
     }
-    metadata.customData[field] = value;
+    metadata.CustomData[field] = value;
 }
 
 // Logger wrapper that accepts multiple arguments
@@ -127,11 +127,11 @@ export function createUnifiedContent(
 // Create standardized metadata
 export function createStandardMetadata(platformData: any, platform: string): MessageMetadata {
     return {
-        channelMessageId : platformData.id || platformData.message_id,
-        forwardedFrom    : platformData.forwarded_from,
-        isForwarded      : Boolean(platformData.forwarded_from),
-        editedAt         : platformData.edited ? new Date() : undefined,
-        customData       : {
+        ChannelMessageId : platformData.id || platformData.message_id,
+        ForwardedFrom    : platformData.forwarded_from,
+        IsForwarded      : Boolean(platformData.forwarded_from),
+        EditedAt         : platformData.edited ? new Date() : undefined,
+        CustomData       : {
             platform,
             platformData,
             replyTo   : platformData.reply_to,

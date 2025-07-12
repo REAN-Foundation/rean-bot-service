@@ -214,7 +214,7 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
             content,
             metadata,
             timestamp,
-            platformMessageId: platformMessage.id
+            platformMessageId : platformMessage.id
         };
 
         if (!this.validateTransformedMessage(transformed)) {
@@ -237,9 +237,9 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
                     `whatsapp://media/${message.image?.id}`,
                     message.image?.caption,
                     {
-                        mimeType: message.image?.mime_type,
-                        sha256: message.image?.sha256,
-                        whatsappId: message.image?.id
+                        mimeType   : message.image?.mime_type,
+                        sha256     : message.image?.sha256,
+                        whatsappId : message.image?.id
                     }
                 );
 
@@ -249,9 +249,9 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
                     `whatsapp://media/${message.audio?.id}`,
                     undefined,
                     {
-                        mimeType: message.audio?.mime_type,
-                        sha256: message.audio?.sha256,
-                        whatsappId: message.audio?.id
+                        mimeType   : message.audio?.mime_type,
+                        sha256     : message.audio?.sha256,
+                        whatsappId : message.audio?.id
                     }
                 );
 
@@ -261,9 +261,9 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
                     `whatsapp://media/${message.video?.id}`,
                     message.video?.caption,
                     {
-                        mimeType: message.video?.mime_type,
-                        sha256: message.video?.sha256,
-                        whatsappId: message.video?.id
+                        mimeType   : message.video?.mime_type,
+                        sha256     : message.video?.sha256,
+                        whatsappId : message.video?.id
                     }
                 );
 
@@ -273,17 +273,17 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
                     `whatsapp://media/${message.document?.id}`,
                     message.document?.caption,
                     {
-                        filename: message.document?.filename,
-                        mimeType: message.document?.mime_type,
-                        sha256: message.document?.sha256,
-                        whatsappId: message.document?.id
+                        filename   : message.document?.filename,
+                        mimeType   : message.document?.mime_type,
+                        sha256     : message.document?.sha256,
+                        whatsappId : message.document?.id
                     }
                 );
 
             case 'location':
                 return this.createLocationContent(
-                    message.location!.latitude,
-                    message.location!.longitude,
+                    message.location?.latitude,
+                    message.location?.longitude,
                     message.location?.name,
                     message.location?.address
                 );
@@ -291,10 +291,10 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
             case 'contacts':
                 return this.createContactContent(
                     message.contacts?.map(contact => ({
-                        name: contact.name.formatted_name,
-                        phones: contact.phones?.map(p => p.phone) || [],
-                        emails: contact.emails?.map(e => e.email) || [],
-                        organization: contact.org?.company
+                        name         : contact.name.formatted_name,
+                        phones       : contact.phones?.map(p => p.phone) || [],
+                        emails       : contact.emails?.map(e => e.email) || [],
+                        organization : contact.org?.company
                     })) || []
                 );
 
@@ -306,8 +306,8 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
                     'button_reply',
                     message.button?.text,
                     [{
-                        id: message.button?.payload || '',
-                        title: message.button?.text || ''
+                        id    : message.button?.payload || '',
+                        title : message.button?.text || ''
                     }]
                 );
 
@@ -317,15 +317,15 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
     }
 
     private parseInteractiveMessage(message: WhatsAppWebhookMessage): MessageContent {
-        const interactive = message.interactive!;
+        const interactive = message.interactive;
 
         if (interactive.button_reply) {
             return this.createInteractiveContent(
                 'button_reply',
                 interactive.button_reply.title,
                 [{
-                    id: interactive.button_reply.id,
-                    title: interactive.button_reply.title
+                    id    : interactive.button_reply.id,
+                    title : interactive.button_reply.title
                 }]
             );
         }
@@ -336,9 +336,9 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
                 interactive.list_reply.title,
                 undefined,
                 [{
-                    id: interactive.list_reply.id,
-                    title: interactive.list_reply.title,
-                    description: interactive.list_reply.description
+                    id          : interactive.list_reply.id,
+                    title       : interactive.list_reply.title,
+                    description : interactive.list_reply.description
                 }]
             );
         }
@@ -356,15 +356,15 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
         metadata?: MessageMetadata
     ): WhatsAppOutgoingMessage {
         const baseMessage: WhatsAppOutgoingMessage = {
-            messaging_product: 'whatsapp',
-            to: userId,
-            type: this.getWhatsAppMessageType(content)
+            messaging_product : 'whatsapp',
+            to                : userId,
+            type              : this.getWhatsAppMessageType(content)
         };
 
         // Add context for replies
         if (metadata?.replyTo) {
             baseMessage.context = {
-                message_id: metadata.replyTo
+                message_id : metadata.replyTo
             };
         }
 
@@ -386,17 +386,17 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
     ): WhatsAppOutgoingMessage {
         if (content.text) {
             message.text = {
-                body: content.text,
-                preview_url: this.hasUrl(content.text)
+                body        : content.text,
+                preview_url : this.hasUrl(content.text)
             };
         } else if (content.type) {
             this.addMediaContent(message, content);
         } else if (content.latitude !== undefined) {
             message.location = {
-                latitude: content.latitude,
-                longitude: content.longitude!,
-                name: content.name,
-                address: content.address
+                latitude  : content.latitude,
+                longitude : content.longitude,
+                name      : content.name,
+                address   : content.address
             };
         } else if (content.contacts) {
             message.contacts = this.formatContactsForWhatsApp(content.contacts);
@@ -410,7 +410,7 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
     private addMediaContent(message: WhatsAppOutgoingMessage, content: any): void {
         const mediaType = content.type;
         const mediaData: any = {
-            link: content.url
+            link : content.url
         };
 
         if (content.caption) {
@@ -426,30 +426,30 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
 
     private formatContactsForWhatsApp(contacts: any[]): any[] {
         return contacts.map(contact => ({
-            name: {
-                formatted_name: contact.name,
-                first_name: contact.firstName,
-                last_name: contact.lastName
+            name : {
+                formatted_name : contact.name,
+                first_name     : contact.firstName,
+                last_name      : contact.lastName
             },
-            phones: contact.phones?.map((phone: string) => ({
+            phones : contact.phones?.map((phone: string) => ({
                 phone,
-                type: 'CELL'
+                type : 'CELL'
             })),
-            emails: contact.emails?.map((email: string) => ({
+            emails : contact.emails?.map((email: string) => ({
                 email,
-                type: 'WORK'
+                type : 'WORK'
             })),
-            org: contact.organization ? {
-                company: contact.organization
+            org : contact.organization ? {
+                company : contact.organization
             } : undefined
         }));
     }
 
     private formatInteractiveForWhatsApp(interactive: any): any {
         const formatted: any = {
-            type: interactive.type,
-            body: {
-                text: interactive.body || ''
+            type : interactive.type,
+            body : {
+                text : interactive.body || ''
             }
         };
 
@@ -459,22 +459,22 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
 
         if (interactive.type === 'button' && interactive.buttons) {
             formatted.action = {
-                buttons: interactive.buttons.map((btn: any) => ({
-                    type: 'reply',
-                    reply: {
-                        id: btn.id,
-                        title: btn.title
+                buttons : interactive.buttons.map((btn: any) => ({
+                    type  : 'reply',
+                    reply : {
+                        id    : btn.id,
+                        title : btn.title
                     }
                 }))
             };
         } else if (interactive.type === 'list' && interactive.listItems) {
             formatted.action = {
-                button: 'Select an option',
-                sections: [{
-                    rows: interactive.listItems.map((item: any) => ({
-                        id: item.id,
-                        title: item.title,
-                        description: item.description
+                button   : 'Select an option',
+                sections : [{
+                    rows : interactive.listItems.map((item: any) => ({
+                        id          : item.id,
+                        title       : item.title,
+                        description : item.description
                     }))
                 }]
             };
@@ -527,8 +527,8 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
 
     private createWhatsAppMetadata(message: WhatsAppWebhookMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            whatsappMessageId: message.id,
-            messageType: message.type
+            whatsappMessageId : message.id,
+            messageType       : message.type
         });
 
         // Add context information if available

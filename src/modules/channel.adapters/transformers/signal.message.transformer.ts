@@ -1,9 +1,10 @@
 import {
     MessageContent,
-    MessageType,
     MessageMetadata
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
+
+////////////////////////////////////////////////////////////
 
 export interface SignalContact {
     name?: string;
@@ -310,7 +311,7 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
             content,
             metadata,
             timestamp,
-            platformMessageId: platformMessage.timestamp.toString()
+            platformMessageId : platformMessage.timestamp.toString()
         };
 
         if (!this.validateTransformedMessage(transformed)) {
@@ -329,10 +330,10 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
                 undefined,
                 undefined,
                 {
-                    emoji: message.reaction.emoji,
-                    remove: message.reaction.remove,
-                    targetAuthor: message.reaction.targetAuthor,
-                    targetTimestamp: message.reaction.targetSentTimestamp
+                    emoji           : message.reaction.emoji,
+                    remove          : message.reaction.remove,
+                    targetAuthor    : message.reaction.targetAuthor,
+                    targetTimestamp : message.reaction.targetSentTimestamp
                 }
             );
         }
@@ -347,10 +348,10 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
                 `signal://sticker/${message.sticker.packId}/${message.sticker.stickerId}`,
                 message.sticker.emoji,
                 {
-                    packId: message.sticker.packId,
-                    packKey: message.sticker.packKey,
-                    stickerId: message.sticker.stickerId,
-                    isSticker: true
+                    packId    : message.sticker.packId,
+                    packKey   : message.sticker.packKey,
+                    stickerId : message.sticker.stickerId,
+                    isSticker : true
                 }
             );
         }
@@ -365,18 +366,18 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
                 attachment.url || attachment.path || `signal://attachment/${attachment.id}`,
                 attachment.caption || message.message,
                 {
-                    filename: attachment.filename,
-                    contentType: attachment.contentType,
-                    size: attachment.size,
-                    dimensions: attachment.width && attachment.height ? {
-                        width: attachment.width,
-                        height: attachment.height
+                    filename    : attachment.filename,
+                    contentType : attachment.contentType,
+                    size        : attachment.size,
+                    dimensions  : attachment.width && attachment.height ? {
+                        width  : attachment.width,
+                        height : attachment.height
                     } : undefined,
-                    isVoiceNote: attachment.voiceNote,
-                    isGif: attachment.gif,
-                    isBorderless: attachment.borderless,
-                    isViewOnce: message.isViewOnce,
-                    blurhash: attachment.blurhash
+                    isVoiceNote  : attachment.voiceNote,
+                    isGif        : attachment.gif,
+                    isBorderless : attachment.borderless,
+                    isViewOnce   : message.isViewOnce,
+                    blurhash     : attachment.blurhash
                 }
             );
         }
@@ -384,18 +385,18 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         // Handle contact sharing
         if (message.contact) {
             return this.createContactContent([{
-                name: message.contact.name.displayName ||
+                name : message.contact.name.displayName ||
                       `${message.contact.name.givenName || ''} ${message.contact.name.familyName || ''}`.trim(),
-                phones: message.contact.number?.map(n => n.value) || [],
-                emails: message.contact.email?.map(e => e.value) || [],
-                organization: message.contact.organization,
-                addresses: message.contact.address?.map(addr => ({
-                    type: addr.type,
-                    street: addr.street,
-                    city: addr.city,
-                    region: addr.region,
-                    postcode: addr.postcode,
-                    country: addr.country
+                phones       : message.contact.number?.map(n => n.value) || [],
+                emails       : message.contact.email?.map(e => e.value) || [],
+                organization : message.contact.organization,
+                addresses    : message.contact.address?.map(addr => ({
+                    type     : addr.type,
+                    street   : addr.street,
+                    city     : addr.city,
+                    region   : addr.region,
+                    postcode : addr.postcode,
+                    country  : addr.country
                 })) || []
             }]);
         }
@@ -430,11 +431,11 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
             );
 
             (content as any).quote = {
-                id: dataMessage.quote.id,
-                author: dataMessage.quote.author,
-                authorUuid: dataMessage.quote.authorUuid,
-                text: dataMessage.quote.text,
-                attachments: dataMessage.quote.attachments
+                id          : dataMessage.quote.id,
+                author      : dataMessage.quote.author,
+                authorUuid  : dataMessage.quote.authorUuid,
+                text        : dataMessage.quote.text,
+                attachments : dataMessage.quote.attachments
             };
 
             return content;
@@ -450,15 +451,15 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
                 attachment.url || attachment.path || `signal://attachment/${attachment.id}`,
                 attachment.caption || dataMessage.body || fallbackText,
                 {
-                    filename: attachment.filename,
-                    contentType: attachment.contentType,
-                    size: attachment.size,
-                    dimensions: attachment.width && attachment.height ? {
-                        width: attachment.width,
-                        height: attachment.height
+                    filename    : attachment.filename,
+                    contentType : attachment.contentType,
+                    size        : attachment.size,
+                    dimensions  : attachment.width && attachment.height ? {
+                        width  : attachment.width,
+                        height : attachment.height
                     } : undefined,
-                    isVoiceNote: attachment.voiceNote,
-                    isViewOnce: dataMessage.isViewOnce
+                    isVoiceNote : attachment.voiceNote,
+                    isViewOnce  : dataMessage.isViewOnce
                 }
             );
         }
@@ -470,10 +471,10 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
                 `signal://sticker/${dataMessage.sticker.packId}/${dataMessage.sticker.stickerId}`,
                 undefined,
                 {
-                    packId: dataMessage.sticker.packId,
-                    packKey: dataMessage.sticker.packKey,
-                    stickerId: dataMessage.sticker.stickerId,
-                    isSticker: true
+                    packId    : dataMessage.sticker.packId,
+                    packKey   : dataMessage.sticker.packKey,
+                    stickerId : dataMessage.sticker.stickerId,
+                    isSticker : true
                 }
             );
         }
@@ -501,17 +502,17 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
 
     private parseSignalFormatting(bodyRanges: any[]): any {
         const formatting: any = {
-            bold: [],
-            italic: [],
-            strikethrough: [],
-            monospace: [],
-            mentions: []
+            bold          : [],
+            italic        : [],
+            strikethrough : [],
+            monospace     : [],
+            mentions      : []
         };
 
         for (const range of bodyRanges) {
             const rangeData = {
-                offset: range.start,
-                length: range.length
+                offset : range.start,
+                length : range.length
             };
 
             if (range.style) {
@@ -559,9 +560,9 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         // Add quote information for replies
         if (metadata?.replyTo) {
             baseMessage.quote = {
-                id: parseInt(metadata.replyTo),
-                author: metadata.quotedFrom || userId,
-                authorUuid: metadata.quotedFromUuid
+                id         : parseInt(metadata.replyTo as string),
+                author     : metadata.quotedFrom as string || userId,
+                authorUuid : metadata.quotedFromUuid as string
             };
         }
 
@@ -588,20 +589,20 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
 
         } else if (content.contacts && content.contacts.length > 0) {
             message.contacts = content.contacts.map(contact => ({
-                name: {
-                    displayName: contact.name,
-                    givenName: this.extractFirstName(contact.name),
-                    familyName: this.extractLastName(contact.name)
+                name : {
+                    displayName : contact.name,
+                    givenName   : this.extractFirstName(contact.name),
+                    familyName  : this.extractLastName(contact.name)
                 },
-                number: contact.phones?.map(phone => ({
-                    value: phone,
-                    type: 'MOBILE'
+                number : contact.phones?.map(phone => ({
+                    value : phone,
+                    type  : 'MOBILE'
                 })) || [],
-                email: contact.emails?.map(email => ({
-                    value: email,
-                    type: 'WORK'
+                email : contact.emails?.map(email => ({
+                    value : email,
+                    type  : 'WORK'
                 })) || [],
-                organization: contact.organization
+                organization : contact.organization
             }));
 
         } else if (content.interactive) {
@@ -611,10 +612,10 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
 
             if (content.interactive.type === 'reaction') {
                 message.reaction = {
-                    emoji: (content.interactive as any).emoji,
-                    remove: (content.interactive as any).remove || false,
-                    targetAuthor: (content.interactive as any).targetAuthor,
-                    targetSentTimestamp: (content.interactive as any).targetTimestamp
+                    emoji               : (content.interactive as any).emoji,
+                    remove              : (content.interactive as any).remove || false,
+                    targetAuthor        : (content.interactive as any).targetAuthor,
+                    targetSentTimestamp : (content.interactive as any).targetTimestamp
                 };
             }
         }
@@ -624,8 +625,8 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
 
     private createSignalAttachment(content: any): any {
         const attachment: any = {
-            filename: content.filename || 'file',
-            contentType: content.mimeType || this.getMimeTypeFromExtension(
+            filename    : content.filename || 'file',
+            contentType : content.mimeType || this.getMimeTypeFromExtension(
                 this.extractFileExtension(content.filename || '')
             )
         };
@@ -661,9 +662,9 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         if (formatting.bold) {
             formatting.bold.forEach((range: any) => {
                 ranges.push({
-                    start: range.offset,
-                    length: range.length,
-                    style: 'BOLD'
+                    start  : range.offset,
+                    length : range.length,
+                    style  : 'BOLD'
                 });
             });
         }
@@ -672,9 +673,9 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         if (formatting.italic) {
             formatting.italic.forEach((range: any) => {
                 ranges.push({
-                    start: range.offset,
-                    length: range.length,
-                    style: 'ITALIC'
+                    start  : range.offset,
+                    length : range.length,
+                    style  : 'ITALIC'
                 });
             });
         }
@@ -683,9 +684,9 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         if (formatting.strikethrough) {
             formatting.strikethrough.forEach((range: any) => {
                 ranges.push({
-                    start: range.offset,
-                    length: range.length,
-                    style: 'STRIKETHROUGH'
+                    start  : range.offset,
+                    length : range.length,
+                    style  : 'STRIKETHROUGH'
                 });
             });
         }
@@ -694,9 +695,9 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         if (formatting.monospace) {
             formatting.monospace.forEach((range: any) => {
                 ranges.push({
-                    start: range.offset,
-                    length: range.length,
-                    style: 'MONOSPACE'
+                    start  : range.offset,
+                    length : range.length,
+                    style  : 'MONOSPACE'
                 });
             });
         }
@@ -736,35 +737,35 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
 
     private createSignalMetadata(message: SignalMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            signalTimestamp: message.timestamp,
-            sourceNumber: message.source,
-            sourceUuid: message.sourceUuid,
-            sourceDevice: message.sourceDevice,
-            sourceName: message.sourceName,
-            isIncoming: message.isIncoming,
-            isOutgoing: message.isOutgoing,
-            delivered: message.delivered,
-            read: message.read,
-            profileKey: message.profileKey,
-            profileName: message.profileName,
-            expiresInSeconds: message.expiresInSeconds,
-            isViewOnce: message.isViewOnce,
-            unidentifiedDeliveryReceived: message.unidentifiedDeliveryReceived
+            signalTimestamp              : message.timestamp,
+            sourceNumber                 : message.source,
+            sourceUuid                   : message.sourceUuid,
+            sourceDevice                 : message.sourceDevice,
+            sourceName                   : message.sourceName,
+            isIncoming                   : message.isIncoming,
+            isOutgoing                   : message.isOutgoing,
+            delivered                    : message.delivered,
+            read                         : message.read,
+            profileKey                   : message.profileKey,
+            profileName                  : message.profileName,
+            expiresInSeconds             : message.expiresInSeconds,
+            isViewOnce                   : message.isViewOnce,
+            unidentifiedDeliveryReceived : message.unidentifiedDeliveryReceived
         });
 
         // Add group information
         if (message.group) {
             metadata.group = {
-                groupId: message.group.groupId,
-                type: message.group.type
+                groupId : message.group.groupId,
+                type    : message.group.type
             };
         }
 
         if (message.groupV2) {
             metadata.groupV2 = {
-                groupId: message.groupV2.groupId,
-                revision: message.groupV2.revision,
-                masterKey: message.groupV2.masterKey
+                groupId   : message.groupV2.groupId,
+                revision  : message.groupV2.revision,
+                masterKey : message.groupV2.masterKey
             };
         }
 

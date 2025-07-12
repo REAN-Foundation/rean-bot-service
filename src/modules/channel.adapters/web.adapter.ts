@@ -484,7 +484,7 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
         return {
             userId    : transformed.userId,
             content   : transformed.content,
-            metadata  : transformed.metadata.customData || {},
+            metadata  : transformed.metadata.CustomData || {},
             timestamp : transformed.timestamp
         };
     }

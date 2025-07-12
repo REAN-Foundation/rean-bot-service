@@ -1,9 +1,10 @@
 import {
     MessageContent,
-    MessageType,
     MessageMetadata
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
+
+////////////////////////////////////////////////////////////
 
 export interface SlackUser {
     id: string;
@@ -299,7 +300,7 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
             content,
             metadata,
             timestamp,
-            platformMessageId: message.ts
+            platformMessageId : message.ts
         };
 
         if (!this.validateTransformedMessage(transformed)) {
@@ -313,20 +314,20 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         const userId = payload.user.id;
         const content = this.parseInteractiveContent(payload);
         const metadata = this.createMetadata(payload, {
-            actionTs: payload.action_ts,
-            triggerId: payload.trigger_id,
-            responseUrl: payload.response_url,
-            teamId: payload.team.id,
-            channelId: payload.channel?.id,
-            originalMessage: payload.message
+            actionTs        : payload.action_ts,
+            triggerId       : payload.trigger_id,
+            responseUrl     : payload.response_url,
+            teamId          : payload.team.id,
+            channelId       : payload.channel?.id,
+            originalMessage : payload.message
         });
 
         return {
             userId,
             content,
             metadata,
-            timestamp: new Date(parseFloat(payload.action_ts) * 1000),
-            platformMessageId: payload.action_ts
+            timestamp         : new Date(parseFloat(payload.action_ts) * 1000),
+            platformMessageId : payload.action_ts
         };
     }
 
@@ -339,17 +340,17 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
                 file.url_private || file.permalink || '',
                 message.text || file.title,
                 {
-                    fileId: file.id,
-                    filename: file.name,
-                    title: file.title,
-                    mimeType: file.mimetype,
-                    fileType: file.filetype,
-                    size: file.size,
-                    isPublic: file.is_public,
-                    thumbUrl: file.thumb_360 || file.thumb_160,
-                    originalDimensions: file.original_w && file.original_h ? {
-                        width: file.original_w,
-                        height: file.original_h
+                    fileId             : file.id,
+                    filename           : file.name,
+                    title              : file.title,
+                    mimeType           : file.mimetype,
+                    fileType           : file.filetype,
+                    size               : file.size,
+                    isPublic           : file.is_public,
+                    thumbUrl           : file.thumb_360 || file.thumb_160,
+                    originalDimensions : file.original_w && file.original_h ? {
+                        width  : file.original_w,
+                        height : file.original_h
                     } : undefined
                 }
             );
@@ -399,9 +400,9 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
                 'button_click',
                 action.value || action.selected_option?.value,
                 [{
-                    id: action.action_id,
-                    title: action.selected_option?.text?.text || action.value || 'Button clicked',
-                    payload: action.value
+                    id      : action.action_id,
+                    title   : action.selected_option?.text?.text || action.value || 'Button clicked',
+                    payload : action.value
                 }]
             );
         }
@@ -432,10 +433,10 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
 
                 case 'image':
                     attachments.push({
-                        type: 'image',
-                        url: block.image_url,
-                        alt: block.alt_text,
-                        title: block.title?.text
+                        type  : 'image',
+                        url   : block.image_url,
+                        alt   : block.alt_text,
+                        title : block.title?.text
                     });
                     break;
 
@@ -476,16 +477,16 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
 
         // Add rich attachment data
         (content as any).attachment = {
-            color: attachment.color,
-            title: attachment.title,
-            titleLink: attachment.title_link,
-            imageUrl: attachment.image_url,
-            thumbUrl: attachment.thumb_url,
-            footer: attachment.footer,
-            footerIcon: attachment.footer_icon,
-            authorName: attachment.author_name,
-            authorLink: attachment.author_link,
-            authorIcon: attachment.author_icon
+            color      : attachment.color,
+            title      : attachment.title,
+            titleLink  : attachment.title_link,
+            imageUrl   : attachment.image_url,
+            thumbUrl   : attachment.thumb_url,
+            footer     : attachment.footer,
+            footerIcon : attachment.footer_icon,
+            authorName : attachment.author_name,
+            authorLink : attachment.author_link,
+            authorIcon : attachment.author_icon
         };
 
         return content;
@@ -553,7 +554,7 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         metadata?: MessageMetadata
     ): SlackOutgoingMessage {
         const baseMessage: SlackOutgoingMessage = {
-            channel: userId
+            channel : userId
         };
 
         // Add thread information
@@ -607,27 +608,27 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
 
         if (content.caption) {
             blocks.push({
-                type: 'section',
-                text: {
-                    type: 'mrkdwn',
-                    text: content.caption
+                type : 'section',
+                text : {
+                    type : 'mrkdwn',
+                    text : content.caption
                 }
             });
         }
 
         if (content.type === 'image') {
             blocks.push({
-                type: 'image',
-                image_url: content.url,
-                alt_text: content.caption || 'Image'
+                type      : 'image',
+                image_url : content.url,
+                alt_text  : content.caption || 'Image'
             });
         } else {
             // For non-images, create a context block with file info
             blocks.push({
-                type: 'section',
-                text: {
-                    type: 'mrkdwn',
-                    text: `📎 <${content.url}|${content.filename || 'Download File'}>`
+                type : 'section',
+                text : {
+                    type : 'mrkdwn',
+                    text : `📎 <${content.url}|${content.filename || 'Download File'}>`
                 }
             });
         }
@@ -652,10 +653,10 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         // Add header if present
         if (interactive.header) {
             blocks.push({
-                type: 'header',
-                text: {
-                    type: 'plain_text',
-                    text: interactive.header.text || interactive.header
+                type : 'header',
+                text : {
+                    type : 'plain_text',
+                    text : interactive.header.text || interactive.header
                 }
             });
         }
@@ -663,10 +664,10 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         // Add body text
         if (interactive.body) {
             blocks.push({
-                type: 'section',
-                text: {
-                    type: 'mrkdwn',
-                    text: interactive.body
+                type : 'section',
+                text : {
+                    type : 'mrkdwn',
+                    text : interactive.body
                 }
             });
         }
@@ -674,18 +675,18 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         // Add buttons
         if (interactive.buttons && interactive.buttons.length > 0) {
             const buttonElements = interactive.buttons.map((btn: any) => ({
-                type: 'button',
-                text: {
-                    type: 'plain_text',
-                    text: btn.title
+                type : 'button',
+                text : {
+                    type : 'plain_text',
+                    text : btn.title
                 },
-                action_id: btn.id,
-                value: btn.payload || btn.id
+                action_id : btn.id,
+                value     : btn.payload || btn.id
             }));
 
             blocks.push({
-                type: 'actions',
-                elements: buttonElements
+                type     : 'actions',
+                elements : buttonElements
             });
         }
 
@@ -731,15 +732,15 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
 
     private createSlackMetadata(message: SlackMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            slackTs: message.ts,
-            channelId: message.channel,
-            userId: message.user,
-            username: message.username,
-            botId: message.bot_id,
-            appId: message.app_id,
-            teamId: message.team,
-            subtype: message.subtype,
-            clientMsgId: message.client_msg_id
+            slackTs     : message.ts,
+            channelId   : message.channel,
+            userId      : message.user,
+            username    : message.username,
+            botId       : message.bot_id,
+            appId       : message.app_id,
+            teamId      : message.team,
+            subtype     : message.subtype,
+            clientMsgId : message.client_msg_id
         });
 
         // Add thread information
@@ -753,12 +754,12 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         if (message.edited) {
             metadata.edited = true;
             metadata.editedBy = message.edited.user;
-            metadata.editedAt = new Date(parseFloat(message.edited.ts) * 1000);
+            metadata.EditedAt = new Date(parseFloat(message.edited.ts) * 1000);
         }
 
         // Add reaction information
         if (message.reactions && message.reactions.length > 0) {
-            metadata.reactions = message.reactions;
+            metadata.Reactions = message.reactions;
         }
 
         return metadata;

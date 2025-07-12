@@ -256,9 +256,9 @@ export class WebMessageTransformer extends BaseMessageTransformer {
             type     : this.getWebChatMessageType(content),
             content,
             metadata : {
-                replyTo    : metadata?.customData?.replyTo,
-                priority   : metadata?.priority as any || 'normal',
-                customData : metadata?.customData
+                replyTo    : metadata?.CustomData?.replyTo,
+                priority   : metadata?.Priority as any || 'normal',
+                customData : metadata?.CustomData
             },
             options : {
                 requireDeliveryReceipt : true,
@@ -319,19 +319,19 @@ export class WebMessageTransformer extends BaseMessageTransformer {
 
         // Add web-specific metadata
         if (message.metadata?.replyTo) {
-            metadata.customData!.replyTo = message.metadata.replyTo;
+            metadata.CustomData!.replyTo = message.metadata.replyTo;
         }
 
         if (message.metadata?.edited) {
-            metadata.editedAt = message.metadata.editedAt || new Date();
+            metadata.EditedAt = message.metadata.editedAt || new Date();
         }
 
         if (message.metadata?.forwarded) {
-            metadata.isForwarded = true;
+            metadata.IsForwarded = true;
         }
 
         if (message.metadata?.delivered || message.metadata?.read) {
-            metadata.deliveryStatus = {
+            metadata.DeliveryStatus = {
                 delivered : message.metadata.delivered ? new Date() : undefined,
                 read      : message.metadata.read ? (message.metadata.readAt || new Date()) : undefined
             };

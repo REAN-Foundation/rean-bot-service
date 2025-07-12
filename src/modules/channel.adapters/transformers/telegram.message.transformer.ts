@@ -1,9 +1,10 @@
 import {
     MessageContent,
-    MessageType,
     MessageMetadata
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
+
+////////////////////////////////////////////////////////////
 
 export interface TelegramUser {
     id: number;
@@ -244,7 +245,7 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
             content,
             metadata,
             timestamp,
-            platformMessageId: message.message_id.toString()
+            platformMessageId : message.message_id.toString()
         };
 
         if (!this.validateTransformedMessage(transformed)) {
@@ -260,24 +261,24 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
             'callback_query',
             query.data || '',
             [{
-                id: query.data || '',
-                title: query.data || 'Button pressed'
+                id    : query.data || '',
+                title : query.data || 'Button pressed'
             }]
         );
 
         const metadata = this.createMetadata(query, {
-            callbackQueryId: query.id,
-            chatInstance: query.chat_instance,
-            inlineMessageId: query.inline_message_id,
-            originalMessageId: query.message?.message_id
+            callbackQueryId   : query.id,
+            chatInstance      : query.chat_instance,
+            inlineMessageId   : query.inline_message_id,
+            originalMessageId : query.message?.message_id
         });
 
         return {
             userId,
             content,
             metadata,
-            timestamp: new Date(),
-            platformMessageId: query.id
+            timestamp         : new Date(),
+            platformMessageId : query.id
         };
     }
 
@@ -301,11 +302,11 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
                 `telegram://file/${largestPhoto.file_id}`,
                 message.caption,
                 {
-                    fileId: largestPhoto.file_id,
-                    fileUniqueId: largestPhoto.file_unique_id,
-                    width: largestPhoto.width,
-                    height: largestPhoto.height,
-                    fileSize: largestPhoto.file_size
+                    fileId       : largestPhoto.file_id,
+                    fileUniqueId : largestPhoto.file_unique_id,
+                    width        : largestPhoto.width,
+                    height       : largestPhoto.height,
+                    fileSize     : largestPhoto.file_size
                 }
             );
         }
@@ -317,14 +318,14 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
                 `telegram://file/${message.audio.file_id}`,
                 message.caption,
                 {
-                    fileId: message.audio.file_id,
-                    fileUniqueId: message.audio.file_unique_id,
-                    duration: message.audio.duration,
-                    performer: message.audio.performer,
-                    title: message.audio.title,
-                    fileName: message.audio.file_name,
-                    mimeType: message.audio.mime_type,
-                    fileSize: message.audio.file_size
+                    fileId       : message.audio.file_id,
+                    fileUniqueId : message.audio.file_unique_id,
+                    duration     : message.audio.duration,
+                    performer    : message.audio.performer,
+                    title        : message.audio.title,
+                    fileName     : message.audio.file_name,
+                    mimeType     : message.audio.mime_type,
+                    fileSize     : message.audio.file_size
                 }
             );
         }
@@ -336,12 +337,12 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
                 `telegram://file/${message.voice.file_id}`,
                 undefined,
                 {
-                    fileId: message.voice.file_id,
-                    fileUniqueId: message.voice.file_unique_id,
-                    duration: message.voice.duration,
-                    mimeType: message.voice.mime_type,
-                    fileSize: message.voice.file_size,
-                    isVoiceNote: true
+                    fileId       : message.voice.file_id,
+                    fileUniqueId : message.voice.file_unique_id,
+                    duration     : message.voice.duration,
+                    mimeType     : message.voice.mime_type,
+                    fileSize     : message.voice.file_size,
+                    isVoiceNote  : true
                 }
             );
         }
@@ -353,14 +354,14 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
                 `telegram://file/${message.video.file_id}`,
                 message.caption,
                 {
-                    fileId: message.video.file_id,
-                    fileUniqueId: message.video.file_unique_id,
-                    width: message.video.width,
-                    height: message.video.height,
-                    duration: message.video.duration,
-                    fileName: message.video.file_name,
-                    mimeType: message.video.mime_type,
-                    fileSize: message.video.file_size
+                    fileId       : message.video.file_id,
+                    fileUniqueId : message.video.file_unique_id,
+                    width        : message.video.width,
+                    height       : message.video.height,
+                    duration     : message.video.duration,
+                    fileName     : message.video.file_name,
+                    mimeType     : message.video.mime_type,
+                    fileSize     : message.video.file_size
                 }
             );
         }
@@ -372,11 +373,11 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
                 `telegram://file/${message.document.file_id}`,
                 message.caption,
                 {
-                    fileId: message.document.file_id,
-                    fileUniqueId: message.document.file_unique_id,
-                    fileName: message.document.file_name,
-                    mimeType: message.document.mime_type,
-                    fileSize: message.document.file_size
+                    fileId       : message.document.file_id,
+                    fileUniqueId : message.document.file_unique_id,
+                    fileName     : message.document.file_name,
+                    mimeType     : message.document.mime_type,
+                    fileSize     : message.document.file_size
                 }
             );
         }
@@ -394,11 +395,11 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
         // Contact message
         if (message.contact) {
             return this.createContactContent([{
-                name: `${message.contact.first_name} ${message.contact.last_name || ''}`.trim(),
-                phones: [message.contact.phone_number],
-                emails: [],
-                userId: message.contact.user_id?.toString(),
-                vcard: message.contact.vcard
+                name   : `${message.contact.first_name} ${message.contact.last_name || ''}`.trim(),
+                phones : [message.contact.phone_number],
+                emails : [],
+                userId : message.contact.user_id?.toString(),
+                vcard  : message.contact.vcard
             }]);
         }
 
@@ -408,14 +409,14 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
 
     private parseTextEntities(entities: TelegramMessageEntity[]): any {
         const formatting: any = {
-            bold: [],
-            italic: [],
-            underline: [],
-            strikethrough: [],
-            mentions: [],
-            links: [],
-            code: [],
-            pre: []
+            bold          : [],
+            italic        : [],
+            underline     : [],
+            strikethrough : [],
+            mentions      : [],
+            links         : [],
+            code          : [],
+            pre           : []
         };
 
         for (const entity of entities) {
@@ -438,15 +439,15 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
                 case 'text_mention':
                     formatting.mentions.push({
                         ...range,
-                        username: entity.user?.username,
-                        userId: entity.user?.id
+                        username : entity.user?.username,
+                        userId   : entity.user?.id
                     });
                     break;
                 case 'url':
                 case 'text_link':
                     formatting.links.push({
                         ...range,
-                        url: entity.url
+                        url : entity.url
                     });
                     break;
                 case 'code':
@@ -455,7 +456,7 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
                 case 'pre':
                     formatting.pre.push({
                         ...range,
-                        language: entity.language
+                        language : entity.language
                     });
                     break;
             }
@@ -474,7 +475,7 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
         metadata?: MessageMetadata
     ): TelegramOutgoingMessage | TelegramOutgoingMessage[] {
         const baseMessage: TelegramOutgoingMessage = {
-            chat_id: userId
+            chat_id : userId
         };
 
         // Add reply information
@@ -568,9 +569,9 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
         if (formatting.bold) {
             formatting.bold.forEach((range: any) => {
                 entities.push({
-                    type: 'bold',
-                    offset: range.offset,
-                    length: range.length
+                    type   : 'bold',
+                    offset : range.offset,
+                    length : range.length
                 });
             });
         }
@@ -579,9 +580,9 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
         if (formatting.italic) {
             formatting.italic.forEach((range: any) => {
                 entities.push({
-                    type: 'italic',
-                    offset: range.offset,
-                    length: range.length
+                    type   : 'italic',
+                    offset : range.offset,
+                    length : range.length
                 });
             });
         }
@@ -600,8 +601,8 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
             const buttonsPerRow = 2;
             for (let i = 0; i < interactive.buttons.length; i += buttonsPerRow) {
                 const row = interactive.buttons.slice(i, i + buttonsPerRow).map((btn: any) => ({
-                    text: btn.title,
-                    callback_data: btn.id
+                    text          : btn.title,
+                    callback_data : btn.id
                 }));
                 keyboard.push(row);
             }
@@ -641,24 +642,24 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
 
     private createTelegramMetadata(message: TelegramMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            telegramMessageId: message.message_id,
-            chatType: message.chat.type,
-            chatId: message.chat.id,
-            userId: message.from?.id,
-            username: message.from?.username,
-            firstName: message.from?.first_name,
-            lastName: message.from?.last_name,
-            isBot: message.from?.is_bot,
-            languageCode: message.from?.language_code
+            telegramMessageId : message.message_id,
+            chatType          : message.chat.type,
+            chatId            : message.chat.id,
+            userId            : message.from?.id,
+            username          : message.from?.username,
+            firstName         : message.from?.first_name,
+            lastName          : message.from?.last_name,
+            isBot             : message.from?.is_bot,
+            languageCode      : message.from?.language_code
         });
 
         // Add forward information
         if (message.forward_from || message.forward_from_chat) {
-            metadata.forwardedFrom = {
-                from: message.forward_from,
-                fromChat: message.forward_from_chat,
-                messageId: message.forward_from_message_id,
-                date: message.forward_date
+            metadata.ForwardedFrom = {
+                from      : message.forward_from,
+                fromChat  : message.forward_from_chat,
+                messageId : message.forward_from_message_id,
+                date      : message.forward_date
             };
         }
 

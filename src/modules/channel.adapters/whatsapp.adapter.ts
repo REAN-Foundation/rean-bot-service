@@ -4,18 +4,13 @@ import needle from 'needle';
 import { IChannelAdapter } from '../interfaces/channel.adapter.interface';
 import {
     MessageContent,
-    ChannelType
+    ChannelType,
+    DeliveryStatus
 } from '../../domain.types/message.types';
-
-export interface AdapterDeliveryStatus {
-    messageId: string;
-    status: 'sent' | 'delivered' | 'read' | 'failed';
-    timestamp: Date;
-    error?: string;
-    platformResponse?: any;
-}
 import { WhatsAppMessageTransformer, WhatsAppWebhookMessage, WhatsAppOutgoingMessage } from './transformers/whatsapp.message.transformer';
 import { logger } from '../../logger/logger';
+
+////////////////////////////////////////////////////////////
 
 export interface WhatsAppConfig {
     accessToken: string;
@@ -76,9 +71,13 @@ export interface WhatsAppWebhookPayload {
 export class WhatsAppAdapter implements IChannelAdapter {
 
     private config: WhatsAppConfig | null = null;
+
     private transformer: WhatsAppMessageTransformer;
+
     private isInitialized = false;
+
     private lastHealthCheck = new Date();
+
     private healthStatus: 'healthy' | 'degraded' | 'unhealthy' = 'unhealthy';
 
     constructor() {
@@ -103,14 +102,11 @@ export class WhatsAppAdapter implements IChannelAdapter {
             this.healthStatus = 'healthy';
             this.lastHealthCheck = new Date();
 
-            logger.info('WhatsApp adapter initialized successfully', {
-                phoneNumberId: this.config.phoneNumberId,
-                apiVersion: this.config.apiVersion
-            });
+            logger.info(`WhatsApp adapter initialized successfully, phoneNumberId: ${this.config.phoneNumberId}, apiVersion: ${this.config.apiVersion}`);
 
         } catch (error) {
             this.healthStatus = 'unhealthy';
-            logger.error('Failed to initialize WhatsApp adapter', { error });
+            logger.error(`Failed to initialize WhatsApp adapter: ${error}`);
             throw new Error(`WhatsApp adapter initialization failed: ${error}`);
         }
     }
@@ -119,7 +115,7 @@ export class WhatsAppAdapter implements IChannelAdapter {
         channelUserId: string,
         content: MessageContent,
         metadata?: Record<string, any>
-    ): Promise<AdapterDeliveryStatus> {
+    ): Promise<DeliveryStatus> {
         this.ensureInitialized();
 
         try {
@@ -132,25 +128,21 @@ export class WhatsAppAdapter implements IChannelAdapter {
             const response = await this.makeApiCall('POST', 'messages', whatsappMessage);
 
             return {
-                messageId: response.messages[0].id,
-                status: 'sent',
-                timestamp: new Date(),
-                platformResponse: response
+                messageId        : response.messages[0].id,
+                status           : 'sent',
+                timestamp        : new Date(),
+                platformResponse : response
             };
 
         } catch (error) {
-            logger.error('Failed to send WhatsApp message', {
-                channelUserId,
-                error: error.message,
-                content
-            });
+            logger.error(`Failed to send WhatsApp message, channelUserId: ${channelUserId}, error: ${error.message}, content: ${content}`);
 
             return {
-                messageId: metadata?.messageId || '',
-                status: 'failed',
-                timestamp: new Date(),
-                error: error.message,
-                platformResponse: error.response?.data
+                messageId        : metadata?.messageId || '',
+                status           : 'failed',
+                timestamp        : new Date(),
+                error            : error.message,
+                platformResponse : error.response?.data
             };
         }
     }
@@ -176,15 +168,12 @@ export class WhatsAppAdapter implements IChannelAdapter {
 
             const messages = this.extractMessagesFromWebhook(webhookPayload);
 
-            logger.info('Processed WhatsApp webhook', {
-                messagesCount: messages.length,
-                entriesCount: webhookPayload.entry.length
-            });
+            logger.info(`Processed WhatsApp webhook, messagesCount: ${messages.length}, entriesCount: ${webhookPayload.entry.length}`);
 
             return { messages, isValid: true };
 
         } catch (error) {
-            logger.error('Error processing WhatsApp webhook', { error: error.message });
+            logger.error(`Error processing WhatsApp webhook: ${error.message}`);
             return { messages: [], isValid: false };
         }
     }
@@ -260,9 +249,9 @@ export class WhatsAppAdapter implements IChannelAdapter {
     }> {
         if (!this.isInitialized) {
             return {
-                status: 'unhealthy',
-                lastCheck: new Date(),
-                details: 'Adapter not initialized'
+                status    : 'unhealthy',
+                lastCheck : new Date(),
+                details   : 'Adapter not initialized'
             };
         }
 
@@ -273,8 +262,8 @@ export class WhatsAppAdapter implements IChannelAdapter {
             this.lastHealthCheck = new Date();
 
             return {
-                status: this.healthStatus,
-                lastCheck: this.lastHealthCheck
+                status    : this.healthStatus,
+                lastCheck : this.lastHealthCheck
             };
 
         } catch (error) {
@@ -282,9 +271,9 @@ export class WhatsAppAdapter implements IChannelAdapter {
             this.lastHealthCheck = new Date();
 
             return {
-                status: this.healthStatus,
-                lastCheck: this.lastHealthCheck,
-                details: `Health check failed: ${error.message}`
+                status    : this.healthStatus,
+                lastCheck : this.lastHealthCheck,
+                details   : `Health check failed: ${error.message}`
             };
         }
     }
@@ -293,7 +282,7 @@ export class WhatsAppAdapter implements IChannelAdapter {
         this.isInitialized = false;
         this.config = null;
         this.healthStatus = 'unhealthy';
-        logger.info('WhatsApp adapter shut down');
+        logger.info(`WhatsApp adapter shut down`);
     }
 
     formatMessageContent(content: MessageContent): any {
@@ -308,10 +297,10 @@ export class WhatsAppAdapter implements IChannelAdapter {
     } {
         const transformed = this.transformer.parseIncomingMessage(rawMessage);
         return {
-            userId: transformed.userId,
-            content: transformed.content,
-            metadata: transformed.metadata,
-            timestamp: transformed.timestamp
+            userId    : transformed.userId,
+            content   : transformed.content,
+            metadata  : transformed.metadata,
+            timestamp : transformed.timestamp
         };
     }
 
@@ -346,16 +335,16 @@ export class WhatsAppAdapter implements IChannelAdapter {
     }
 
     private async makeApiCall(method: string, endpoint: string, data?: any): Promise<any> {
-        const url = `${this.config!.baseUrl}/${this.config!.apiVersion}/${this.config!.phoneNumberId}/${endpoint}`;
+        const url = `${this.config?.baseUrl}/${this.config?.apiVersion}/${this.config?.phoneNumberId}/${endpoint}`;
 
         const options = {
-            headers: {
-                'Authorization': `Bearer ${this.config!.accessToken}`,
-                'Content-Type': 'application/json'
+            headers : {
+                'Authorization' : `Bearer ${this.config?.accessToken}`,
+                'Content-Type'  : 'application/json'
             }
         };
 
-        let response;
+        let response: any = null;
         try {
             if (method === 'GET') {
                 response = await needle('get', url, options);
@@ -370,12 +359,7 @@ export class WhatsAppAdapter implements IChannelAdapter {
             return response.body;
 
         } catch (error) {
-            logger.error('WhatsApp API call failed', {
-                method,
-                endpoint,
-                status: response?.statusCode,
-                error: error.message
-            });
+            logger.error(`WhatsApp API call failed, method: ${method}, endpoint: ${endpoint}, status: ${response?.statusCode}, error: ${error.message}`);
             throw error;
         }
     }
@@ -388,7 +372,7 @@ export class WhatsAppAdapter implements IChannelAdapter {
 
         const payloadBody = typeof payload === 'string' ? payload : JSON.stringify(payload);
         const expectedSignature = crypto
-            .createHmac('sha256', this.config!.webhookSecret!)
+            .createHmac('sha256', this.config?.webhookSecret || '')
             .update(payloadBody, 'utf8')
             .digest('hex');
 
@@ -417,16 +401,13 @@ export class WhatsAppAdapter implements IChannelAdapter {
                             const transformed = this.transformer.parseIncomingMessage(message);
                             messages.push({
                                 ...transformed,
-                                channelData: {
-                                    phoneNumberId: change.value.metadata.phone_number_id,
-                                    displayPhoneNumber: change.value.metadata.display_phone_number
+                                channelData : {
+                                    phoneNumberId      : change.value.metadata.phone_number_id,
+                                    displayPhoneNumber : change.value.metadata.display_phone_number
                                 }
                             });
                         } catch (error) {
-                            logger.warn('Failed to transform WhatsApp message', {
-                                messageId: message.id,
-                                error: error.message
-                            });
+                            logger.warn(`Failed to transform WhatsApp message, messageId: ${message.id}, error: ${error.message}`);
                         }
                     }
                 }
@@ -435,12 +416,12 @@ export class WhatsAppAdapter implements IChannelAdapter {
                 if (change.field === 'messages' && change.value.statuses) {
                     for (const status of change.value.statuses) {
                         messages.push({
-                            type: 'status_update',
-                            messageId: status.id,
-                            status: status.status,
-                            timestamp: new Date(parseInt(status.timestamp) * 1000),
-                            recipientId: status.recipient_id,
-                            errors: status.errors
+                            type        : 'status_update',
+                            messageId   : status.id,
+                            status      : status.status,
+                            timestamp   : new Date(parseInt(status.timestamp) * 1000),
+                            recipientId : status.recipient_id,
+                            errors      : status.errors
                         });
                     }
                 }

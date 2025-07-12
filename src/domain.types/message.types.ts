@@ -155,80 +155,80 @@ export type MessageContent =
 
 // Message Metadata Interface
 export interface MessageMetadata {
-    channelMessageId?: string;
-    referenceMessageId?: string;
-    threadId?: string;
-    forwardedFrom?: string;
-    isForwarded?: boolean;
-    editedAt?: Date;
-    quotedMessage?: QuotedMessage;
-    deliveryStatus?: DeliveryStatus;
-    readBy?: ReadReceipt[];
-    reactions?: MessageReaction[];
-    priority?: MessagePriority;
-    tags?: string[];
-    customData?: Record<string, any>;
+    ChannelMessageId  ?: string;
+    ReferenceMessageId?: string;
+    ThreadId          ?: string;
+    ForwardedFrom     ?: string;
+    IsForwarded       ?: boolean;
+    EditedAt          ?: Date;
+    QuotedMessage     ?: QuotedMessage;
+    DeliveryStatus    ?: DeliveryStatus;
+    ReadBy            ?: ReadReceipt[];
+    Reactions         ?: MessageReaction[];
+    Priority          ?: MessagePriority;
+    Tags              ?: string[];
+    CustomData        ?: Record<string, any>;
 }
 
 export interface QuotedMessage {
     id: string;
-    content: string;
-    author: string;
-    timestamp: Date;
+    Content         ?: string;
+    Author          ?: string;
+    Timestamp       ?: Date;
 }
 
 export interface DeliveryStatus {
-    sent?: Date;
-    delivered?: Date;
-    read?: Date;
-    failed?: Date;
-    failureReason?: string;
+    Sent            ?: Date;
+    Delivered       ?: Date;
+    Read            ?: Date;
+    Failed          ?: Date;
+    FailureReason   ?: string;
 }
 
 export interface ReadReceipt {
-    userId: string;
-    readAt: Date;
+    UserId          ?: string;
+    ReadAt          ?: Date;
 }
 
 export interface MessageReaction {
-    emoji: string;
-    userId: string;
-    timestamp: Date;
+    Emoji           ?: string;
+    UserId          ?: string;
+    Timestamp       ?: Date;
 }
 
 export enum MessagePriority {
-    Low = 'low',
+    Low    = 'low',
     Normal = 'normal',
-    High = 'high',
+    High   = 'high',
     Urgent = 'urgent'
 }
 
 // Processed Message Content Interface
 export interface ProcessedMessageContent {
-    intent?: string;
-    intentScore?: number;
-    entities?: ExtractedEntity[];
-    sentiment?: SentimentAnalysis;
-    language?: string;
-    translation?: string;
-    summary?: string;
-    keywords?: string[];
-    topics?: string[];
-    customAnalysis?: Record<string, any>;
+    Intent          ?: string;
+    IntentScore     ?: number;
+    Entities        ?: ExtractedEntity[];
+    Sentiment       ?: SentimentAnalysis;
+    Language        ?: string;
+    Translation     ?: string;
+    Summary         ?: string;
+    Keywords        ?: string[];
+    Topics          ?: string[];
+    CustomAnalysis  ?: Record<string, any>;
 }
 
 export interface ExtractedEntity {
-    type: string;
-    value: string;
-    confidence: number;
-    start: number;
-    end: number;
+    Type            ?: string;
+    Value           ?: string;
+    Confidence      ?: number;
+    Start           ?: number;
+    End             ?: number;
 }
 
 export interface SentimentAnalysis {
-    polarity: 'positive' | 'negative' | 'neutral';
-    confidence: number;
-    score: number; // -1 to 1
+    Polarity        ?: 'positive' | 'negative' | 'neutral';
+    Confidence      ?: number;
+    Score           ?: number; // -1 to 1
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -236,64 +236,64 @@ export interface SentimentAnalysis {
 // Common Message Interface (for internal use)
 export interface CommonMessage {
     id: string;
-    conversationId: string;
-    userId: string;
-    channel: ChannelType;
-    messageType: MessageType;
-    direction: MessageDirection;
-    content: MessageContent;
-    metadata?: MessageMetadata;
-    processedContent?: ProcessedMessageContent;
-    status: MessageStatus;
-    timestamp: Date;
-    createdAt: Date;
-    updatedAt?: Date;
+    ConversationId: string;
+    UserId          ?: string;
+    Channel         ?: ChannelType;
+    MessageType     ?: MessageType;
+    Direction       ?: MessageDirection;
+    Content         ?: MessageContent;
+    Metadata        ?: MessageMetadata;
+    ProcessedContent?: ProcessedMessageContent;
+    Status          ?: MessageStatus;
+    Timestamp       ?: Date;
+    CreatedAt       ?: Date;
+    UpdatedAt       ?: Date;
 }
 
 // Message Creation DTO
-export interface CreateMessageDto {
-    conversationId: string;
-    userId: string;
-    channel: ChannelType;
-    messageType: MessageType;
-    direction: MessageDirection;
-    content: MessageContent;
-    metadata?: Partial<MessageMetadata>;
-    status?: MessageStatus;
+export interface CreateMessageModel {
+    ConversationId: string;
+    UserId          ?: string;
+    Channel         ?: ChannelType;
+    MessageType     ?: MessageType;
+    Direction       ?: MessageDirection;
+    Content         ?: MessageContent;
+    Metadata        ?: Partial<MessageMetadata>;
+    Status          ?: MessageStatus;
 }
 
 // Message Update DTO
-export interface UpdateMessageDto {
-    status?: MessageStatus;
-    metadata?: Partial<MessageMetadata>;
-    processedContent?: Partial<ProcessedMessageContent>;
+export interface UpdateMessageModel {
+    Status          ?: MessageStatus;
+    Metadata        ?: Partial<MessageMetadata>;
+    ProcessedContent?: Partial<ProcessedMessageContent>;
 }
 
 // Message Search Filters
 export interface MessageSearchFilters {
-    conversationId?: string;
-    userId?: string;
-    channel?: ChannelType;
-    messageType?: MessageType;
-    direction?: MessageDirection;
-    status?: MessageStatus;
-    dateFrom?: Date;
-    dateTo?: Date;
-    hasAttachments?: boolean;
-    containsText?: string;
-    limit?: number;
-    offset?: number;
+    ConversationId?: string;
+    UserId          ?: string;
+    Channel         ?: ChannelType;
+    MessageType     ?: MessageType;
+    Direction       ?: MessageDirection;
+    Status          ?: MessageStatus;
+    DateFrom        ?: Date;
+    DateTo          ?: Date;
+    HasAttachments  ?: boolean;
+    ContainsText    ?: string;
+    Limit           ?: number;
+    Offset          ?: number;
 }
 
 // Message Statistics
 export interface MessageStatistics {
-    totalMessages: number;
-    messagesByChannel: Record<ChannelType, number>;
-    messagesByType: Record<MessageType, number>;
-    messagesByStatus: Record<MessageStatus, number>;
-    messagesByDirection: Record<MessageDirection, number>;
-    averageResponseTime: number;
-    dailyMessageCount: Record<string, number>;
+    TotalMessages      : number;
+    MessagesByChannel  : Record<ChannelType,      number>;
+    MessagesByType     : Record<MessageType,      number>;
+    MessagesByStatus   : Record<MessageStatus,    number>;
+    MessagesByDirection: Record<MessageDirection, number>;
+    AverageResponseTime: number;
+    DailyMessageCount  : Record<string,           number>;
 }
 
 ////////////////////////////////////////////////////////////////////////

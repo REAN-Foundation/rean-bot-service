@@ -1,5 +1,4 @@
 import { injectable } from 'tsyringe';
-import * as crypto from 'crypto';
 import needle from 'needle';
 import { IChannelAdapter } from '../interfaces/channel.adapter.interface';
 import {
@@ -15,6 +14,7 @@ import {
 } from './transformers/telegram.message.transformer';
 import { logger } from '../../logger/logger';
 
+////////////////////////////////////////////////////////////
 export interface TelegramConfig {
     botToken: string;
     webhookSecret?: string;
@@ -62,10 +62,15 @@ export interface TelegramApiResponse {
 export class TelegramAdapter implements IChannelAdapter {
 
     private config: TelegramConfig | null = null;
+
     private transformer: TelegramMessageTransformer;
+
     private isInitialized = false;
+
     private lastHealthCheck = new Date();
+
     private healthStatus: 'healthy' | 'degraded' | 'unhealthy' = 'unhealthy';
+
     private botInfo: any = null;
 
     constructor() {
@@ -92,14 +97,11 @@ export class TelegramAdapter implements IChannelAdapter {
             this.healthStatus = 'healthy';
             this.lastHealthCheck = new Date();
 
-            logger.info('Telegram adapter initialized successfully', {
-                botUsername: this.botInfo?.username,
-                botId: this.botInfo?.id
-            });
+            logger.info(`Telegram adapter initialized successfully, botUsername: ${this.botInfo?.username}, botId: ${this.botInfo?.id}`);
 
         } catch (error) {
             this.healthStatus = 'unhealthy';
-            logger.error('Failed to initialize Telegram adapter', { error });
+            logger.error(`Failed to initialize Telegram adapter: ${error}`);
             throw new Error(`Telegram adapter initialization failed: ${error}`);
         }
     }
@@ -118,7 +120,7 @@ export class TelegramAdapter implements IChannelAdapter {
                 metadata
             );
 
-            let response: TelegramApiResponse;
+            let response: TelegramApiResponse = null;
 
             // Handle different message types
             if (Array.isArray(telegramMessage)) {
@@ -137,25 +139,21 @@ export class TelegramAdapter implements IChannelAdapter {
             }
 
             return {
-                messageId: response.result.message_id.toString(),
-                status: 'sent',
-                timestamp: new Date(),
-                platformResponse: response.result
+                messageId        : response.result.message_id.toString(),
+                status           : 'sent',
+                timestamp        : new Date(),
+                platformResponse : response.result
             };
 
         } catch (error) {
-            logger.error('Failed to send Telegram message', {
-                channelUserId,
-                error: error.message,
-                content
-            });
+            logger.error(`Failed to send Telegram message, channelUserId: ${channelUserId}, error: ${error.message}, content: ${content}`);
 
             return {
-                messageId: metadata?.messageId || '',
-                status: 'failed',
-                timestamp: new Date(),
-                error: error.message,
-                platformResponse: error.response?.data
+                messageId        : metadata?.messageId || '',
+                status           : 'failed',
+                timestamp        : new Date(),
+                error            : error.message,
+                platformResponse : error.response?.data
             };
         }
     }
@@ -181,15 +179,12 @@ export class TelegramAdapter implements IChannelAdapter {
 
             const messages = this.processUpdates(updates);
 
-            logger.info('Processed Telegram webhook', {
-                messagesCount: messages.length,
-                updatesCount: updates.length
-            });
+            logger.info(`Processed Telegram webhook, messagesCount: ${messages.length}, updatesCount: ${updates.length}`);
 
             return { messages, isValid: true };
 
         } catch (error) {
-            logger.error('Error processing Telegram webhook', { error: error.message });
+            logger.error(`Error processing Telegram webhook: ${error.message}`);
             return { messages: [], isValid: false };
         }
     }
@@ -265,9 +260,9 @@ export class TelegramAdapter implements IChannelAdapter {
     }> {
         if (!this.isInitialized) {
             return {
-                status: 'unhealthy',
-                lastCheck: new Date(),
-                details: 'Adapter not initialized'
+                status    : 'unhealthy',
+                lastCheck : new Date(),
+                details   : 'Adapter not initialized'
             };
         }
 
@@ -283,8 +278,8 @@ export class TelegramAdapter implements IChannelAdapter {
             this.lastHealthCheck = new Date();
 
             return {
-                status: this.healthStatus,
-                lastCheck: this.lastHealthCheck
+                status    : this.healthStatus,
+                lastCheck : this.lastHealthCheck
             };
 
         } catch (error) {
@@ -292,9 +287,9 @@ export class TelegramAdapter implements IChannelAdapter {
             this.lastHealthCheck = new Date();
 
             return {
-                status: this.healthStatus,
-                lastCheck: this.lastHealthCheck,
-                details: `Health check failed: ${error.message}`
+                status    : this.healthStatus,
+                lastCheck : this.lastHealthCheck,
+                details   : `Health check failed: ${error.message}`
             };
         }
     }
@@ -319,10 +314,10 @@ export class TelegramAdapter implements IChannelAdapter {
     } {
         const transformed = this.transformer.parseIncomingMessage(rawMessage);
         return {
-            userId: transformed.userId,
-            content: transformed.content,
-            metadata: transformed.metadata,
-            timestamp: transformed.timestamp
+            userId    : transformed.userId,
+            content   : transformed.content,
+            metadata  : transformed.metadata,
+            timestamp : transformed.timestamp
         };
     }
 
@@ -366,11 +361,11 @@ export class TelegramAdapter implements IChannelAdapter {
     }
 
     private async makeApiCall(method: string, data?: any): Promise<TelegramApiResponse> {
-        const url = `${this.config!.apiBaseUrl}/bot${this.config!.botToken}/${method}`;
+        const url = `${this.config?.apiBaseUrl}/bot${this.config?.botToken}/${method}`;
 
         const options = {
-            headers: {
-                'Content-Type': 'application/json'
+            headers : {
+                'Content-Type' : 'application/json'
             }
         };
 
@@ -384,10 +379,7 @@ export class TelegramAdapter implements IChannelAdapter {
             return response.body;
 
         } catch (error) {
-            logger.error('Telegram API call failed', {
-                method,
-                error: error.message
-            });
+            logger.error(`Telegram API call failed, method: ${method}, error: ${error.message}`);
             throw error;
         }
     }
@@ -395,7 +387,7 @@ export class TelegramAdapter implements IChannelAdapter {
     private async sendSingleMessage(message: TelegramOutgoingMessage): Promise<TelegramApiResponse> {
         // Determine the appropriate API method based on message content
         let method = 'sendMessage';
-        let data = { ...message };
+        const data = { ...message };
 
         if (message.photo) {
             method = 'sendPhoto';
@@ -478,8 +470,8 @@ export class TelegramAdapter implements IChannelAdapter {
                     const transformed = this.transformer.parseIncomingMessage(update.message);
                     messages.push({
                         ...transformed,
-                        updateId: update.update_id,
-                        messageType: 'message'
+                        updateId    : update.update_id,
+                        messageType : 'message'
                     });
                 }
 
@@ -488,8 +480,8 @@ export class TelegramAdapter implements IChannelAdapter {
                     const transformed = this.transformer.parseIncomingMessage(update.edited_message);
                     messages.push({
                         ...transformed,
-                        updateId: update.update_id,
-                        messageType: 'edited_message'
+                        updateId    : update.update_id,
+                        messageType : 'edited_message'
                     });
                 }
 
@@ -498,9 +490,9 @@ export class TelegramAdapter implements IChannelAdapter {
                     const transformed = this.transformer.parseIncomingMessage(update.callback_query);
                     messages.push({
                         ...transformed,
-                        updateId: update.update_id,
-                        messageType: 'callback_query',
-                        callbackQueryId: update.callback_query.id
+                        updateId        : update.update_id,
+                        messageType     : 'callback_query',
+                        callbackQueryId : update.callback_query.id
                     });
                 }
 
@@ -509,8 +501,8 @@ export class TelegramAdapter implements IChannelAdapter {
                     const transformed = this.transformer.parseIncomingMessage(update.channel_post);
                     messages.push({
                         ...transformed,
-                        updateId: update.update_id,
-                        messageType: 'channel_post'
+                        updateId    : update.update_id,
+                        messageType : 'channel_post'
                     });
                 }
 
@@ -519,15 +511,15 @@ export class TelegramAdapter implements IChannelAdapter {
                     const transformed = this.transformer.parseIncomingMessage(update.edited_channel_post);
                     messages.push({
                         ...transformed,
-                        updateId: update.update_id,
-                        messageType: 'edited_channel_post'
+                        updateId    : update.update_id,
+                        messageType : 'edited_channel_post'
                     });
                 }
 
             } catch (error) {
                 logger.warn('Failed to transform Telegram update', {
-                    updateId: update.update_id,
-                    error: error.message
+                    updateId : update.update_id,
+                    error    : error.message
                 });
             }
         }
@@ -549,14 +541,14 @@ export class TelegramAdapter implements IChannelAdapter {
     ): Promise<boolean> {
         try {
             const response = await this.makeApiCall('answerCallbackQuery', {
-                callback_query_id: callbackQueryId,
+                callback_query_id : callbackQueryId,
                 text,
-                show_alert: showAlert
+                show_alert        : showAlert
             });
 
             return response.ok;
         } catch (error) {
-            logger.error('Failed to answer callback query', { error, callbackQueryId });
+            logger.error(`Failed to answer callback query, error: ${error}, callbackQueryId: ${callbackQueryId}`);
             return false;
         }
     }
@@ -567,13 +559,13 @@ export class TelegramAdapter implements IChannelAdapter {
     async sendChatAction(chatId: string, action: string): Promise<boolean> {
         try {
             const response = await this.makeApiCall('sendChatAction', {
-                chat_id: chatId,
+                chat_id : chatId,
                 action
             });
 
             return response.ok;
         } catch (error) {
-            logger.error('Failed to send chat action', { error, chatId, action });
+            logger.error(`Failed to send chat action, error: ${error}, chatId: ${chatId}, action: ${action}`);
             return false;
         }
     }
@@ -586,12 +578,12 @@ export class TelegramAdapter implements IChannelAdapter {
             const response = await this.makeApiCall('getFile', { file_id: fileId });
 
             if (response.ok && response.result.file_path) {
-                return `${this.config!.apiBaseUrl}/file/bot${this.config!.botToken}/${response.result.file_path}`;
+                return `${this.config?.apiBaseUrl}/file/bot${this.config?.botToken}/${response.result.file_path}`;
             }
 
             return null;
         } catch (error) {
-            logger.error('Failed to get file URL', { error, fileId });
+            logger.error(`Failed to get file URL, error: ${error}, fileId: ${fileId}`);
             return null;
         }
     }

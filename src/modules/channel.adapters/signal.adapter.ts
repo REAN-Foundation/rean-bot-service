@@ -14,6 +14,8 @@ import {
 } from './transformers/signal.message.transformer';
 import { logger } from '../../logger/logger';
 
+////////////////////////////////////////////////////////////
+
 export interface SignalConfig {
     apiUrl: string;
     apiKey?: string;

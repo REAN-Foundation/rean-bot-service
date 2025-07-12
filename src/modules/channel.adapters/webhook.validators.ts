@@ -2,6 +2,8 @@ import * as crypto from 'crypto';
 import { ChannelType } from '../../domain.types/message.types';
 import { logger } from '../../logger/logger';
 
+////////////////////////////////////////////////////////////
+
 export interface WebhookValidationResult {
     isValid: boolean;
     error?: string;
@@ -27,6 +29,7 @@ export interface WebhookValidationConfig {
 export class WebhookValidators {
 
     private static readonly DEFAULT_MAX_AGE = 300; // 5 minutes
+
     private static requestCounts = new Map<string, { count: number; resetTime: number }>();
 
     //#region Platform-Specific Validators
@@ -44,15 +47,15 @@ export class WebhookValidators {
             if (payload['hub.mode'] === 'subscribe' && payload['hub.verify_token'] && payload['hub.challenge']) {
                 if (payload['hub.verify_token'] === config.token) {
                     return {
-                        isValid: true,
-                        challenge: payload['hub.challenge'],
-                        channelType: ChannelType.WhatsApp
+                        isValid     : true,
+                        challenge   : payload['hub.challenge'],
+                        channelType : ChannelType.WhatsApp
                     };
                 }
                 return {
-                    isValid: false,
-                    error: 'Invalid verification token',
-                    channelType: ChannelType.WhatsApp
+                    isValid     : false,
+                    error       : 'Invalid verification token',
+                    channelType : ChannelType.WhatsApp
                 };
             }
 
@@ -61,18 +64,18 @@ export class WebhookValidators {
                 const signature = headers['x-hub-signature-256'];
                 if (!signature) {
                     return {
-                        isValid: false,
-                        error: 'Missing signature header',
-                        channelType: ChannelType.WhatsApp
+                        isValid     : false,
+                        error       : 'Missing signature header',
+                        channelType : ChannelType.WhatsApp
                     };
                 }
 
                 const isSignatureValid = this.validateWhatsAppSignature(payload, signature, config.secret);
                 if (!isSignatureValid) {
                     return {
-                        isValid: false,
-                        error: 'Invalid signature',
-                        channelType: ChannelType.WhatsApp
+                        isValid     : false,
+                        error       : 'Invalid signature',
+                        channelType : ChannelType.WhatsApp
                     };
                 }
             }
@@ -80,23 +83,23 @@ export class WebhookValidators {
             // Validate payload structure
             if (!this.isValidWhatsAppPayload(payload)) {
                 return {
-                    isValid: false,
-                    error: 'Invalid payload structure',
-                    channelType: ChannelType.WhatsApp
+                    isValid     : false,
+                    error       : 'Invalid payload structure',
+                    channelType : ChannelType.WhatsApp
                 };
             }
 
             return {
-                isValid: true,
-                channelType: ChannelType.WhatsApp
+                isValid     : true,
+                channelType : ChannelType.WhatsApp
             };
 
         } catch (error) {
-            logger.error('WhatsApp webhook validation error', { error: error.message });
+            logger.error(`WhatsApp webhook validation error: ${error.message}`);
             return {
-                isValid: false,
-                error: `Validation error: ${error.message}`,
-                channelType: ChannelType.WhatsApp
+                isValid     : false,
+                error       : `Validation error: ${error.message}`,
+                channelType : ChannelType.WhatsApp
             };
         }
     }
@@ -115,17 +118,17 @@ export class WebhookValidators {
                 const signature = headers['x-telegram-bot-api-secret-token'];
                 if (!signature) {
                     return {
-                        isValid: false,
-                        error: 'Missing secret token header',
-                        channelType: ChannelType.Telegram
+                        isValid     : false,
+                        error       : 'Missing secret token header',
+                        channelType : ChannelType.Telegram
                     };
                 }
 
                 if (signature !== config.secret) {
                     return {
-                        isValid: false,
-                        error: 'Invalid secret token',
-                        channelType: ChannelType.Telegram
+                        isValid     : false,
+                        error       : 'Invalid secret token',
+                        channelType : ChannelType.Telegram
                     };
                 }
             }
@@ -133,23 +136,23 @@ export class WebhookValidators {
             // Validate payload structure
             if (!this.isValidTelegramPayload(payload)) {
                 return {
-                    isValid: false,
-                    error: 'Invalid payload structure',
-                    channelType: ChannelType.Telegram
+                    isValid     : false,
+                    error       : 'Invalid payload structure',
+                    channelType : ChannelType.Telegram
                 };
             }
 
             return {
-                isValid: true,
-                channelType: ChannelType.Telegram
+                isValid     : true,
+                channelType : ChannelType.Telegram
             };
 
         } catch (error) {
-            logger.error('Telegram webhook validation error', { error: error.message });
+            logger.error(`Telegram webhook validation error: ${error.message}`);
             return {
-                isValid: false,
-                error: `Validation error: ${error.message}`,
-                channelType: ChannelType.Telegram
+                isValid     : false,
+                error       : `Validation error: ${error.message}`,
+                channelType : ChannelType.Telegram
             };
         }
     }
@@ -166,9 +169,9 @@ export class WebhookValidators {
             // Handle URL verification challenge
             if (payload.challenge && payload.type === 'url_verification') {
                 return {
-                    isValid: true,
-                    challenge: payload.challenge,
-                    channelType: ChannelType.Slack
+                    isValid     : true,
+                    challenge   : payload.challenge,
+                    channelType : ChannelType.Slack
                 };
             }
 
@@ -179,9 +182,9 @@ export class WebhookValidators {
 
                 if (!signature || !timestamp) {
                     return {
-                        isValid: false,
-                        error: 'Missing signature headers',
-                        channelType: ChannelType.Slack
+                        isValid     : false,
+                        error       : 'Missing signature headers',
+                        channelType : ChannelType.Slack
                     };
                 }
 
@@ -190,18 +193,18 @@ export class WebhookValidators {
                 const now = Math.floor(Date.now() / 1000);
                 if (Math.abs(now - parseInt(timestamp)) > maxAge) {
                     return {
-                        isValid: false,
-                        error: 'Request too old',
-                        channelType: ChannelType.Slack
+                        isValid     : false,
+                        error       : 'Request too old',
+                        channelType : ChannelType.Slack
                     };
                 }
 
                 const isSignatureValid = this.validateSlackSignature(payload, signature, timestamp, config.secret);
                 if (!isSignatureValid) {
                     return {
-                        isValid: false,
-                        error: 'Invalid signature',
-                        channelType: ChannelType.Slack
+                        isValid     : false,
+                        error       : 'Invalid signature',
+                        channelType : ChannelType.Slack
                     };
                 }
             }
@@ -209,23 +212,23 @@ export class WebhookValidators {
             // Validate payload structure
             if (!this.isValidSlackPayload(payload)) {
                 return {
-                    isValid: false,
-                    error: 'Invalid payload structure',
-                    channelType: ChannelType.Slack
+                    isValid     : false,
+                    error       : 'Invalid payload structure',
+                    channelType : ChannelType.Slack
                 };
             }
 
             return {
-                isValid: true,
-                channelType: ChannelType.Slack
+                isValid     : true,
+                channelType : ChannelType.Slack
             };
 
         } catch (error) {
-            logger.error('Slack webhook validation error', { error: error.message });
+            logger.error(`Slack webhook validation error: ${error.message}`);
             return {
-                isValid: false,
-                error: `Validation error: ${error.message}`,
-                channelType: ChannelType.Slack
+                isValid     : false,
+                error       : `Validation error: ${error.message}`,
+                channelType : ChannelType.Slack
             };
         }
     }
@@ -244,18 +247,18 @@ export class WebhookValidators {
                 const signature = headers['x-signal-signature'];
                 if (!signature) {
                     return {
-                        isValid: false,
-                        error: 'Missing signature header',
-                        channelType: ChannelType.Signal
+                        isValid     : false,
+                        error       : 'Missing signature header',
+                        channelType : ChannelType.Signal
                     };
                 }
 
                 const isSignatureValid = this.validateSignalSignature(payload, signature, config.secret);
                 if (!isSignatureValid) {
                     return {
-                        isValid: false,
-                        error: 'Invalid signature',
-                        channelType: ChannelType.Signal
+                        isValid     : false,
+                        error       : 'Invalid signature',
+                        channelType : ChannelType.Signal
                     };
                 }
             }
@@ -263,23 +266,23 @@ export class WebhookValidators {
             // Validate payload structure
             if (!this.isValidSignalPayload(payload)) {
                 return {
-                    isValid: false,
-                    error: 'Invalid payload structure',
-                    channelType: ChannelType.Signal
+                    isValid     : false,
+                    error       : 'Invalid payload structure',
+                    channelType : ChannelType.Signal
                 };
             }
 
             return {
-                isValid: true,
-                channelType: ChannelType.Signal
+                isValid     : true,
+                channelType : ChannelType.Signal
             };
 
         } catch (error) {
-            logger.error('Signal webhook validation error', { error: error.message });
+            logger.error(`Signal webhook validation error: ${error.message}`);
             return {
-                isValid: false,
-                error: `Validation error: ${error.message}`,
-                channelType: ChannelType.Signal
+                isValid     : false,
+                error       : `Validation error: ${error.message}`,
+                channelType : ChannelType.Signal
             };
         }
     }
@@ -298,18 +301,18 @@ export class WebhookValidators {
                 const token = headers['authorization']?.replace('Bearer ', '') || payload.token;
                 if (!token) {
                     return {
-                        isValid: false,
-                        error: 'Missing authentication token',
-                        channelType: ChannelType.Web
+                        isValid     : false,
+                        error       : 'Missing authentication token',
+                        channelType : ChannelType.Web
                     };
                 }
 
                 const isTokenValid = this.validateWebChatToken(token, config.token);
                 if (!isTokenValid) {
                     return {
-                        isValid: false,
-                        error: 'Invalid authentication token',
-                        channelType: ChannelType.Web
+                        isValid     : false,
+                        error       : 'Invalid authentication token',
+                        channelType : ChannelType.Web
                     };
                 }
             }
@@ -317,23 +320,23 @@ export class WebhookValidators {
             // Validate payload structure for auth requests
             if (!this.isValidWebChatPayload(payload)) {
                 return {
-                    isValid: false,
-                    error: 'Invalid payload structure',
-                    channelType: ChannelType.Web
+                    isValid     : false,
+                    error       : 'Invalid payload structure',
+                    channelType : ChannelType.Web
                 };
             }
 
             return {
-                isValid: true,
-                channelType: ChannelType.Web
+                isValid     : true,
+                channelType : ChannelType.Web
             };
 
         } catch (error) {
-            logger.error('Web Chat authentication validation error', { error: error.message });
+            logger.error(`Web Chat authentication validation error: ${error.message}`);
             return {
-                isValid: false,
-                error: `Validation error: ${error.message}`,
-                channelType: ChannelType.Web
+                isValid     : false,
+                error       : `Validation error: ${error.message}`,
+                channelType : ChannelType.Web
             };
         }
     }
@@ -360,7 +363,7 @@ export class WebhookValidators {
                 Buffer.from(expectedHeader)
             );
         } catch (error) {
-            logger.error('WhatsApp signature validation error', { error: error.message });
+            logger.error(`WhatsApp signature validation error: ${error.message}`);
             return false;
         }
     }
@@ -384,7 +387,7 @@ export class WebhookValidators {
                 Buffer.from(expectedSignature)
             );
         } catch (error) {
-            logger.error('Slack signature validation error', { error: error.message });
+            logger.error(`Slack signature validation error: ${error.message}`);
             return false;
         }
     }
@@ -407,7 +410,7 @@ export class WebhookValidators {
                 Buffer.from(expectedHeader)
             );
         } catch (error) {
-            logger.error('Signal signature validation error', { error: error.message });
+            logger.error(`Signal signature validation error: ${error.message}`);
             return false;
         }
     }
@@ -423,7 +426,7 @@ export class WebhookValidators {
                 Buffer.from(expectedToken)
             );
         } catch (error) {
-            logger.error('Web Chat token validation error', { error: error.message });
+            logger.error(`Web Chat token validation error: ${error.message}`);
             return false;
         }
     }
@@ -574,8 +577,8 @@ export class WebhookValidators {
                 return this.validateWebChatAuth(payload, headers, config);
             default:
                 return {
-                    isValid: false,
-                    error: `Unsupported channel type: ${channelType}`
+                    isValid : false,
+                    error   : `Unsupported channel type: ${channelType}`
                 };
         }
     }
@@ -603,21 +606,21 @@ export class WebhookValidators {
         if (currentData) {
             if (currentData.count >= rateLimitConfig.maxRequests) {
                 return {
-                    isValid: false,
-                    error: 'Rate limit exceeded',
-                    details: {
+                    isValid : false,
+                    error   : 'Rate limit exceeded',
+                    details : {
                         clientIP,
-                        currentCount: currentData.count,
-                        maxRequests: rateLimitConfig.maxRequests,
-                        resetTime: currentData.resetTime
+                        currentCount : currentData.count,
+                        maxRequests  : rateLimitConfig.maxRequests,
+                        resetTime    : currentData.resetTime
                     }
                 };
             }
             currentData.count++;
         } else {
             this.requestCounts.set(clientIP, {
-                count: 1,
-                resetTime: now + rateLimitConfig.windowMs
+                count     : 1,
+                resetTime : now + rateLimitConfig.windowMs
             });
         }
 
@@ -635,9 +638,9 @@ export class WebhookValidators {
 
         if (!allowedIPs.includes(clientIP)) {
             return {
-                isValid: false,
-                error: 'IP not allowed',
-                details: { clientIP, allowedIPs }
+                isValid : false,
+                error   : 'IP not allowed',
+                details : { clientIP, allowedIPs }
             };
         }
 
@@ -657,9 +660,9 @@ export class WebhookValidators {
 
         if (missingHeaders.length > 0) {
             return {
-                isValid: false,
-                error: 'Missing required headers',
-                details: { missingHeaders }
+                isValid : false,
+                error   : 'Missing required headers',
+                details : { missingHeaders }
             };
         }
 
@@ -733,18 +736,18 @@ export class WebhookValidators {
     ): void {
         const logData = {
             channelType,
-            isValid: result.isValid,
-            error: result.error,
-            clientIP: this.getClientIP(headers),
-            userAgent: headers['user-agent'],
-            timestamp: new Date().toISOString(),
+            isValid   : result.isValid,
+            error     : result.error,
+            clientIP  : this.getClientIP(headers),
+            userAgent : headers['user-agent'],
+            timestamp : new Date().toISOString(),
             ...metadata
         };
 
         if (result.isValid) {
-            logger.info('Webhook validation successful', logData);
+            logger.info(`Webhook validation successful for ${channelType} - ${JSON.stringify(logData, null, 2)}`);
         } else {
-            logger.warn('Webhook validation failed', logData);
+            logger.warn(`Webhook validation failed for ${channelType} - ${JSON.stringify(logData, null, 2)}`);
         }
     }
 
