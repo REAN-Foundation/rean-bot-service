@@ -6,7 +6,8 @@ import {
     isLocationMessageContent,
     isContactMessageContent,
     isInteractiveMessageContent,
-    InteractiveMessageContent
+    InteractiveMessageContent,
+    ChannelType
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
@@ -279,7 +280,7 @@ export interface SlackOutgoingMessage {
 export class SlackMessageTransformer extends BaseMessageTransformer {
 
     getPlatformName(): string {
-        return 'slack';
+        return ChannelType.Slack;
     }
 
     //#region Incoming Message Parsing
@@ -560,7 +561,7 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         metadata?: MessageMetadata
     ): SlackOutgoingMessage {
         const baseMessage: SlackOutgoingMessage = {
-            channel: userId
+            channel : userId
         };
 
         // Add thread information for replies
@@ -580,10 +581,10 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         } else if (isMediaMessageContent(content)) {
             message.text = `📎 ${content.caption || 'Media file'}`;
             message.attachments = [{
-                fallback: content.caption || 'Media file',
-                title: content.filename || 'File',
-                text: content.caption || '',
-                image_url: content.mediaType === 'image' ? content.url : undefined
+                fallback  : content.caption || 'Media file',
+                title     : content.filename || 'File',
+                text      : content.caption || '',
+                image_url : content.mediaType === 'image' ? content.url : undefined
             }];
         } else if (isInteractiveMessageContent(content)) {
             message.text = content.text || '';
@@ -662,10 +663,10 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         // Add header if available
         if (interactive.header) {
             blocks.push({
-                type: 'header',
-                text: {
-                    type: 'plain_text',
-                    text: interactive.header.content
+                type : 'header',
+                text : {
+                    type : 'plain_text',
+                    text : interactive.header.content
                 }
             });
         }
@@ -673,10 +674,10 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         // Add body text
         if (interactive.text) {
             blocks.push({
-                type: 'section',
-                text: {
-                    type: 'mrkdwn',
-                    text: interactive.text
+                type : 'section',
+                text : {
+                    type : 'mrkdwn',
+                    text : interactive.text
                 }
             });
         }
@@ -684,17 +685,17 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         // Add buttons if available
         if (interactive.buttons && interactive.buttons.length > 0) {
             const elements = interactive.buttons.map(button => ({
-                type: 'button',
-                text: {
-                    type: 'plain_text',
-                    text: button.title
+                type : 'button',
+                text : {
+                    type : 'plain_text',
+                    text : button.title
                 },
-                value: button.payload || button.id,
-                action_id: button.id
+                value     : button.payload || button.id,
+                action_id : button.id
             }));
 
             blocks.push({
-                type: 'actions',
+                type : 'actions',
                 elements
             });
         }
@@ -741,8 +742,8 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
 
     private createSlackMetadata(message: SlackMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            platform: 'slack',
-            timestamp: new Date(parseFloat(message.ts) * 1000)
+            platform  : ChannelType.Slack,
+            timestamp : new Date(parseFloat(message.ts) * 1000)
         });
 
         // Add Slack-specific metadata
@@ -765,9 +766,9 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
 
         if (message.reactions) {
             metadata.Reactions = message.reactions.map(reaction => ({
-                Emoji: reaction.name,
-                UserId: reaction.users[0], // Take first user
-                Timestamp: new Date(parseFloat(message.ts) * 1000)
+                Emoji     : reaction.name,
+                UserId    : reaction.users[0], // Take first user
+                Timestamp : new Date(parseFloat(message.ts) * 1000)
             }));
         }
 

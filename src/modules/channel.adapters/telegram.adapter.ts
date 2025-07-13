@@ -139,23 +139,23 @@ export class TelegramAdapter implements IChannelAdapter {
             }
 
             return {
-                Sent: new Date(),
-                MessageId: response.result.message_id.toString(),
-                Status: 'sent',
-                Timestamp: new Date(),
-                PlatformResponse: response
+                Sent             : new Date(),
+                MessageId        : response.result.message_id.toString(),
+                Status           : 'sent',
+                Timestamp        : new Date(),
+                PlatformResponse : response
             };
 
         } catch (error) {
             logger.error(`Failed to send Telegram message, channelUserId: ${channelUserId}, error: ${error.message}, content: ${content}`);
 
             return {
-                Failed: new Date(),
-                MessageId: metadata?.messageId || '',
-                Status: 'failed',
-                Timestamp: new Date(),
-                Error: error,
-                PlatformResponse: null
+                Failed           : new Date(),
+                MessageId        : metadata?.messageId || '',
+                Status           : 'failed',
+                Timestamp        : new Date(),
+                Error            : error,
+                PlatformResponse : null
             };
         }
     }

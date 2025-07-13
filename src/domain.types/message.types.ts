@@ -43,11 +43,11 @@ export enum InteractiveMessageType {
 export enum ChannelType {
     WhatsApp = 'whatsapp',
     Telegram = 'telegram',
-    Slack = 'slack',
-    Signal = 'signal',
-    Web = 'web',
-    SMS = 'sms',
-    Email = 'email'
+    Slack    = 'slack',
+    Signal   = 'signal',
+    Web      = 'web',
+    SMS      = 'sms',
+    Email    = 'email'
 }
 
 ////////////////////////////////////////////////////////////////////////

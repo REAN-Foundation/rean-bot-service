@@ -78,15 +78,6 @@ export type {
     TransformedMessage
 } from './transformers/base.message.transformer';
 
-// Channel Adapter Constants
-export const SUPPORTED_CHANNEL_TYPES = [
-    'whatsapp',
-    'telegram',
-    'slack',
-    'signal',
-    'web'
-] as const;
-
 export const CHANNEL_FEATURES = {
     whatsapp : [
         'text_messages',

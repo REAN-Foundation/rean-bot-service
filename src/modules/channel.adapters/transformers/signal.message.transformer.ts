@@ -6,7 +6,8 @@ import {
     isLocationMessageContent,
     isContactMessageContent,
     isInteractiveMessageContent,
-    MediaMessageContent
+    MediaMessageContent,
+    ChannelType
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
@@ -297,7 +298,7 @@ export interface SignalOutgoingMessage {
 export class SignalMessageTransformer extends BaseMessageTransformer {
 
     getPlatformName(): string {
-        return 'signal';
+        return ChannelType.Signal;
     }
 
     //#region Incoming Message Parsing
@@ -566,9 +567,9 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         // Add quote information if available
         if (metadata?.ReplyTo) {
             message.quote = {
-                id: parseInt(metadata.ReplyTo),
-                author: metadata.QuotedFrom || userId,
-                authorUuid: metadata.QuotedFromUuid
+                id         : parseInt(metadata.ReplyTo),
+                author     : metadata.QuotedFrom || userId,
+                authorUuid : metadata.QuotedFromUuid
             };
         }
 
@@ -591,31 +592,31 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
             message.attachments = [this.createSignalAttachment(content)];
         } else if (isContactMessageContent(content)) {
             message.contacts = [{
-                name: {
-                    givenName: content.name.split(' ')[0],
-                    familyName: content.name.split(' ').slice(1).join(' '),
-                    displayName: content.name
+                name : {
+                    givenName   : content.name.split(' ')[0],
+                    familyName  : content.name.split(' ').slice(1).join(' '),
+                    displayName : content.name
                 },
-                number: content.phone ? [{
-                    value: content.phone,
-                    type: 'CELL',
-                    label: 'Mobile'
+                number : content.phone ? [{
+                    value : content.phone,
+                    type  : 'CELL',
+                    label : 'Mobile'
                 }] : [],
-                email: content.email ? [{
-                    value: content.email,
-                    type: 'WORK',
-                    label: 'Work'
+                email : content.email ? [{
+                    value : content.email,
+                    type  : 'WORK',
+                    label : 'Work'
                 }] : [],
-                organization: content.organization
+                organization : content.organization
             }];
         } else if (isInteractiveMessageContent(content)) {
             message.message = content.text || 'Interactive message';
             if (content.type === 'reaction' as any) {
                 message.reaction = {
-                    emoji: (content as any).emoji,
-                    remove: (content as any).remove || false,
-                    targetAuthor: (content as any).targetAuthor,
-                    targetSentTimestamp: (content as any).targetTimestamp
+                    emoji               : (content as any).emoji,
+                    remove              : (content as any).remove || false,
+                    targetAuthor        : (content as any).targetAuthor,
+                    targetSentTimestamp : (content as any).targetTimestamp
                 };
             }
         }
@@ -625,15 +626,15 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
 
     private createSignalAttachment(content: MediaMessageContent): any {
         return {
-            filename: content.filename || `file.${this.extractFileExtension(content.url)}`,
-            contentType: content.mimeType || this.getMimeTypeFromExtension(this.extractFileExtension(content.url)),
-            data: content.url, // In real implementation, this would be the actual file data
-            caption: content.caption,
-            width: content.dimensions?.width,
-            height: content.dimensions?.height,
-            voiceNote: content.mediaType === 'audio',
-            gif: content.mimeType === 'image/gif',
-            borderless: false
+            filename    : content.filename || `file.${this.extractFileExtension(content.url)}`,
+            contentType : content.mimeType || this.getMimeTypeFromExtension(this.extractFileExtension(content.url)),
+            data        : content.url, // In real implementation, this would be the actual file data
+            caption     : content.caption,
+            width       : content.dimensions?.width,
+            height      : content.dimensions?.height,
+            voiceNote   : content.mediaType === 'audio',
+            gif         : content.mimeType === 'image/gif',
+            borderless  : false
         };
     }
 
@@ -719,23 +720,23 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
 
     private createSignalMetadata(message: SignalMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            platform: 'signal',
-            timestamp: new Date(message.timestamp)
+            platform  : ChannelType.Signal,
+            timestamp : new Date(message.timestamp)
         });
 
         // Add Signal-specific metadata
         if (message.group) {
             metadata.Group = {
-                groupId: message.group.groupId,
-                type: message.group.type
+                groupId : message.group.groupId,
+                type    : message.group.type
             };
         }
 
         if (message.groupV2) {
             metadata.GroupV2 = {
-                groupId: message.groupV2.groupId,
-                masterKey: message.groupV2.masterKey,
-                revision: message.groupV2.revision
+                groupId   : message.groupV2.groupId,
+                masterKey : message.groupV2.masterKey,
+                revision  : message.groupV2.revision
             };
         }
 

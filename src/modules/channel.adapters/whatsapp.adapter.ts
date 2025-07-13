@@ -26,7 +26,7 @@ export interface WhatsAppWebhookEntry {
     id: string;
     changes: Array<{
         value: {
-            messaging_product: 'whatsapp';
+            messaging_product: ChannelType.WhatsApp;
             metadata: {
                 display_phone_number: string;
                 phone_number_id: string;
@@ -128,23 +128,23 @@ export class WhatsAppAdapter implements IChannelAdapter {
             const response = await this.makeApiCall('POST', 'messages', whatsappMessage);
 
             return {
-                Sent: new Date(),
-                MessageId: response.messages[0].id,
-                Status: 'sent',
-                Timestamp: new Date(),
-                PlatformResponse: response
+                Sent             : new Date(),
+                MessageId        : response.messages[0].id,
+                Status           : 'sent',
+                Timestamp        : new Date(),
+                PlatformResponse : response
             };
 
         } catch (error) {
             logger.error(`Failed to send WhatsApp message, channelUserId: ${channelUserId}, error: ${error.message}, content: ${content}`);
 
             return {
-                Failed: new Date(),
-                MessageId: metadata?.messageId || '',
-                Status: 'failed',
-                Timestamp: new Date(),
-                Error: error,
-                PlatformResponse: null
+                Failed           : new Date(),
+                MessageId        : metadata?.messageId || '',
+                Status           : 'failed',
+                Timestamp        : new Date(),
+                Error            : error,
+                PlatformResponse : null
             };
         }
     }

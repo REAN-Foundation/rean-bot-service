@@ -7,7 +7,8 @@ import {
     isContactMessageContent,
     isInteractiveMessageContent,
     MediaMessageContent,
-    InteractiveMessageContent
+    InteractiveMessageContent,
+    ChannelType
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
@@ -225,7 +226,7 @@ export interface TelegramCallbackQuery {
 export class TelegramMessageTransformer extends BaseMessageTransformer {
 
     getPlatformName(): string {
-        return 'telegram';
+        return ChannelType.Telegram;
     }
 
     //#region Incoming Message Parsing
@@ -606,8 +607,8 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
             const row: TelegramInlineKeyboardButton[] = [];
             for (const button of interactive.buttons) {
                 row.push({
-                    text: button.title,
-                    callback_data: button.payload || button.id
+                    text          : button.title,
+                    callback_data : button.payload || button.id
                 });
             }
             keyboard.push(row);
@@ -647,17 +648,17 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
 
     private createTelegramMetadata(message: TelegramMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            platform: 'telegram',
-            timestamp: new Date(message.date * 1000)
+            platform  : ChannelType.Telegram,
+            timestamp : new Date(message.date * 1000)
         });
 
         // Add Telegram-specific metadata
         if (message.forward_from) {
             metadata.ForwardedFrom = JSON.stringify({
-                from: message.forward_from,
-                fromChat: message.forward_from_chat,
-                messageId: message.forward_from_message_id,
-                date: message.forward_date
+                from      : message.forward_from,
+                fromChat  : message.forward_from_chat,
+                messageId : message.forward_from_message_id,
+                date      : message.forward_date
             });
         }
 

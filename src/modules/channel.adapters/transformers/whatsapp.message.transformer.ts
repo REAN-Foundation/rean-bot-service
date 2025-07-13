@@ -8,7 +8,8 @@ import {
     isInteractiveMessageContent,
     ContactMessageContent,
     InteractiveMessageContent,
-    MediaMessageContent
+    MediaMessageContent,
+    ChannelType
 } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
@@ -93,7 +94,7 @@ export interface WhatsAppWebhookMessage {
 }
 
 export interface WhatsAppOutgoingMessage {
-    messaging_product: 'whatsapp';
+    messaging_product: ChannelType.WhatsApp;
     to: string;
     type: string;
     text?: {
@@ -202,7 +203,7 @@ export interface WhatsAppOutgoingMessage {
 export class WhatsAppMessageTransformer extends BaseMessageTransformer {
 
     getPlatformName(): string {
-        return 'whatsapp';
+        return ChannelType.WhatsApp;
     }
 
     //#region Incoming Message Parsing
@@ -364,7 +365,7 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
         metadata?: MessageMetadata
     ): WhatsAppOutgoingMessage {
         const baseMessage: WhatsAppOutgoingMessage = {
-            messaging_product : 'whatsapp',
+            messaging_product : ChannelType.WhatsApp,
             to                : userId,
             type              : this.getWhatsAppMessageType(content)
         };
@@ -535,7 +536,7 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
 
     private createWhatsAppMetadata(message: WhatsAppWebhookMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            platform  : 'whatsapp',
+            platform  : ChannelType.WhatsApp,
             timestamp : new Date(parseInt(message.timestamp) * 1000)
         });
 

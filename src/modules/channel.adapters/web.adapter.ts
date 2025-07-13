@@ -214,10 +214,10 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
                 }
 
                 return {
-                    Sent: new Date(),
-                    Delivered: new Date(),
-                    Status: 'delivered',
-                    Timestamp: new Date()
+                    Sent      : new Date(),
+                    Delivered : new Date(),
+                    Status    : 'delivered',
+                    Timestamp : new Date()
                 };
             }
 
@@ -245,20 +245,20 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
             }
 
             return {
-                Sent: new Date(),
-                Delivered: new Date(),
-                Status: 'delivered',
-                Timestamp: new Date()
+                Sent      : new Date(),
+                Delivered : new Date(),
+                Status    : 'delivered',
+                Timestamp : new Date()
             };
 
         } catch (error) {
             logger.error(`Failed to send message: ${error}, userId: ${channelUserId}, messageId: ${messageId}`);
             return {
-                Sent: new Date(),
-                Failed: new Date(),
-                Status: 'failed',
-                Timestamp: new Date(),
-                FailureReason: error.message
+                Sent          : new Date(),
+                Failed        : new Date(),
+                Status        : 'failed',
+                Timestamp     : new Date(),
+                FailureReason : error.message
             };
         }
     }
@@ -736,7 +736,7 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
                 startTime    : new Date(),
                 lastActivity : new Date(),
                 isActive     : true,
-                channel      : 'web',
+                channel      : ChannelType.Web,
                 referrer     : authMessage.referrer,
                 pageUrl      : authMessage.pageUrl,
                 metadata     : authMessage.metadata

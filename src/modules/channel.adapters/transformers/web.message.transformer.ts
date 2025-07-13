@@ -2,7 +2,8 @@ import {
     MessageContent,
     MessageMetadata,
     TextMessageContent,
-    MediaMessageContent} from '../../../domain.types/message.types';
+    MediaMessageContent,
+    ChannelType } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
 export interface WebChatUser {
@@ -100,7 +101,7 @@ export interface WebChatDeliveryReceipt {
 export class WebMessageTransformer extends BaseMessageTransformer {
 
     getPlatformName(): string {
-        return 'web';
+        return ChannelType.Web;
     }
 
     //#region Incoming Message Parsing
@@ -308,13 +309,13 @@ export class WebMessageTransformer extends BaseMessageTransformer {
 
     private createWebChatMetadata(message: WebChatMessage): MessageMetadata {
         const metadata = this.createMetadata(message, {
-            sessionId: message.sessionId,
-            messageType: message.type,
-            status: message.status,
-            userAgent: message.metadata?.userAgent,
-            ipAddress: message.metadata?.ipAddress,
-            pageUrl: message.metadata?.pageUrl,
-            referrer: message.metadata?.referrer
+            sessionId   : message.sessionId,
+            messageType : message.type,
+            status      : message.status,
+            userAgent   : message.metadata?.userAgent,
+            ipAddress   : message.metadata?.ipAddress,
+            pageUrl     : message.metadata?.pageUrl,
+            referrer    : message.metadata?.referrer
         });
 
         // Add web-specific metadata
@@ -332,8 +333,8 @@ export class WebMessageTransformer extends BaseMessageTransformer {
 
         if (message.metadata?.delivered || message.metadata?.read) {
             metadata.DeliveryStatus = {
-                Delivered: message.metadata.delivered ? new Date() : undefined,
-                Read: message.metadata.read ? (message.metadata.readAt || new Date()) : undefined
+                Delivered : message.metadata.delivered ? new Date() : undefined,
+                Read      : message.metadata.read ? (message.metadata.readAt || new Date()) : undefined
             };
         }
 

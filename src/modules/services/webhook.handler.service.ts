@@ -2,6 +2,9 @@ import { injectable } from 'tsyringe';
 import express from 'express';
 import crypto from 'crypto';
 import { logger } from '../../logger/logger';
+import { ChannelType } from '../../domain.types/message.types';
+
+/////////////////////////////////////////////////////////////////////
 
 @injectable()
 export class WebhookHandlerService {
@@ -9,12 +12,14 @@ export class WebhookHandlerService {
     async verifySignature(req: express.Request, channel: string, token: string): Promise<boolean> {
         try {
             switch (channel) {
-                case 'whatsapp':
+                case ChannelType.WhatsApp:
                     return this.verifyWhatsAppSignature(req, token);
-                case 'telegram':
+                case ChannelType.Telegram:
                     return this.verifyTelegramSignature(req, token);
-                case 'slack':
+                case ChannelType.Slack:
                     return this.verifySlackSignature(req, token);
+                case ChannelType.Web:
+                    return this.verifyWebhookSignature(req, token);
                 default:
                     logger.warn(`Unknown channel for signature verification: ${channel}`);
                     return false;
@@ -27,10 +32,14 @@ export class WebhookHandlerService {
 
     async handleVerification(req: express.Request, channel: string): Promise<{ status: number; response: string }> {
         switch (channel) {
-            case 'whatsapp':
+            case ChannelType.WhatsApp:
                 return this.handleWhatsAppVerification(req);
-            case 'telegram':
+            case ChannelType.Telegram:
                 return this.handleTelegramVerification(req);
+            case ChannelType.Slack:
+                return this.handleSlackVerification(req);
+            case ChannelType.Web:
+                return this.handleWebhookVerification(req);
             default:
                 return { status: 404, response: 'Channel not supported' };
         }
@@ -41,14 +50,17 @@ export class WebhookHandlerService {
 
         // Process webhook payload based on channel
         switch (channel) {
-            case 'whatsapp':
-                await this.processWhatsAppWebhook(payload);
+            case ChannelType.WhatsApp:
+                await this.processHookForWhatsApp(payload);
                 break;
-            case 'telegram':
-                await this.processTelegramWebhook(payload);
+            case ChannelType.Telegram:
+                await this.processHookForTelegram(payload);
                 break;
-            case 'slack':
-                await this.processSlackWebhook(payload);
+            case ChannelType.Slack:
+                await this.processHookForSlack(payload);
+                break;
+            case ChannelType.Web:
+                await this.processHookForWeb(payload);
                 break;
             default:
                 logger.warn(`Unknown channel: ${channel}`);
@@ -88,6 +100,15 @@ export class WebhookHandlerService {
         return signature === `v0=${expectedSignature}`;
     }
 
+    private verifyWebhookSignature(req: express.Request, token: string): boolean {
+        const signature = req.headers['x-webhook-signature'] as string;
+        const timestamp = req.headers['x-webhook-timestamp'] as string;
+        const body = req.body;
+
+        // TODO: Implement webhook signature Verification
+        return true;
+    }
+
     private handleWhatsAppVerification(req: express.Request): { status: number; response: string } {
         const mode = req.query['hub.mode'];
         const token = req.query['hub.verify_token'];
@@ -105,7 +126,15 @@ export class WebhookHandlerService {
         return { status: 200, response: 'OK' };
     }
 
-    private async processWhatsAppWebhook(payload: any): Promise<void> {
+    private handleSlackVerification(req: express.Request): { status: number; response: string } {
+        return { status: 200, response: 'OK' };
+    }
+
+    private handleWebhookVerification(req: express.Request): { status: number; response: string } {
+        return { status: 200, response: 'OK' };
+    }
+
+    private async processHookForWhatsApp(payload: any): Promise<void> {
         if (payload.object === 'whatsapp_business_account') {
             for (const entry of payload.entry) {
                 for (const change of entry.changes) {
@@ -118,7 +147,7 @@ export class WebhookHandlerService {
                                 to        : change.value.metadata.phone_number_id,
                                 type      : message.type,
                                 content   : this.extractWhatsAppContent(message),
-                                channel   : 'whatsapp',
+                                channel   : ChannelType.WhatsApp,
                                 timestamp : new Date(parseInt(message.timestamp) * 1000)
                             });
                         }
@@ -128,7 +157,7 @@ export class WebhookHandlerService {
         }
     }
 
-    private async processTelegramWebhook(payload: any): Promise<void> {
+    private async processHookForTelegram(payload: any): Promise<void> {
         if (payload.message) {
             await this.processMessage({
                 id        : payload.message.message_id.toString(),
@@ -136,13 +165,13 @@ export class WebhookHandlerService {
                 to        : payload.message.chat.id.toString(),
                 type      : this.getTelegramMessageType(payload.message),
                 content   : this.extractTelegramContent(payload.message),
-                channel   : 'telegram',
+                channel   : ChannelType.Telegram,
                 timestamp : new Date(payload.message.date * 1000)
             });
         }
     }
 
-    private async processSlackWebhook(payload: any): Promise<void> {
+    private async processHookForSlack(payload: any): Promise<void> {
         if (payload.event && payload.event.type === 'message') {
             await this.processMessage({
                 id        : payload.event.ts,
@@ -150,10 +179,15 @@ export class WebhookHandlerService {
                 to        : payload.event.channel,
                 type      : 'text',
                 content   : { text: payload.event.text },
-                channel   : 'slack',
+                channel   : ChannelType.Slack,
                 timestamp : new Date(parseFloat(payload.event.ts) * 1000)
             });
         }
+    }
+
+    private async processHookForWeb(payload: any): Promise<void> {
+        // TODO: Implement Web webhook processing
+        logger.info(`Web webhook received: ${JSON.stringify(payload)}`);
     }
 
     private async processMessage(messageData: any): Promise<void> {
@@ -239,4 +273,5 @@ export class WebhookHandlerService {
         // Basic validation logic
         return true;
     }
+
 }
