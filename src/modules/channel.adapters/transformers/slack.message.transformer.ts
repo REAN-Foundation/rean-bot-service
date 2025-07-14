@@ -1,14 +1,16 @@
 import {
     MessageContent,
     MessageMetadata,
+    InteractiveMessageContent,
+    ChannelType
+} from '../../../domain.types/message.types';
+import {
     isTextMessageContent,
     isMediaMessageContent,
     isLocationMessageContent,
     isContactMessageContent,
-    isInteractiveMessageContent,
-    InteractiveMessageContent,
-    ChannelType
-} from '../../../domain.types/message.types';
+    isInteractiveMessageContent
+} from "src/domain.types/isTextMessageContent";
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
 ////////////////////////////////////////////////////////////

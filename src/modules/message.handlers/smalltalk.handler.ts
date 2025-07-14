@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { injectable } from 'tsyringe';
-import { IMessageHandler } from './interfaces/handler.interface';
+import { IMessageHandler } from '../interfaces/handler.interface';
+import { HandlerType } from '../../domain.types/intent.types';
+
+///////////////////////////////////////////////////////////////////////////////
 
 @injectable()
 export class SmallTalkHandler implements IMessageHandler {
@@ -35,8 +38,8 @@ export class SmallTalkHandler implements IMessageHandler {
 
     async handle(messageData: any, conversation: any, intentResult: any): Promise<any> {
         return {
-            text: 'SmallTalk handler response',
-            type: 'text'
+            Text : 'SmallTalk handler response',
+            Type : 'text'
         };
     }
 
@@ -45,7 +48,7 @@ export class SmallTalkHandler implements IMessageHandler {
     }
 
     getHandlerType(): string {
-        return 'SMALL_TALK';
+        return HandlerType.SmallTalk;
     }
 
     private detectSmallTalkType(text: string): string {

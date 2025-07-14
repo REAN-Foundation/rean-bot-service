@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { IMessageHandler } from './interfaces/handler.interface';
+import { IMessageHandler } from '../interfaces/handler.interface';
 
 @injectable()
 export class ReminderHandler implements IMessageHandler {

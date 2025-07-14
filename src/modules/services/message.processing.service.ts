@@ -2,8 +2,11 @@ import { inject, scoped, Lifecycle } from 'tsyringe';
 import { MessageRepository } from '../../database/repositories/message.repository';
 import { ConversationRepository } from '../../database/repositories/conversation.repository';
 import { MessageDirection } from '../../database/models/message.entity';
-import { IMessageHandler } from '../message.handlers/interfaces/handler.interface';
+import { IMessageHandler } from '../interfaces/handler.interface';
 import { logger } from '../../logger/logger';
+import { HandlerType } from '../../domain.types/intent.types';
+import { ChannelFactory } from '../channel.adapters';
+import { MessageStatus } from '../../domain.types/message.types';
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -13,41 +16,56 @@ export class MessageProcessingService {
     private handlers = new Map<string, IMessageHandler>();
 
     constructor(
-    @inject('MessageRepository') private messageRepo: MessageRepository,
-    @inject('ConversationRepository') private conversationRepo: ConversationRepository,
-    @inject('AssessmentHandler') assessmentHandler: IMessageHandler,
-    @inject('WorkflowHandler') workflowHandler: IMessageHandler,
-    @inject('ReminderHandler') reminderHandler: IMessageHandler,
-    @inject('TaskHandler') taskHandler: IMessageHandler,
-    @inject('SmallTalkHandler') smallTalkHandler: IMessageHandler,
-    @inject('FeedbackHandler') feedbackHandler: IMessageHandler,
-    @inject('FallbackHandler') private fallbackHandler: IMessageHandler
+    @inject('MessageRepository') private _messageRepo: MessageRepository,
+    @inject('ConversationRepository') private _conversationRepo: ConversationRepository,
+    @inject('AssessmentHandler') _assessmentHandler: IMessageHandler,
+    @inject('WorkflowHandler') _workflowHandler: IMessageHandler,
+    @inject('ReminderHandler') _reminderHandler: IMessageHandler,
+    @inject('TaskHandler') _taskHandler: IMessageHandler,
+    @inject('SmallTalkHandler') _smallTalkHandler: IMessageHandler,
+    @inject('FeedbackHandler') _feedbackHandler: IMessageHandler,
+    @inject('FallbackHandler') private _fallbackHandler: IMessageHandler
     ) {
     // Register handlers
-        this.handlers.set('assessment', assessmentHandler);
-        this.handlers.set('workflow', workflowHandler);
-        this.handlers.set('reminder', reminderHandler);
-        this.handlers.set('task', taskHandler);
-        this.handlers.set('small_talk', smallTalkHandler);
-        this.handlers.set('feedback', feedbackHandler);
+        this.handlers.set(HandlerType.Assessment, _assessmentHandler);
+        this.handlers.set(HandlerType.Workflow, _workflowHandler);
+        this.handlers.set(HandlerType.Reminder, _reminderHandler);
+        this.handlers.set(HandlerType.Task, _taskHandler);
+        this.handlers.set(HandlerType.SmallTalk, _smallTalkHandler);
+        this.handlers.set(HandlerType.Feedback, _feedbackHandler);
     }
 
     async processMessage(messageData: any): Promise<void> {
         try {
-            // Save message
-            const message = await this.messageRepo.create({
-                id             : messageData.id,
-                ConversationId : '', // Will be set after conversation creation
-                UserId         : messageData.from,
-                Channel        : messageData.channel,
-                MessageType    : messageData.type,
-                Direction      : MessageDirection.Inbound,
-                Content        : messageData.content,
-                Status         : 'processing'
-            });
 
-            // Get or create conversation
             const conversation = await this.getOrCreateConversation(messageData);
+
+            //Convert incoming message to our internal message format
+            const channelFactory = ChannelFactory.getInstance();
+            const channelAdapter = await channelFactory.createAdapter(
+                messageData.channel,
+                messageData.tenantId,
+                messageData.config
+            );
+            const inMessage = await channelAdapter.parseIncomingMessage(messageData);
+            if (!inMessage) {
+                throw new Error('Failed to parse incoming message');
+            }
+
+            // Save message
+            const message = await this._messageRepo.create({
+                ConversationId            : conversation.id,
+                UserId                    : inMessage.UserId,
+                Channel                   : inMessage.Channel,
+                ChannelMessageId          : inMessage.Metadata?.ChannelMessageId,
+                ReferenceChannelMessageId : inMessage.Metadata?.ReferenceMessageId,
+                MessageType               : inMessage.MessageType,
+                Direction                 : MessageDirection.Inbound,
+                Content                   : inMessage.Content,
+                Metadata                  : inMessage.Metadata,
+                ProcessedContent          : inMessage.ProcessedContent,
+                Status                    : MessageStatus.Processing
+            });
 
             // Recognize intent
             // const intentResult = await this.intentService.recognizeIntent(
@@ -62,14 +80,14 @@ export class MessageProcessingService {
             };
 
             // Route to appropriate handler
-            const handler = this.handlers.get(intentResult.intent) || this.fallbackHandler;
+            const handler = this.handlers.get(intentResult.intent) || this._fallbackHandler;
             const response = await handler.handle(messageData, conversation, intentResult);
 
             // Update conversation context
             await this.updateConversationContext(conversation, messageData, response, intentResult);
 
             // Update message status
-            await this.messageRepo.update(message.id, { Status: 'processed' });
+            await this._messageRepo.update(message.id, { Status: 'processed' });
             logger.info(`Message processed successfully, messageId: ${message.id}, intent: ${intentResult.intent}, confidence: ${intentResult.confidence}`);
 
         } catch (error) {
@@ -79,7 +97,7 @@ export class MessageProcessingService {
     }
 
     private async getOrCreateConversation(messageData: any): Promise<any> {
-        const existingConversation = await this.conversationRepo.findOne({
+        const existingConversation = await this._conversationRepo.findOne({
             where : {
                 UserId  : messageData.from,
                 Channel : messageData.channel,
@@ -91,7 +109,7 @@ export class MessageProcessingService {
             return existingConversation;
         }
 
-        return this.conversationRepo.create({
+        return this._conversationRepo.create({
             UserId  : messageData.from,
             Channel : messageData.channel,
             Status  : 'active'
@@ -117,7 +135,7 @@ export class MessageProcessingService {
             conversation.context.history = conversation.context.history.slice(-10);
         }
 
-        await this.conversationRepo.update(conversation.id, {
+        await this._conversationRepo.update(conversation.id, {
             Status : 'active'
         });
     }

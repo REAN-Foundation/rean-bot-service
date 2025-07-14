@@ -1,16 +1,18 @@
 import {
     MessageContent,
     MessageMetadata,
-    isTextMessageContent,
-    isMediaMessageContent,
-    isLocationMessageContent,
-    isContactMessageContent,
-    isInteractiveMessageContent,
     ContactMessageContent,
     InteractiveMessageContent,
     MediaMessageContent,
     ChannelType
 } from '../../../domain.types/message.types';
+import {
+    isTextMessageContent,
+    isMediaMessageContent,
+    isLocationMessageContent,
+    isContactMessageContent,
+    isInteractiveMessageContent
+} from "src/domain.types/isTextMessageContent";
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
 /////////////////////////////////////////////////////////////////////////////
@@ -395,8 +397,8 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
     ): WhatsAppOutgoingMessage {
         if (isTextMessageContent(content)) {
             message.text = {
-                body        : content.text,
-                preview_url : this.hasUrl(content.text)
+                body        : content.Text,
+                preview_url : this.hasUrl(content.Text)
             };
         } else if (isMediaMessageContent(content)) {
             this.addMediaContent(message, content);

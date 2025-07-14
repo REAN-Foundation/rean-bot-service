@@ -4,7 +4,8 @@ import { IChannelAdapter } from '../interfaces/channel.adapter.interface';
 import {
     MessageContent,
     DeliveryStatus,
-    ChannelType
+    ChannelType,
+    CommonMessage
 } from '../../domain.types/message.types';
 import {
     TelegramMessageTransformer,
@@ -15,6 +16,7 @@ import {
 import { logger } from '../../logger/logger';
 
 ////////////////////////////////////////////////////////////
+
 export interface TelegramConfig {
     botToken: string;
     webhookSecret?: string;
@@ -313,19 +315,9 @@ export class TelegramAdapter implements IChannelAdapter {
         return this.transformer.formatOutgoingMessage('', content);
     }
 
-    parseIncomingMessage(rawMessage: any): {
-        userId: string;
-        content: MessageContent;
-        metadata: Record<string, any>;
-        timestamp: Date;
-    } {
+    parseIncomingMessage(rawMessage: any): CommonMessage {
         const transformed = this.transformer.parseIncomingMessage(rawMessage);
-        return {
-            userId    : transformed.userId,
-            content   : transformed.content,
-            metadata  : transformed.metadata,
-            timestamp : transformed.timestamp
-        };
+        return transformed;
     }
 
     //#endregion

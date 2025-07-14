@@ -1,13 +1,16 @@
-import { injectable } from 'tsyringe';
-import { IMessageHandler } from './interfaces/handler.interface';
+import { injectable, Lifecycle, scoped } from 'tsyringe';
+import { IMessageHandler } from '../interfaces/handler.interface';
+import { HandlerType } from '../../domain.types/intent.types';
 
-@injectable()
+///////////////////////////////////////////////////////////////////////////////
+
+@scoped(Lifecycle.ContainerScoped)
 export class FallbackHandler implements IMessageHandler {
 
     async handle(messageData: any, conversation: any, intentResult: any): Promise<any> {
         return {
-            text: 'I apologize, but I did not understand your request. Could you please rephrase?',
-            type: 'text'
+            text : 'I apologize, but I did not understand your request. Could you please rephrase?',
+            type : 'text'
         };
     }
 
@@ -16,6 +19,7 @@ export class FallbackHandler implements IMessageHandler {
     }
 
     getHandlerType(): string {
-        return 'FALLBACK';
+        return HandlerType.Fallback;
     }
+
 }

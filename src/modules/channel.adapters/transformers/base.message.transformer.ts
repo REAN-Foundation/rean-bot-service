@@ -88,7 +88,7 @@ export abstract class BaseMessageTransformer {
     protected createTextContent(text: string, formatting?: any): TextMessageContent {
         return {
             text,
-            formatting: formatting ? this.parseTextFormatting(formatting) : undefined
+            formatting : formatting ? this.parseTextFormatting(formatting) : undefined
         };
     }
 
@@ -102,14 +102,14 @@ export abstract class BaseMessageTransformer {
         metadata?: any
     ): MediaMessageContent {
         return {
-            mediaType: type,
+            mediaType  : type,
             url,
             caption,
-            filename: metadata?.filename,
-            mimeType: metadata?.mimeType,
-            size: metadata?.size,
-            dimensions: metadata?.dimensions,
-            duration: metadata?.duration
+            filename   : metadata?.filename,
+            mimeType   : metadata?.mimeType,
+            size       : metadata?.size,
+            dimensions : metadata?.dimensions,
+            duration   : metadata?.duration
         };
     }
 
@@ -136,11 +136,11 @@ export abstract class BaseMessageTransformer {
     protected createContactContent(contacts: any[]): ContactMessageContent {
         const contact = contacts[0] || {};
         return {
-            name: contact.name || '',
-            phone: Array.isArray(contact.phones) ? contact.phones[0] : contact.phone,
-            email: Array.isArray(contact.emails) ? contact.emails[0] : contact.email,
-            organization: contact.organization,
-            vcard: contact.vcard
+            name         : contact.name || '',
+            phone        : Array.isArray(contact.phones) ? contact.phones[0] : contact.phone,
+            email        : Array.isArray(contact.emails) ? contact.emails[0] : contact.email,
+            organization : contact.organization,
+            vcard        : contact.vcard
         };
     }
 
@@ -155,23 +155,23 @@ export abstract class BaseMessageTransformer {
         header?: any
     ): InteractiveMessageContent {
         return {
-            type: type as InteractiveMessageType,
+            type    : type as InteractiveMessageType,
             text,
-            buttons: buttons?.map(btn => ({
-                id: btn.id,
-                title: btn.title || btn.text,
-                type: 'reply' as const,
-                payload: btn.payload || btn.id
+            buttons : buttons?.map(btn => ({
+                id      : btn.id,
+                title   : btn.title || btn.text,
+                type    : 'reply' as const,
+                payload : btn.payload || btn.id
             })),
-            listItems: listItems?.map(item => ({
-                id: item.id,
-                title: item.title,
-                description: item.description,
-                payload: item.payload
+            listItems : listItems?.map(item => ({
+                id          : item.id,
+                title       : item.title,
+                description : item.description,
+                payload     : item.payload
             })),
-            header: header ? {
-                type: header.type,
-                content: header.text || header.content
+            header : header ? {
+                type    : header.type,
+                content : header.text || header.content
             } : undefined
         };
     }
@@ -182,12 +182,12 @@ export abstract class BaseMessageTransformer {
     protected parseTextFormatting(formatting: any): any {
         // Common formatting parsing logic
         return {
-            bold: formatting.bold || [],
-            italic: formatting.italic || [],
-            strikethrough: formatting.strikethrough || [],
-            underline: formatting.underline || [],
-            mentions: formatting.mentions || [],
-            links: formatting.links || []
+            bold          : formatting.bold || [],
+            italic        : formatting.italic || [],
+            strikethrough : formatting.strikethrough || [],
+            underline     : formatting.underline || [],
+            mentions      : formatting.mentions || [],
+            links         : formatting.links || []
         };
     }
 
@@ -199,15 +199,15 @@ export abstract class BaseMessageTransformer {
         additionalData?: Record<string, any>
     ): MessageMetadata {
         return {
-            ChannelMessageId: platformMessage.id || platformMessage.message_id,
-            ForwardedFrom: platformMessage.forwarded_from,
-            IsForwarded: Boolean(platformMessage.forwarded_from),
-            EditedAt: platformMessage.edited ? this.extractTimestamp(platformMessage) : undefined,
-            CustomData: {
-                platform: this.getPlatformName(),
-                timestamp: this.extractTimestamp(platformMessage),
-                replyTo: platformMessage.reply_to,
-                channelSpecific: platformMessage,
+            ChannelMessageId : platformMessage.id || platformMessage.message_id,
+            ForwardedFrom    : platformMessage.forwarded_from,
+            IsForwarded      : Boolean(platformMessage.forwarded_from),
+            EditedAt         : platformMessage.edited ? this.extractTimestamp(platformMessage) : undefined,
+            CustomData       : {
+                platform        : this.getPlatformName(),
+                timestamp       : this.extractTimestamp(platformMessage),
+                replyTo         : platformMessage.reply_to,
+                channelSpecific : platformMessage,
                 ...additionalData
             }
         };
@@ -234,7 +234,7 @@ export abstract class BaseMessageTransformer {
      */
     protected sanitizeText(text: string): string {
         if (!text) return '';
-        return text.trim().replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+        return text.trim().replace('/[\u0000-\u001F\u007F-\u009F]/g', '');
     }
 
     /**
@@ -263,22 +263,22 @@ export abstract class BaseMessageTransformer {
      */
     protected getMimeTypeFromExtension(extension: string): string {
         const mimeTypes: Record<string, string> = {
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'png': 'image/png',
-            'gif': 'image/gif',
-            'webp': 'image/webp',
-            'mp4': 'video/mp4',
-            'avi': 'video/avi',
-            'mov': 'video/quicktime',
-            'mp3': 'audio/mpeg',
-            'wav': 'audio/wav',
-            'ogg': 'audio/ogg',
-            'pdf': 'application/pdf',
-            'doc': 'application/msword',
-            'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'xls': 'application/vnd.ms-excel',
-            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            'jpg'  : 'image/jpeg',
+            'jpeg' : 'image/jpeg',
+            'png'  : 'image/png',
+            'gif'  : 'image/gif',
+            'webp' : 'image/webp',
+            'mp4'  : 'video/mp4',
+            'avi'  : 'video/avi',
+            'mov'  : 'video/quicktime',
+            'mp3'  : 'audio/mpeg',
+            'wav'  : 'audio/wav',
+            'ogg'  : 'audio/ogg',
+            'pdf'  : 'application/pdf',
+            'doc'  : 'application/msword',
+            'docx' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls'  : 'application/vnd.ms-excel',
+            'xlsx' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         };
         return mimeTypes[extension] || 'application/octet-stream';
     }
@@ -316,7 +316,7 @@ export abstract class BaseMessageTransformer {
         return content.text !== undefined && content.text.length > 0;
     }
 
-        /**
+    /**
      * Validate media content
      */
     protected validateMediaContent(content: MediaMessageContent): boolean {

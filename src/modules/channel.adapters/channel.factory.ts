@@ -74,9 +74,6 @@ export class ChannelFactory {
 
     //#region Adapter Management
 
-    /**
-     * Create and initialize a channel adapter
-     */
     async createAdapter(
         channelType: ChannelType,
         tenantId: string,
@@ -120,17 +117,11 @@ export class ChannelFactory {
         }
     }
 
-    /**
-     * Get an existing adapter
-     */
     getAdapter(channelType: ChannelType, tenantId: string): IChannelAdapter | null {
         const adapterKey = this.getAdapterKey(channelType, tenantId);
         return this.adapters.get(adapterKey) || null;
     }
 
-    /**
-     * Update adapter configuration
-     */
     async updateAdapterConfig(
         channelType: ChannelType,
         tenantId: string,
@@ -170,9 +161,6 @@ export class ChannelFactory {
         }
     }
 
-    /**
-     * Remove and shutdown an adapter
-     */
     async removeAdapter(channelType: ChannelType, tenantId: string): Promise<boolean> {
         const adapterKey = this.getAdapterKey(channelType, tenantId);
         const adapter = this.adapters.get(adapterKey);
@@ -196,9 +184,6 @@ export class ChannelFactory {
         }
     }
 
-    /**
-     * List all active adapters
-     */
     listAdapters(): Array<{
         channelType: ChannelType;
         tenantId: string;
@@ -228,9 +213,6 @@ export class ChannelFactory {
 
     //#region Channel Type Support
 
-    /**
-     * Get all supported channel types
-     */
     getSupportedChannelTypes(): ChannelType[] {
         return [
             ChannelType.WhatsApp,
@@ -241,16 +223,10 @@ export class ChannelFactory {
         ];
     }
 
-    /**
-     * Check if a channel type is supported
-     */
     isChannelTypeSupported(channelType: ChannelType): boolean {
         return this.getSupportedChannelTypes().includes(channelType);
     }
 
-    /**
-     * Get channel type capabilities
-     */
     getChannelCapabilities(channelType: ChannelType): {
         supportedMessageTypes: string[];
         supportedFeatures: string[];
@@ -423,9 +399,6 @@ export class ChannelFactory {
 
     //#region Lifecycle Management
 
-    /**
-     * Shutdown all adapters gracefully
-     */
     async shutdownAllAdapters(): Promise<void> {
         logger.info('Shutting down all channel adapters');
 
@@ -463,9 +436,6 @@ export class ChannelFactory {
         logger.info('All channel adapters shut down');
     }
 
-    /**
-     * Restart a specific adapter
-     */
     async restartAdapter(channelType: ChannelType, tenantId: string): Promise<boolean> {
         const adapterKey = this.getAdapterKey(channelType, tenantId);
         const configuration = this.configurations.get(adapterKey);
@@ -491,9 +461,6 @@ export class ChannelFactory {
         }
     }
 
-    /**
-     * Get factory statistics
-     */
     getStatistics(): {
         totalAdapters: number;
         activeAdapters: number;

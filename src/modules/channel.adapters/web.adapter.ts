@@ -4,7 +4,8 @@ import {
     MessageContent,
     MessageMetadata,
     ChannelType,
-    DeliveryStatus
+    DeliveryStatus,
+    CommonMessage
 } from '../../domain.types/message.types';
 import {
     WebMessageTransformer,
@@ -18,6 +19,8 @@ import {
 import { EventEmitter } from 'events';
 import * as WebSocket from 'ws';
 import { logger } from '../../logger/logger';
+
+///////////////////////////////////////////////////////////////////////////////
 
 export interface WebChatConfig {
     port: number;
@@ -479,19 +482,9 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
     /**
      * Parse incoming message to standard format
      */
-    parseIncomingMessage(rawMessage: any): {
-        userId: string;
-        content: MessageContent;
-        metadata: Record<string, any>;
-        timestamp: Date;
-    } {
+    parseIncomingMessage(rawMessage: any): CommonMessage {
         const transformed = this._transformer.parseIncomingMessage(rawMessage);
-        return {
-            userId    : transformed.userId,
-            content   : transformed.content,
-            metadata  : transformed.metadata.CustomData || {},
-            timestamp : transformed.timestamp
-        };
+        return transformed as CommonMessage;
     }
 
     //#endregion
