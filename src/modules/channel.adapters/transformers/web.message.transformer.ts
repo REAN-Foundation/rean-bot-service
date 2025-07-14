@@ -3,6 +3,9 @@ import {
     MessageMetadata,
     TextMessageContent,
     MediaMessageContent,
+    LocationMessageContent,
+    ContactMessageContent,
+    InteractiveMessageContent,
     ChannelType } from '../../../domain.types/message.types';
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
@@ -187,55 +190,59 @@ export class WebMessageTransformer extends BaseMessageTransformer {
         const content = message.content;
 
         // Validate and return content based on type
-        if ('text' in content) {
+        if ('Text' in content) {
             const textContent = content as TextMessageContent;
             return this.createTextContent(
-                this.sanitizeText(textContent.text),
-                textContent.formatting
+                this.sanitizeText(textContent.Text),
+                textContent.Formatting
             );
         }
 
-        if ('mediaType' in content) {
+        if ('MediaType' in content) {
+            const mediaContent = content as MediaMessageContent;
             return this.createMediaContent(
-                content.mediaType,
-                content.url,
-                content.caption,
+                mediaContent.MediaType,
+                mediaContent.Url,
+                mediaContent.Caption,
                 {
-                    filename   : content.filename,
-                    mimeType   : content.mimeType,
-                    size       : content.size,
-                    duration   : content.duration,
-                    dimensions : content.dimensions
+                    filename   : mediaContent.Filename,
+                    mimeType   : mediaContent.MimeType,
+                    size       : mediaContent.Size,
+                    duration   : mediaContent.Duration,
+                    dimensions : mediaContent.Dimensions
                 }
             );
         }
 
-        if ('latitude' in content) {
+        if ('Latitude' in content) {
+            const locationContent = content as LocationMessageContent;
             return this.createLocationContent(
-                content.latitude,
-                content.longitude,
-                content.name,
-                content.address
+                locationContent.Latitude,
+                locationContent.Longitude,
+                locationContent.Name,
+                locationContent.Address
             );
         }
 
-        if ('name' in content && 'phone' in content) {
+        if ('Name' in content && 'Phone' in content) {
+            const contactContent = content as ContactMessageContent;
             return this.createContactContent([{
-                name         : content.name,
-                phone        : content.phone,
-                email        : content.email,
-                organization : content.organization,
-                vcard        : content.vcard
+                name         : contactContent.Name,
+                phone        : contactContent.Phone,
+                email        : contactContent.Email,
+                organization : contactContent.Organization,
+                vcard        : contactContent.Vcard
             }]);
         }
 
-        if ('type' in content && 'buttons' in content) {
+        if ('Type' in content && 'Buttons' in content) {
+            const interactiveContent = content as InteractiveMessageContent;
             return this.createInteractiveContent(
-                content.type,
-                content.text,
-                content.buttons,
-                content.listItems,
-                content.header
+                interactiveContent.Type,
+                interactiveContent.Text,
+                interactiveContent.Buttons,
+                interactiveContent.ListItems,
+                interactiveContent.Header
             );
         }
 

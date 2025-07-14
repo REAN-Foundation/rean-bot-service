@@ -1,11 +1,14 @@
 import { container } from 'tsyringe';
+import * as crypto from 'crypto';
 import { IChannelAdapter } from '../interfaces/channel.adapter.interface';
 import {
     MessageContent,
     MessageMetadata,
     ChannelType,
     DeliveryStatus,
-    CommonMessage
+    CommonMessage,
+    MessageDirection,
+    MessageStatus
 } from '../../domain.types/message.types';
 import {
     WebMessageTransformer,
@@ -476,7 +479,7 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
      * Format message content for the specific channel
      */
     formatMessageContent(content: MessageContent): any {
-        return this._transformer.formatOutgoingMessage('', content);
+        return this._transformer.formatOutgoingMessage('dummy_user', content);
     }
 
     /**
@@ -484,7 +487,22 @@ export class WebChatAdapter extends EventEmitter implements IChannelAdapter {
      */
     parseIncomingMessage(rawMessage: any): CommonMessage {
         const transformed = this._transformer.parseIncomingMessage(rawMessage);
-        return transformed as CommonMessage;
+        const messageType = this._transformer.determineMessageType(transformed.content);
+
+        const commonMessage: CommonMessage = {
+            id             : crypto.randomUUID(),
+            ConversationId : transformed.userId,
+            UserId         : transformed.userId,
+            Channel        : ChannelType.Web,
+            MessageType    : messageType,
+            Direction      : MessageDirection.Inbound,
+            Content        : transformed.content,
+            Metadata       : transformed.metadata,
+            Timestamp      : transformed.timestamp,
+            Status         : MessageStatus.Sent,
+        };
+
+        return commonMessage;
     }
 
     //#endregion

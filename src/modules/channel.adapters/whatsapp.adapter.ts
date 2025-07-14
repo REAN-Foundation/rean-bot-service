@@ -6,7 +6,9 @@ import {
     MessageContent,
     ChannelType,
     DeliveryStatus,
-    CommonMessage
+    CommonMessage,
+    MessageDirection,
+    MessageStatus
 } from '../../domain.types/message.types';
 import { WhatsAppMessageTransformer, WhatsAppWebhookMessage, WhatsAppOutgoingMessage } from './transformers/whatsapp.message.transformer';
 import { logger } from '../../logger/logger';
@@ -289,12 +291,27 @@ export class WhatsAppAdapter implements IChannelAdapter {
     }
 
     formatMessageContent(content: MessageContent): any {
-        return this.transformer.formatOutgoingMessage('', content);
+        return this.transformer.formatOutgoingMessage('dummy_user', content);
     }
 
     parseIncomingMessage(rawMessage: any): CommonMessage {
         const transformed = this.transformer.parseIncomingMessage(rawMessage);
-        return transformed as CommonMessage;
+        const messageType = this.transformer.determineMessageType(transformed.content);
+
+        const commonMessage: CommonMessage = {
+            id             : crypto.randomUUID(),
+            ConversationId : transformed.userId,
+            UserId         : transformed.userId,
+            Channel        : ChannelType.WhatsApp,
+            MessageType    : messageType,
+            Direction      : MessageDirection.Inbound,
+            Content        : transformed.content,
+            Metadata       : transformed.metadata,
+            Timestamp      : transformed.timestamp,
+            Status         : MessageStatus.Sent,
+        };
+
+        return commonMessage;
     }
 
     //#endregion

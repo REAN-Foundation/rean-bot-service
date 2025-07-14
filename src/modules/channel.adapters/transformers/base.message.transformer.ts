@@ -65,10 +65,10 @@ export abstract class BaseMessageTransformer {
     /**
      * Determine message type from content
      */
-    protected determineMessageType(content: any): MessageType {
-        if (content.text) return MessageType.Text;
-        if (content.mediaType) {
-            switch (content.mediaType) {
+    public determineMessageType(content: MessageContent): MessageType {
+        if ('Text' in content) return MessageType.Text;
+        if ('MediaType' in content) {
+            switch (content.MediaType) {
                 case 'image': return MessageType.Image;
                 case 'audio': return MessageType.Audio;
                 case 'video': return MessageType.Video;
@@ -76,9 +76,9 @@ export abstract class BaseMessageTransformer {
                 default: return MessageType.Document;
             }
         }
-        if (content.latitude && content.longitude) return MessageType.Location;
-        if (content.name && content.phone) return MessageType.Contact;
-        if (content.type && content.buttons) return MessageType.Interactive;
+        if ('Latitude' in content && 'Longitude' in content) return MessageType.Location;
+        if ('Name' in content && 'Phone' in content) return MessageType.Contact;
+        if ('Type' in content && 'Buttons' in content) return MessageType.Interactive;
         return MessageType.Text; // Default fallback
     }
 
@@ -87,8 +87,8 @@ export abstract class BaseMessageTransformer {
      */
     protected createTextContent(text: string, formatting?: any): TextMessageContent {
         return {
-            text,
-            formatting : formatting ? this.parseTextFormatting(formatting) : undefined
+            Text       : text,
+            Formatting : formatting ? this.parseTextFormatting(formatting) : undefined
         };
     }
 
@@ -102,14 +102,14 @@ export abstract class BaseMessageTransformer {
         metadata?: any
     ): MediaMessageContent {
         return {
-            mediaType  : type,
-            url,
-            caption,
-            filename   : metadata?.filename,
-            mimeType   : metadata?.mimeType,
-            size       : metadata?.size,
-            dimensions : metadata?.dimensions,
-            duration   : metadata?.duration
+            MediaType  : type,
+            Url        : url,
+            Caption    : caption,
+            Filename   : metadata?.filename,
+            MimeType   : metadata?.mimeType,
+            Size       : metadata?.size,
+            Dimensions : metadata?.dimensions,
+            Duration   : metadata?.duration
         };
     }
 
@@ -123,10 +123,10 @@ export abstract class BaseMessageTransformer {
         address?: string
     ): LocationMessageContent {
         return {
-            latitude,
-            longitude,
-            name,
-            address
+            Latitude  : latitude,
+            Longitude : longitude,
+            Name      : name,
+            Address   : address
         };
     }
 
@@ -136,11 +136,11 @@ export abstract class BaseMessageTransformer {
     protected createContactContent(contacts: any[]): ContactMessageContent {
         const contact = contacts[0] || {};
         return {
-            name         : contact.name || '',
-            phone        : Array.isArray(contact.phones) ? contact.phones[0] : contact.phone,
-            email        : Array.isArray(contact.emails) ? contact.emails[0] : contact.email,
-            organization : contact.organization,
-            vcard        : contact.vcard
+            Name         : contact.name || '',
+            Phone        : Array.isArray(contact.phones) ? contact.phones[0] : contact.phone,
+            Email        : Array.isArray(contact.emails) ? contact.emails[0] : contact.email,
+            Organization : contact.organization,
+            Vcard        : contact.vcard
         };
     }
 
@@ -148,30 +148,30 @@ export abstract class BaseMessageTransformer {
      * Create interactive message content
      */
     protected createInteractiveContent(
-        type: string,
+        type: InteractiveMessageType,
         text?: string,
         buttons?: any[],
         listItems?: any[],
         header?: any
     ): InteractiveMessageContent {
         return {
-            type    : type as InteractiveMessageType,
-            text,
-            buttons : buttons?.map(btn => ({
-                id      : btn.id,
-                title   : btn.title || btn.text,
-                type    : 'reply' as const,
-                payload : btn.payload || btn.id
+            Type    : type,
+            Text    : text,
+            Buttons : buttons?.map(btn => ({
+                Id      : btn.id,
+                Title   : btn.title || btn.text,
+                Type    : 'reply' as const,
+                Payload : btn.payload || btn.id
             })),
-            listItems : listItems?.map(item => ({
-                id          : item.id,
-                title       : item.title,
-                description : item.description,
-                payload     : item.payload
+            ListItems : listItems?.map(item => ({
+                Id          : item.id,
+                Title       : item.title,
+                Description : item.description,
+                Payload     : item.payload
             })),
-            header : header ? {
-                type    : header.type,
-                content : header.text || header.content
+            Header : header ? {
+                Type    : header.type,
+                Content : header.text || header.content
             } : undefined
         };
     }
@@ -296,13 +296,13 @@ export abstract class BaseMessageTransformer {
         }
 
         // Validate content based on type using type guards
-        if ('text' in message.content) {
+        if ('Text' in message.content) {
             return this.validateTextContent(message.content as TextMessageContent);
         }
-        if ('mediaType' in message.content) {
+        if ('MediaType' in message.content) {
             return this.validateMediaContent(message.content as MediaMessageContent);
         }
-        if ('latitude' in message.content) {
+        if ('Latitude' in message.content && 'Longitude' in message.content) {
             return this.validateLocationContent(message.content as LocationMessageContent);
         }
 
@@ -313,26 +313,26 @@ export abstract class BaseMessageTransformer {
      * Validate text content
      */
     protected validateTextContent(content: TextMessageContent): boolean {
-        return content.text !== undefined && content.text.length > 0;
+        return content.Text !== undefined && content.Text.length > 0;
     }
 
     /**
      * Validate media content
      */
     protected validateMediaContent(content: MediaMessageContent): boolean {
-        return content.mediaType !== undefined &&
-               content.url !== undefined &&
-               this.isValidUrl(content.url);
+        return content.MediaType !== undefined &&
+               content.Url !== undefined &&
+               this.isValidUrl(content.Url);
     }
 
     /**
      * Validate location content
      */
     protected validateLocationContent(content: LocationMessageContent): boolean {
-        return content.latitude !== undefined &&
-               content.longitude !== undefined &&
-               content.latitude >= -90 && content.latitude <= 90 &&
-               content.longitude >= -180 && content.longitude <= 180;
+        return content.Latitude !== undefined &&
+               content.Longitude !== undefined &&
+               content.Latitude >= -90 && content.Latitude <= 90 &&
+               content.Longitude >= -180 && content.Longitude <= 180;
     }
 
     //#endregion

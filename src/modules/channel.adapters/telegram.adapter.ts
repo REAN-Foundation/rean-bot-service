@@ -1,11 +1,14 @@
 import { injectable } from 'tsyringe';
+import * as crypto from 'crypto';
 import needle from 'needle';
 import { IChannelAdapter } from '../interfaces/channel.adapter.interface';
 import {
     MessageContent,
     DeliveryStatus,
     ChannelType,
-    CommonMessage
+    CommonMessage,
+    MessageDirection,
+    MessageStatus
 } from '../../domain.types/message.types';
 import {
     TelegramMessageTransformer,
@@ -312,12 +315,27 @@ export class TelegramAdapter implements IChannelAdapter {
     }
 
     formatMessageContent(content: MessageContent): any {
-        return this.transformer.formatOutgoingMessage('', content);
+        return this.transformer.formatOutgoingMessage('dummy_user', content);
     }
 
     parseIncomingMessage(rawMessage: any): CommonMessage {
         const transformed = this.transformer.parseIncomingMessage(rawMessage);
-        return transformed;
+        const messageType = this.transformer.determineMessageType(transformed.content);
+
+        const commonMessage: CommonMessage = {
+            id             : crypto.randomUUID(),
+            ConversationId : transformed.userId,
+            UserId         : transformed.userId,
+            Channel        : ChannelType.Telegram,
+            MessageType    : messageType,
+            Direction      : MessageDirection.Inbound,
+            Content        : transformed.content,
+            Metadata       : transformed.metadata,
+            Timestamp      : transformed.timestamp,
+            Status         : MessageStatus.Sent,
+        };
+
+        return commonMessage;
     }
 
     //#endregion

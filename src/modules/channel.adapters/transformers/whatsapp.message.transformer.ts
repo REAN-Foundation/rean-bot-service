@@ -4,7 +4,10 @@ import {
     ContactMessageContent,
     InteractiveMessageContent,
     MediaMessageContent,
-    ChannelType
+    ChannelType,
+    TextMessageContent,
+    LocationMessageContent,
+    InteractiveMessageType
 } from '../../../domain.types/message.types';
 import {
     isTextMessageContent,
@@ -12,7 +15,7 @@ import {
     isLocationMessageContent,
     isContactMessageContent,
     isInteractiveMessageContent
-} from "src/domain.types/isTextMessageContent";
+} from "../message.utils";
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
 /////////////////////////////////////////////////////////////////////////////
@@ -238,123 +241,90 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
     private parseMessageContent(message: WhatsAppWebhookMessage): MessageContent {
         switch (message.type) {
             case 'text':
-                return this.createTextContent(
-                    this.sanitizeText(message.text?.body || '')
-                );
+                return {
+                    Text: this.sanitizeText(message.text?.body || '')
+                } as TextMessageContent;
 
             case 'image':
-                return this.createMediaContent(
-                    'image',
-                    `whatsapp://media/${message.image?.id}`,
-                    message.image?.caption,
-                    {
-                        mimeType   : message.image?.mime_type,
-                        sha256     : message.image?.sha256,
-                        whatsappId : message.image?.id
-                    }
-                );
+                return {
+                    MediaType : 'image',
+                    Url       : `whatsapp://media/${message.image?.id}`,
+                    Caption   : message.image?.caption,
+                } as MediaMessageContent;
 
             case 'audio':
-                return this.createMediaContent(
-                    'audio',
-                    `whatsapp://media/${message.audio?.id}`,
-                    undefined,
-                    {
-                        mimeType   : message.audio?.mime_type,
-                        sha256     : message.audio?.sha256,
-                        whatsappId : message.audio?.id
-                    }
-                );
+                return {
+                    MediaType : 'audio',
+                    Url       : `whatsapp://media/${message.audio?.id}`,
+                } as MediaMessageContent;
 
             case 'video':
-                return this.createMediaContent(
-                    'video',
-                    `whatsapp://media/${message.video?.id}`,
-                    message.video?.caption,
-                    {
-                        mimeType   : message.video?.mime_type,
-                        sha256     : message.video?.sha256,
-                        whatsappId : message.video?.id
-                    }
-                );
+                return {
+                    MediaType : 'video',
+                    Url       : `whatsapp://media/${message.video?.id}`,
+                    Caption   : message.video?.caption,
+                } as MediaMessageContent;
 
             case 'document':
-                return this.createMediaContent(
-                    'document',
-                    `whatsapp://media/${message.document?.id}`,
-                    message.document?.caption,
-                    {
-                        filename   : message.document?.filename,
-                        mimeType   : message.document?.mime_type,
-                        sha256     : message.document?.sha256,
-                        whatsappId : message.document?.id
-                    }
-                );
+                return {
+                    MediaType : 'document',
+                    Url       : `whatsapp://media/${message.document?.id}`,
+                    Caption   : message.document?.caption,
+                    Filename  : message.document?.filename,
+                } as MediaMessageContent;
 
             case 'location':
-                return this.createLocationContent(
-                    message.location?.latitude,
-                    message.location?.longitude,
-                    message.location?.name,
-                    message.location?.address
-                );
+                return {
+                    Latitude  : message.location.latitude,
+                    Longitude : message.location.longitude,
+                    Name      : message.location.name,
+                    Address   : message.location.address,
+                } as LocationMessageContent;
 
             case 'contacts':
-                return this.createContactContent(
-                    message.contacts?.map(contact => ({
-                        name         : contact.name.formatted_name,
-                        phones       : contact.phones?.map(p => p.phone) || [],
-                        emails       : contact.emails?.map(e => e.email) || [],
-                        organization : contact.org?.company
-                    })) || []
-                );
+                const contact = message.contacts[0];
+                return {
+                    Name         : contact.name.formatted_name,
+                    Phone        : contact.phones?.[0]?.phone,
+                    Email        : contact.emails?.[0]?.email,
+                    Organization : contact.org?.company
+                } as ContactMessageContent;
 
             case 'interactive':
                 return this.parseInteractiveMessage(message);
 
-            case 'button':
-                return this.createInteractiveContent(
-                    'button_reply',
-                    message.button?.text,
-                    [{
-                        id    : message.button?.payload || '',
-                        title : message.button?.text || ''
-                    }]
-                );
-
             default:
-                return this.createTextContent(`Unsupported message type: ${message.type}`);
+                return { Text: 'Unsupported message type' } as TextMessageContent;
         }
     }
 
     private parseInteractiveMessage(message: WhatsAppWebhookMessage): MessageContent {
         const interactive = message.interactive;
-
-        if (interactive.button_reply) {
-            return this.createInteractiveContent(
-                'button_reply',
-                interactive.button_reply.title,
-                [{
-                    id    : interactive.button_reply.id,
-                    title : interactive.button_reply.title
+        if (interactive.type === 'button_reply') {
+            return {
+                Type : InteractiveMessageType.Button,
+                Text : interactive.button_reply.title,
+                Buttons: [{
+                    Id      : interactive.button_reply.id,
+                    Title   : interactive.button_reply.title,
+                    Type    : 'reply',
+                    Payload : interactive.button_reply.id
                 }]
-            );
+            } as InteractiveMessageContent;
         }
-
-        if (interactive.list_reply) {
-            return this.createInteractiveContent(
-                'list_reply',
-                interactive.list_reply.title,
-                undefined,
-                [{
-                    id          : interactive.list_reply.id,
-                    title       : interactive.list_reply.title,
-                    description : interactive.list_reply.description
+        if (interactive.type === 'list_reply') {
+            return {
+                Type : InteractiveMessageType.List,
+                Text : interactive.list_reply.title,
+                ListItems: [{
+                    Id          : interactive.list_reply.id,
+                    Title       : interactive.list_reply.title,
+                    Description : interactive.list_reply.description,
+                    Payload     : interactive.list_reply.id
                 }]
-            );
+            } as InteractiveMessageContent;
         }
-
-        return this.createTextContent('Interactive message received');
+        return { Text: 'Unsupported interactive message' } as TextMessageContent;
     }
 
     //#endregion
@@ -384,7 +354,7 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
 
     private getWhatsAppMessageType(content: MessageContent): string {
         if (isTextMessageContent(content)) return 'text';
-        if (isMediaMessageContent(content)) return content.mediaType;
+        if (isMediaMessageContent(content)) return content.MediaType;
         if (isLocationMessageContent(content)) return 'location';
         if (isContactMessageContent(content)) return 'contacts';
         if (isInteractiveMessageContent(content)) return 'interactive';
@@ -404,32 +374,31 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
             this.addMediaContent(message, content);
         } else if (isLocationMessageContent(content)) {
             message.location = {
-                latitude  : content.latitude,
-                longitude : content.longitude,
-                name      : content.name,
-                address   : content.address
+                latitude  : content.Latitude,
+                longitude : content.Longitude,
+                name      : content.Name,
+                address   : content.Address
             };
         } else if (isContactMessageContent(content)) {
             message.contacts = this.formatContactsForWhatsApp([content]);
         } else if (isInteractiveMessageContent(content)) {
             message.interactive = this.formatInteractiveForWhatsApp(content);
         }
-
         return message;
     }
 
     private addMediaContent(message: WhatsAppOutgoingMessage, content: MediaMessageContent): void {
-        const mediaType = content.mediaType;
+        const mediaType = content.MediaType;
         const mediaData: any = {
-            link : content.url
+            link : content.Url
         };
 
-        if (content.caption) {
-            mediaData.caption = content.caption;
+        if (content.Caption) {
+            mediaData.caption = content.Caption;
         }
 
-        if (mediaType === 'document' && content.filename) {
-            mediaData.filename = content.filename;
+        if (mediaType === 'document' && content.Filename) {
+            mediaData.filename = content.Filename;
         }
 
         message[mediaType as keyof WhatsAppOutgoingMessage] = mediaData;
@@ -437,61 +406,59 @@ export class WhatsAppMessageTransformer extends BaseMessageTransformer {
 
     private formatContactsForWhatsApp(contacts: ContactMessageContent[]): any[] {
         return contacts.map(contact => ({
-            name : {
-                formatted_name : contact.name,
-                first_name     : contact.name.split(' ')[0],
-                last_name      : contact.name.split(' ').slice(1).join(' ')
+            name: {
+                formatted_name : contact.Name,
+                first_name     : contact.Name.split(' ')[0]
             },
-            phones : contact.phone ? [{
-                phone : contact.phone,
-                type  : 'CELL'
-            }] : [],
-            emails : contact.email ? [{
-                email : contact.email,
-                type  : 'WORK'
-            }] : [],
-            org : contact.organization ? {
-                company : contact.organization
+            phones: contact.Phone ? [{
+                phone : contact.Phone,
+                type  : 'main'
+            }] : undefined,
+            emails: contact.Email ? [{
+                email : contact.Email,
+                type  : 'work'
+            }] : undefined,
+            org: contact.Organization ? {
+                company: contact.Organization
             } : undefined
         }));
     }
 
     private formatInteractiveForWhatsApp(interactive: InteractiveMessageContent): any {
-        const formatted: any = {
-            type : interactive.type,
-            body : {
-                text : interactive.text || ''
-            }
-        };
-
-        if (interactive.header) {
-            formatted.header = interactive.header;
-        }
-
-        if (interactive.type === 'button' && interactive.buttons) {
-            formatted.action = {
-                buttons : interactive.buttons.map(btn => ({
-                    type  : 'reply',
-                    reply : {
-                        id    : btn.id,
-                        title : btn.title
-                    }
+        const action: any = {};
+        if (interactive.Buttons) {
+            action.buttons = interactive.Buttons.map(b => ({
+                type  : 'reply',
+                reply : { id: b.Id, title: b.Title }
+            }));
+        } else if (interactive.ListItems) {
+            action.button = interactive.Text || 'Select an option';
+            action.sections = [{
+                title : interactive.Header?.Content || 'Options',
+                rows  : interactive.ListItems.map(item => ({
+                    id          : item.Id,
+                    title       : item.Title,
+                    description : item.Description
                 }))
-            };
-        } else if (interactive.type === 'list' && interactive.listItems) {
-            formatted.action = {
-                button   : 'Select an option',
-                sections : [{
-                    rows : interactive.listItems.map(item => ({
-                        id          : item.id,
-                        title       : item.title,
-                        description : item.description
-                    }))
-                }]
-            };
+            }];
         }
 
-        return formatted;
+        const interactivePayload = {
+            type   : interactive.Type,
+            header : interactive.Header ? {
+                type    : interactive.Header.Type,
+                text    : interactive.Header.Content,
+                // TODO: Add support for other header types
+            } : undefined,
+            body: {
+                text: interactive.Text
+            },
+            footer: interactive.Footer ? {
+                text: interactive.Footer
+            } : undefined,
+            action
+        };
+        return interactivePayload;
     }
 
     //#endregion

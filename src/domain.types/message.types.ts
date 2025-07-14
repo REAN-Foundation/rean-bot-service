@@ -54,93 +54,93 @@ export enum ChannelType {
 
 // Message Content Interfaces
 export interface TextMessageContent {
-    text: string;
-    formatting?: TextFormatting;
+    Text: string;
+    Formatting?: TextFormatting;
 }
 
 export interface TextFormatting {
-    bold?: boolean;
-    italic?: boolean;
-    strikethrough?: boolean;
-    code?: boolean;
-    links?: MessageLink[];
-    mentions?: MessageMention[];
+    Bold?: boolean;
+    Italic?: boolean;
+    Strikethrough?: boolean;
+    Code?: boolean;
+    Links?: MessageLink[];
+    Mentions?: MessageMention[];
 }
 
 export interface MessageLink {
-    url: string;
-    text: string;
-    start: number;
-    end: number;
+    Url: string;
+    Text: string;
+    Start: number;
+    End: number;
 }
 
 export interface MessageMention {
-    userId: string;
-    username: string;
-    start: number;
-    end: number;
+    UserId: string;
+    Username: string;
+    Start: number;
+    End: number;
 }
 
 export interface MediaMessageContent {
-    mediaType: 'image' | 'audio' | 'video' | 'document';
-    url: string;
-    filename?: string;
-    caption?: string;
-    mimeType?: string;
-    size?: number;
-    duration?: number; // for audio/video
-    dimensions?: MediaDimensions;
+    MediaType: 'image' | 'audio' | 'video' | 'document';
+    Url: string;
+    Filename?: string;
+    Caption?: string;
+    MimeType?: string;
+    Size?: number;
+    Duration?: number; // for audio/video
+    Dimensions?: MediaDimensions;
 }
 
 export interface MediaDimensions {
-    width: number;
-    height: number;
+    Width: number;
+    Height: number;
 }
 
 export interface LocationMessageContent {
-    latitude: number;
-    longitude: number;
-    name?: string;
-    address?: string;
-    url?: string;
+    Latitude: number;
+    Longitude: number;
+    Name?: string;
+    Address?: string;
+    Url?: string;
 }
 
 export interface ContactMessageContent {
-    name: string;
-    phone?: string;
-    email?: string;
-    organization?: string;
-    vcard?: string;
+    Name: string;
+    Phone?: string;
+    Email?: string;
+    Organization?: string;
+    Vcard?: string;
 }
 
 export interface InteractiveMessageContent {
-    type: InteractiveMessageType;
-    text?: string;
-    buttons?: MessageButton[];
-    listItems?: MessageListItem[];
-    header?: MessageHeader;
-    footer?: string;
+    Type: InteractiveMessageType;
+    Text?: string;
+    Buttons?: MessageButton[];
+    ListItems?: MessageListItem[];
+    Header?: MessageHeader;
+    Footer?: string;
 }
 
 export interface MessageButton {
-    id: string;
-    title: string;
-    type: 'reply' | 'url' | 'phone';
-    payload?: string;
-    url?: string;
-    phoneNumber?: string;
+    Id: string;
+    Title: string;
+    Type: 'reply' | 'url' | 'phone';
+    Payload?: string;
+    Url?: string;
+    PhoneNumber?: string;
 }
 
 export interface MessageListItem {
-    id: string;
-    title: string;
-    description?: string;
-    payload?: string;
+    Id: string;
+    Title: string;
+    Description?: string;
+    Payload?: string;
 }
 
 export interface MessageHeader {
-    type: 'text' | 'image' | 'video' | 'document';
-    content: string;
+    Type: 'text' | 'image' | 'video' | 'document';
+    Content: string;
 }
 
 // Union type for all message content types

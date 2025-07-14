@@ -2,7 +2,12 @@ import {
     MessageContent,
     MessageMetadata,
     InteractiveMessageContent,
-    ChannelType
+    ChannelType,
+    TextMessageContent,
+    MediaMessageContent,
+    LocationMessageContent,
+    ContactMessageContent,
+    InteractiveMessageType
 } from '../../../domain.types/message.types';
 import {
     isTextMessageContent,
@@ -10,7 +15,7 @@ import {
     isLocationMessageContent,
     isContactMessageContent,
     isInteractiveMessageContent
-} from "src/domain.types/isTextMessageContent";
+} from "../message.utils";
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
 ////////////////////////////////////////////////////////////
@@ -341,82 +346,54 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
     }
 
     private parseMessageContent(message: SlackMessage): MessageContent {
-        // Handle file uploads
+
         if (message.files && message.files.length > 0) {
-            const file = message.files[0]; // Handle first file
-            return this.createMediaContent(
-                this.getMediaTypeFromSlackFile(file),
-                file.url_private || file.permalink || '',
-                message.text || file.title,
-                {
-                    fileId             : file.id,
-                    filename           : file.name,
-                    title              : file.title,
-                    mimeType           : file.mimetype,
-                    fileType           : file.filetype,
-                    size               : file.size,
-                    isPublic           : file.is_public,
-                    thumbUrl           : file.thumb_360 || file.thumb_160,
-                    originalDimensions : file.original_w && file.original_h ? {
-                        width  : file.original_w,
-                        height : file.original_h
-                    } : undefined
-                }
-            );
+            const file = message.files[0];
+            return {
+                MediaType : this.getMediaTypeFromSlackFile(file),
+                Url       : file.url_private,
+                Caption   : message.text,
+                Filename  : file.name,
+                MimeType  : file.mimetype,
+                Size      : file.size,
+            } as MediaMessageContent;
         }
 
-        // Handle rich message with blocks
-        if (message.blocks && message.blocks.length > 0) {
+        if (message.blocks) {
             return this.parseBlockContent(message.blocks, message.text);
         }
 
-        // Handle message with attachments
-        if (message.attachments && message.attachments.length > 0) {
+        if (message.attachments) {
             return this.parseAttachmentContent(message.attachments, message.text);
         }
 
-        // Handle plain text message
         if (message.text) {
-            return this.createTextContent(
-                this.parseSlackMarkdown(message.text)
-            );
+            return {
+                Text: this.parseSlackMarkdown(message.text)
+            } as TextMessageContent;
         }
 
-        // Handle subtypes
-        switch (message.subtype) {
-            case 'file_share':
-                return this.createTextContent('File shared');
-            case 'channel_join':
-                return this.createTextContent('User joined channel');
-            case 'channel_leave':
-                return this.createTextContent('User left channel');
-            case 'channel_topic':
-                return this.createTextContent(`Topic changed: ${message.topic}`);
-            case 'channel_purpose':
-                return this.createTextContent(`Purpose changed: ${message.purpose}`);
-            case 'channel_name':
-                return this.createTextContent(`Channel renamed from ${message.old_name} to ${message.name}`);
-            default:
-                return this.createTextContent(message.text || 'Message received');
-        }
+        return { Text: 'Unsupported message format' } as TextMessageContent;
     }
 
     private parseInteractiveContent(payload: SlackInteractivePayload): MessageContent {
-        if (payload.actions && payload.actions.length > 0) {
-            const action = payload.actions[0];
-
-            return this.createInteractiveContent(
-                'button_click',
-                action.value || action.selected_option?.value,
-                [{
-                    id      : action.action_id,
-                    title   : action.selected_option?.text?.text || action.value || 'Button clicked',
-                    payload : action.value
-                }]
-            );
+        const action = payload.actions?.[0];
+        if (!action) {
+            return { Text: 'No action found in interactive payload' } as TextMessageContent;
         }
 
-        return this.createTextContent('Interactive action received');
+        const interactive: InteractiveMessageContent = {
+            Type : InteractiveMessageType.Button,
+            Text : payload.message?.text || 'Interactive Message',
+            Buttons: [{
+                Id      : action.action_id,
+                Title   : action.value || action.action_id,
+                Payload : action.value,
+                Type    : 'reply'
+            }]
+        };
+
+        return interactive;
     }
 
     private parseBlockContent(blocks: SlackBlock[], fallbackText?: string): MessageContent {
@@ -579,73 +556,43 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
         content: MessageContent
     ): SlackOutgoingMessage {
         if (isTextMessageContent(content)) {
-            message.text = this.formatTextForSlack(content.text);
+            message.text = this.formatTextForSlack(content.Text);
         } else if (isMediaMessageContent(content)) {
-            message.text = `📎 ${content.caption || 'Media file'}`;
-            message.attachments = [{
-                fallback  : content.caption || 'Media file',
-                title     : content.filename || 'File',
-                text      : content.caption || '',
-                image_url : content.mediaType === 'image' ? content.url : undefined
-            }];
+            message = this.addMediaContent(message, content);
         } else if (isInteractiveMessageContent(content)) {
-            message.text = content.text || '';
+            message.text = content.Text || '';
             message.blocks = this.formatInteractiveBlocks(content);
         } else if (isLocationMessageContent(content)) {
-            message.text = `📍 Location: ${content.latitude}, ${content.longitude}`;
-            if (content.name || content.address) {
-                message.text += `\n${content.name || content.address}`;
+            message.text = `📍 Location: ${content.Latitude}, ${content.Longitude}`;
+            if (content.Name || content.Address) {
+                message.text += `\n${content.Name || content.Address}`;
             }
-            message.text += `\nhttps://maps.google.com/?q=${content.latitude},${content.longitude}`;
+            message.text += `\nhttps://maps.google.com/?q=${content.Latitude},${content.Longitude}`;
+
         } else if (isContactMessageContent(content)) {
             const contact = content;
-            message.text = `👤 Contact: ${contact.name}`;
-            if (contact.phone) {
-                message.text += `\n📞 ${contact.phone}`;
+            message.text = `👤 Contact: ${contact.Name}`;
+            if (contact.Phone) {
+                message.text += `\n📞 ${contact.Phone}`;
             }
-            if (contact.email) {
-                message.text += `\n📧 ${contact.email}`;
+            if (contact.Email) {
+                message.text += `\n📧 ${contact.Email}`;
             }
-            if (contact.organization) {
-                message.text += `\n🏢 ${contact.organization}`;
+            if (contact.Organization) {
+                message.text += `\n🏢 ${contact.Organization}`;
             }
         }
-
         return message;
     }
 
-    private addMediaContent(message: SlackOutgoingMessage, content: any): SlackOutgoingMessage {
-        // For media, we use blocks with image/file elements
-        const blocks: SlackBlock[] = [];
-
-        if (content.caption) {
-            blocks.push({
-                type : 'section',
-                text : {
-                    type : 'mrkdwn',
-                    text : content.caption
-                }
-            });
-        }
-
-        if (content.type === 'image') {
-            blocks.push({
-                type      : 'image',
-                image_url : content.url,
-                alt_text  : content.caption || 'Image'
-            });
-        } else {
-            // For non-images, create a context block with file info
-            blocks.push({
-                type : 'section',
-                text : {
-                    type : 'mrkdwn',
-                    text : `📎 <${content.url}|${content.filename || 'Download File'}>`
-                }
-            });
-        }
-
-        message.blocks = blocks;
+    private addMediaContent(message: SlackOutgoingMessage, content: MediaMessageContent): SlackOutgoingMessage {
+        message.text = `📎 ${content.Caption || 'Media file'}`;
+        message.attachments = [{
+            fallback  : content.Caption || 'Media file',
+            title     : content.Filename || 'File',
+            text      : content.Caption || '',
+            image_url : content.MediaType === 'image' ? content.Url : undefined
+        }];
         return message;
     }
 
@@ -662,44 +609,59 @@ export class SlackMessageTransformer extends BaseMessageTransformer {
     private formatInteractiveBlocks(interactive: InteractiveMessageContent): SlackBlock[] {
         const blocks: SlackBlock[] = [];
 
-        // Add header if available
-        if (interactive.header) {
+        // Header
+        if (interactive.Header) {
             blocks.push({
                 type : 'header',
                 text : {
-                    type : 'plain_text',
-                    text : interactive.header.content
+                    type  : 'plain_text',
+                    text  : interactive.Header.Content,
+                    emoji : true
                 }
             });
         }
 
-        // Add body text
-        if (interactive.text) {
+        // Text
+        if (interactive.Text) {
             blocks.push({
                 type : 'section',
                 text : {
                     type : 'mrkdwn',
-                    text : interactive.text
+                    text : interactive.Text
                 }
             });
         }
 
-        // Add buttons if available
-        if (interactive.buttons && interactive.buttons.length > 0) {
-            const elements = interactive.buttons.map(button => ({
-                type : 'button',
-                text : {
-                    type : 'plain_text',
-                    text : button.title
-                },
-                value     : button.payload || button.id,
-                action_id : button.id
-            }));
-
+        // Buttons
+        if (interactive.Buttons && interactive.Buttons.length > 0) {
             blocks.push({
-                type : 'actions',
-                elements
+                type     : 'actions',
+                elements : interactive.Buttons.map(btn => ({
+                    type     : 'button',
+                    text     : { type: 'plain_text', text: btn.Title, emoji: true },
+                    value    : btn.Payload || btn.Id,
+                    action_id: btn.Id
+                }))
             });
+        }
+
+        // List Items
+        if (interactive.ListItems && interactive.ListItems.length > 0) {
+            for (const item of interactive.ListItems) {
+                blocks.push({
+                    type : 'section',
+                    text : {
+                        type : 'mrkdwn',
+                        text : `*${item.Title}*\n${item.Description || ''}`
+                    },
+                    accessory: {
+                        type     : 'button',
+                        text     : { type: 'plain_text', text: 'Select', emoji: true },
+                        value    : item.Payload || item.Id,
+                        action_id: item.Id
+                    }
+                });
+            }
         }
 
         return blocks;

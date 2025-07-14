@@ -2,7 +2,11 @@ import {
     MessageContent,
     MessageMetadata,
     MediaMessageContent,
-    ChannelType
+    ChannelType,
+    TextMessageContent,
+    ContactMessageContent,
+    InteractiveMessageContent,
+    InteractiveMessageType
 } from '../../../domain.types/message.types';
 import {
     isTextMessageContent,
@@ -10,7 +14,7 @@ import {
     isLocationMessageContent,
     isContactMessageContent,
     isInteractiveMessageContent
-} from "src/domain.types/isTextMessageContent";
+} from "../message.utils";
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
 ////////////////////////////////////////////////////////////
@@ -331,172 +335,88 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
     }
 
     private parseMessageContent(message: SignalMessage): MessageContent {
-        // Handle different message types
-        if (message.reaction) {
-            return this.createInteractiveContent(
-                'reaction',
-                message.reaction.emoji,
-                undefined,
-                undefined,
-                {
-                    emoji           : message.reaction.emoji,
-                    remove          : message.reaction.remove,
-                    targetAuthor    : message.reaction.targetAuthor,
-                    targetTimestamp : message.reaction.targetSentTimestamp
-                }
-            );
-        }
-
-        if (message.remoteDelete) {
-            return this.createTextContent('Message deleted');
-        }
-
-        if (message.sticker) {
-            return this.createMediaContent(
-                'image',
-                `signal://sticker/${message.sticker.packId}/${message.sticker.stickerId}`,
-                message.sticker.emoji,
-                {
-                    packId    : message.sticker.packId,
-                    packKey   : message.sticker.packKey,
-                    stickerId : message.sticker.stickerId,
-                    isSticker : true
-                }
-            );
-        }
-
-        // Handle attachments
-        if (message.attachments && message.attachments.length > 0) {
-            const attachment = message.attachments[0];
-            const mediaType = this.getMediaTypeFromSignalAttachment(attachment);
-
-            return this.createMediaContent(
-                mediaType,
-                attachment.url || attachment.path || `signal://attachment/${attachment.id}`,
-                attachment.caption || message.message,
-                {
-                    filename    : attachment.filename,
-                    contentType : attachment.contentType,
-                    size        : attachment.size,
-                    dimensions  : attachment.width && attachment.height ? {
-                        width  : attachment.width,
-                        height : attachment.height
-                    } : undefined,
-                    isVoiceNote  : attachment.voiceNote,
-                    isGif        : attachment.gif,
-                    isBorderless : attachment.borderless,
-                    isViewOnce   : message.isViewOnce,
-                    blurhash     : attachment.blurhash
-                }
-            );
-        }
-
-        // Handle contact sharing
-        if (message.contact) {
-            return this.createContactContent([{
-                name : message.contact.name.displayName ||
-                      `${message.contact.name.givenName || ''} ${message.contact.name.familyName || ''}`.trim(),
-                phones       : message.contact.number?.map(n => n.value) || [],
-                emails       : message.contact.email?.map(e => e.value) || [],
-                organization : message.contact.organization,
-                addresses    : message.contact.address?.map(addr => ({
-                    type     : addr.type,
-                    street   : addr.street,
-                    city     : addr.city,
-                    region   : addr.region,
-                    postcode : addr.postcode,
-                    country  : addr.country
-                })) || []
-            }]);
-        }
-
-        // Handle data message (main message content)
         if (message.dataMessage) {
             return this.parseDataMessage(message.dataMessage, message.message);
         }
-
-        // Handle text message
         if (message.message) {
-            return this.createTextContent(
-                this.sanitizeText(message.message),
-                this.parseSignalFormatting(message.bodyRanges || [])
-            );
+            const textMessage: TextMessageContent = {
+                Text: this.sanitizeText(message.message),
+            };
+            if (message.bodyRanges) {
+                textMessage.Formatting = this.parseSignalFormatting(message.bodyRanges);
+            }
+            return textMessage;
         }
-
-        // Handle group updates
+        if (message.attachments && message.attachments.length > 0) {
+            const attachment = message.attachments[0];
+            const mediaType = this.getMediaTypeFromSignalAttachment(attachment);
+            return {
+                MediaType  : mediaType,
+                Url        : attachment.url || attachment.path || `signal://attachment/${attachment.id}`,
+                Caption    : attachment.caption,
+                Filename   : attachment.filename,
+                MimeType   : attachment.contentType,
+                Size       : attachment.size,
+                Dimensions : {
+                    Width  : attachment.width,
+                    Height : attachment.height,
+                },
+            } as MediaMessageContent;
+        }
+        if (message.contact) {
+            const contact = message.contact;
+            return {
+                Name         : contact.name.displayName || `${contact.name.givenName || ''} ${contact.name.familyName || ''}`.trim(),
+                Phone        : contact.number?.[0]?.value,
+                Email        : contact.email?.[0]?.value,
+                Organization : contact.organization,
+            } as ContactMessageContent;
+        }
+        if (message.sticker) {
+            return {
+                MediaType : 'image',
+                Url       : `signal://sticker/${message.sticker.packId}/${message.sticker.stickerId}`,
+                Caption   : message.sticker.emoji,
+            } as MediaMessageContent;
+        }
+        if (message.reaction) {
+            return {
+                Type : InteractiveMessageType.Button,
+                Text : message.reaction.emoji,
+            } as InteractiveMessageContent;
+        }
+        if (message.remoteDelete) {
+            return { Text: 'Message deleted' } as TextMessageContent;
+        }
         if (message.group || message.groupV2) {
-            return this.createTextContent(this.parseGroupUpdate(message));
+            return { Text: this.parseGroupUpdate(message) } as TextMessageContent;
         }
-
-        return this.createTextContent('Message received');
+        return { Text: 'Message received' } as TextMessageContent;
     }
 
     private parseDataMessage(dataMessage: any, fallbackText?: string): MessageContent {
-        // Handle quoted messages
-        if (dataMessage.quote) {
-            const content = this.createTextContent(
-                this.sanitizeText(dataMessage.body || fallbackText || ''),
-                this.parseSignalFormatting(dataMessage.bodyRanges || [])
-            );
-
-            (content as any).quote = {
-                id          : dataMessage.quote.id,
-                author      : dataMessage.quote.author,
-                authorUuid  : dataMessage.quote.authorUuid,
-                text        : dataMessage.quote.text,
-                attachments : dataMessage.quote.attachments
+        if (dataMessage.body) {
+            const content: TextMessageContent = {
+                Text : this.sanitizeText(dataMessage.body),
             };
-
+            if (dataMessage.bodyRanges) {
+                content.Formatting = this.parseSignalFormatting(dataMessage.bodyRanges);
+            }
             return content;
         }
-
-        // Handle attachments in data message
         if (dataMessage.attachments && dataMessage.attachments.length > 0) {
             const attachment = dataMessage.attachments[0];
             const mediaType = this.getMediaTypeFromSignalAttachment(attachment);
-
-            return this.createMediaContent(
-                mediaType,
-                attachment.url || attachment.path || `signal://attachment/${attachment.id}`,
-                attachment.caption || dataMessage.body || fallbackText,
-                {
-                    filename    : attachment.filename,
-                    contentType : attachment.contentType,
-                    size        : attachment.size,
-                    dimensions  : attachment.width && attachment.height ? {
-                        width  : attachment.width,
-                        height : attachment.height
-                    } : undefined,
-                    isVoiceNote : attachment.voiceNote,
-                    isViewOnce  : dataMessage.isViewOnce
-                }
-            );
+            return {
+                MediaType : mediaType,
+                Url       : attachment.url || attachment.path || `signal://attachment/${attachment.id}`,
+                Caption   : attachment.caption || fallbackText,
+                Filename  : attachment.filename,
+                MimeType  : attachment.contentType,
+                Size      : attachment.size,
+            } as MediaMessageContent;
         }
-
-        // Handle sticker in data message
-        if (dataMessage.sticker) {
-            return this.createMediaContent(
-                'image',
-                `signal://sticker/${dataMessage.sticker.packId}/${dataMessage.sticker.stickerId}`,
-                undefined,
-                {
-                    packId    : dataMessage.sticker.packId,
-                    packKey   : dataMessage.sticker.packKey,
-                    stickerId : dataMessage.sticker.stickerId,
-                    isSticker : true
-                }
-            );
-        }
-
-        // Handle text content
-        if (dataMessage.body) {
-            return this.createTextContent(
-                this.sanitizeText(dataMessage.body),
-                this.parseSignalFormatting(dataMessage.bodyRanges || [])
-            );
-        }
-
-        return this.createTextContent(fallbackText || 'Data message received');
+        return { Text: fallbackText || 'Data message received' } as TextMessageContent;
     }
 
     private parseGroupUpdate(message: SignalMessage): string {
@@ -510,38 +430,21 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
     }
 
     private parseSignalFormatting(bodyRanges: any[]): any {
-        const formatting: any = {
+        const formatting = {
             bold          : [],
             italic        : [],
             strikethrough : [],
-            monospace     : [],
-            mentions      : []
+            monospace     : []
         };
-
         for (const range of bodyRanges) {
-            const rangeData = {
-                offset : range.start,
-                length : range.length
-            };
-
-            if (range.style) {
-                switch (range.style) {
-                    case 'BOLD':
-                        formatting.bold.push(rangeData);
-                        break;
-                    case 'ITALIC':
-                        formatting.italic.push(rangeData);
-                        break;
-                    case 'STRIKETHROUGH':
-                        formatting.strikethrough.push(rangeData);
-                        break;
-                    case 'MONOSPACE':
-                        formatting.monospace.push(rangeData);
-                        break;
-                }
+            const style = range.style.toLowerCase();
+            if (formatting[style]) {
+                formatting[style].push({
+                    start  : range.start,
+                    length : range.length
+                });
             }
         }
-
         return formatting;
     }
 
@@ -583,65 +486,45 @@ export class SignalMessageTransformer extends BaseMessageTransformer {
         content: MessageContent
     ): SignalOutgoingMessage {
         if (isTextMessageContent(content)) {
-            message.message = content.text;
-            if (content.formatting) {
-                message.bodyRanges = this.formatSignalRanges(content.formatting);
+            message.message = content.Text;
+            if (content.Formatting) {
+                message.bodyRanges = this.formatSignalRanges(content.Formatting);
             }
         } else if (isMediaMessageContent(content)) {
-            if (content.caption) {
-                message.message = content.caption;
-            }
             message.attachments = [this.createSignalAttachment(content)];
+            if (content.Caption) {
+                message.message = content.Caption;
+            }
         } else if (isContactMessageContent(content)) {
             message.contacts = [{
-                name : {
-                    givenName   : content.name.split(' ')[0],
-                    familyName  : content.name.split(' ').slice(1).join(' '),
-                    displayName : content.name
+                name: {
+                    displayName : content.Name,
+                    givenName   : content.Name.split(' ')[0],
+                    familyName  : content.Name.split(' ').slice(1).join(' ')
                 },
-                number : content.phone ? [{
-                    value : content.phone,
-                    type  : 'CELL',
-                    label : 'Mobile'
-                }] : [],
-                email : content.email ? [{
-                    value : content.email,
-                    type  : 'WORK',
-                    label : 'Work'
-                }] : [],
-                organization : content.organization
+                number : content.Phone ? [{ value: content.Phone, type: 'CELL' }] : [],
+                email  : content.Email ? [{ value: content.Email, type: 'WORK' }] : [],
+                organization: content.Organization
             }];
         } else if (isInteractiveMessageContent(content)) {
-            message.message = content.text || 'Interactive message';
-            if (content.type === 'reaction' as any) {
-                message.reaction = {
-                    emoji               : (content as any).emoji,
-                    remove              : (content as any).remove || false,
-                    targetAuthor        : (content as any).targetAuthor,
-                    targetSentTimestamp : (content as any).targetTimestamp
-                };
-            }
+            message.message = content.Text || 'Interactive message';
         }
-
         return message;
     }
 
     private createSignalAttachment(content: MediaMessageContent): any {
         return {
-            filename    : content.filename || `file.${this.extractFileExtension(content.url)}`,
-            contentType : content.mimeType || this.getMimeTypeFromExtension(this.extractFileExtension(content.url)),
-            data        : content.url, // In real implementation, this would be the actual file data
-            caption     : content.caption,
-            width       : content.dimensions?.width,
-            height      : content.dimensions?.height,
-            voiceNote   : content.mediaType === 'audio',
-            gif         : content.mimeType === 'image/gif',
-            borderless  : false
+            filename    : content.Filename || `file.${this.extractFileExtension(content.Url)}`,
+            contentType : content.MimeType || this.getMimeTypeFromExtension(this.extractFileExtension(content.Url)),
+            data        : content.Url,
+            caption     : content.Caption,
+            width       : content.Dimensions?.Width,
+            height      : content.Dimensions?.Height,
         };
     }
 
     private formatSignalRanges(formatting: any): any[] {
-        const ranges: any[] = [];
+        const ranges = [];
 
         // Bold formatting
         if (formatting.bold) {

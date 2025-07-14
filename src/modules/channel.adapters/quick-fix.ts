@@ -9,7 +9,8 @@ import {
     MediaMessageContent,
     LocationMessageContent,
     ContactMessageContent,
-    InteractiveMessageContent
+    InteractiveMessageContent,
+    InteractiveMessageType
 } from '../../domain.types/message.types';
 import { logger } from '../../logger/logger';
 
@@ -24,23 +25,23 @@ export interface AdapterDeliveryStatus {
 
 // Type guards for MessageContent
 export function isTextMessage(content: MessageContent): content is TextMessageContent {
-    return 'text' in content;
+    return 'Text' in content;
 }
 
 export function isMediaMessage(content: MessageContent): content is MediaMessageContent {
-    return 'mediaType' in content;
+    return 'MediaType' in content;
 }
 
 export function isLocationMessage(content: MessageContent): content is LocationMessageContent {
-    return 'latitude' in content;
+    return 'Latitude' in content;
 }
 
 export function isContactMessage(content: MessageContent): content is ContactMessageContent {
-    return 'name' in content && 'phone' in content;
+    return 'Name' in content && 'Phone' in content;
 }
 
 export function isInteractiveMessage(content: MessageContent): content is InteractiveMessageContent {
-    return 'type' in content && 'buttons' in content;
+    return 'Type' in content && 'Buttons' in content;
 }
 
 // Helper function to safely access metadata fields
@@ -72,54 +73,54 @@ export function createUnifiedContent(
     switch (type) {
         case 'text':
             return {
-                text       : data.text || '',
-                formatting : data.formatting
+                Text       : data.text || '',
+                Formatting : data.formatting
             } as TextMessageContent;
 
         case 'media':
             return {
-                mediaType  : data.mediaType || 'document',
-                url        : data.url || '',
-                caption    : data.caption,
-                filename   : data.filename,
-                mimeType   : data.mimeType,
-                size       : data.size,
-                duration   : data.duration,
-                dimensions : data.dimensions
+                MediaType  : data.mediaType || 'document',
+                Url        : data.url || '',
+                Caption    : data.caption,
+                Filename   : data.filename,
+                MimeType   : data.mimeType,
+                Size       : data.size,
+                Duration   : data.duration,
+                Dimensions : data.dimensions
             } as MediaMessageContent;
 
         case 'location':
             return {
-                latitude  : data.latitude || 0,
-                longitude : data.longitude || 0,
-                name      : data.name,
-                address   : data.address,
-                url       : data.url
+                Latitude  : data.latitude || 0,
+                Longitude : data.longitude || 0,
+                Name      : data.name,
+                Address   : data.address,
+                Url       : data.url
             } as LocationMessageContent;
 
         case 'contact':
             return {
-                name         : data.name || '',
-                phone        : data.phone,
-                email        : data.email,
-                organization : data.organization,
-                vcard        : data.vcard
+                Name         : data.name || '',
+                Phone        : data.phone,
+                Email        : data.email,
+                Organization : data.organization,
+                Vcard        : data.vcard
             } as ContactMessageContent;
 
         case 'interactive':
             return {
-                type      : data.type || 'button',
-                text      : data.text,
-                buttons   : data.buttons || [],
-                listItems : data.listItems || [],
-                header    : data.header,
-                footer    : data.footer
+                Type      : data.type || InteractiveMessageType.Button,
+                Text      : data.text,
+                Buttons   : data.buttons || [],
+                ListItems : data.listItems || [],
+                Header    : data.header,
+                Footer    : data.footer
             } as InteractiveMessageContent;
 
         default:
             return {
-                text       : 'Unknown message type',
-                formatting : undefined
+                Text       : 'Unknown message type',
+                Formatting : undefined
             } as TextMessageContent;
     }
 }
@@ -155,17 +156,17 @@ export function formatMessageForPlatform(
         return {
             ...baseMessage,
             type : 'text',
-            text : content.text
+            text : content.Text
         };
     }
 
     if (isMediaMessage(content)) {
         return {
             ...baseMessage,
-            type     : content.mediaType,
-            url      : content.url,
-            caption  : content.caption,
-            filename : content.filename
+            type     : content.MediaType,
+            url      : content.Url,
+            caption  : content.Caption,
+            filename : content.Filename
         };
     }
 
@@ -173,10 +174,10 @@ export function formatMessageForPlatform(
         return {
             ...baseMessage,
             type      : 'location',
-            latitude  : content.latitude,
-            longitude : content.longitude,
-            name      : content.name,
-            address   : content.address
+            latitude  : content.Latitude,
+            longitude : content.Longitude,
+            name      : content.Name,
+            address   : content.Address
         };
     }
 
@@ -184,10 +185,10 @@ export function formatMessageForPlatform(
         return {
             ...baseMessage,
             type         : 'contact',
-            name         : content.name,
-            phone        : content.phone,
-            email        : content.email,
-            organization : content.organization
+            name         : content.Name,
+            phone        : content.Phone,
+            email        : content.Email,
+            organization : content.Organization
         };
     }
 
@@ -195,10 +196,10 @@ export function formatMessageForPlatform(
         return {
             ...baseMessage,
             type            : 'interactive',
-            interactiveType : content.type,
-            text            : content.text,
-            buttons         : content.buttons,
-            listItems       : content.listItems
+            interactiveType : content.Type,
+            text            : content.Text,
+            buttons         : content.Buttons,
+            listItems       : content.ListItems
         };
     }
 

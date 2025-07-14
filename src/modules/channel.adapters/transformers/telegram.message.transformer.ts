@@ -3,7 +3,11 @@ import {
     MessageMetadata,
     MediaMessageContent,
     InteractiveMessageContent,
-    ChannelType
+    ChannelType,
+    TextMessageContent,
+    LocationMessageContent,
+    ContactMessageContent,
+    InteractiveMessageType
 } from '../../../domain.types/message.types';
 import {
     isTextMessageContent,
@@ -11,7 +15,7 @@ import {
     isLocationMessageContent,
     isContactMessageContent,
     isInteractiveMessageContent
-} from "src/domain.types/isTextMessageContent";
+} from "../message.utils";
 import { BaseMessageTransformer, TransformedMessage } from './base.message.transformer';
 
 ////////////////////////////////////////////////////////////
@@ -268,153 +272,99 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
     private parseCallbackQuery(query: TelegramCallbackQuery): TransformedMessage {
         const userId = query.from.id.toString();
         const content = this.createInteractiveContent(
-            'callback_query',
-            query.data || '',
+            InteractiveMessageType.Button,
+            query.data,
             [{
-                id    : query.data || '',
-                title : query.data || 'Button pressed'
+                id      : query.id,
+                title   : query.data,
+                payload : query.data
             }]
         );
 
-        const metadata = this.createMetadata(query, {
-            callbackQueryId   : query.id,
-            chatInstance      : query.chat_instance,
-            inlineMessageId   : query.inline_message_id,
-            originalMessageId : query.message?.message_id
+        const metadata = this.createMetadata(query.message || {}, {
+            callbackQueryId : query.id,
+            chatInstance    : query.chat_instance
         });
 
-        return {
+        const transformed: TransformedMessage = {
             userId,
             content,
             metadata,
             timestamp         : new Date(),
             platformMessageId : query.id
         };
+
+        return transformed;
     }
 
     private parseMessageContent(message: TelegramMessage): MessageContent {
-        // Text message
+
         if (message.text) {
-            return this.createTextContent(
-                this.sanitizeText(message.text),
-                this.parseTextEntities(message.entities || [])
-            );
+            const content: TextMessageContent = {
+                Text: message.text
+            };
+            if (message.entities) {
+                content.Formatting = this.parseTextEntities(message.entities);
+            }
+            return content;
         }
-
-        // Photo message
-        if (message.photo && message.photo.length > 0) {
-            const largestPhoto = message.photo.reduce((prev, current) =>
-                (prev.file_size || 0) > (current.file_size || 0) ? prev : current
-            );
-
-            return this.createMediaContent(
-                'image',
-                `telegram://file/${largestPhoto.file_id}`,
-                message.caption,
-                {
-                    fileId       : largestPhoto.file_id,
-                    fileUniqueId : largestPhoto.file_unique_id,
-                    width        : largestPhoto.width,
-                    height       : largestPhoto.height,
-                    fileSize     : largestPhoto.file_size
-                }
-            );
+        if (message.photo) {
+            const photo = message.photo[message.photo.length - 1]; // Largest one
+            return {
+                MediaType : 'image',
+                Url       : photo.file_id,
+                Caption   : message.caption,
+            } as MediaMessageContent;
         }
-
-        // Audio message
-        if (message.audio) {
-            return this.createMediaContent(
-                'audio',
-                `telegram://file/${message.audio.file_id}`,
-                message.caption,
-                {
-                    fileId       : message.audio.file_id,
-                    fileUniqueId : message.audio.file_unique_id,
-                    duration     : message.audio.duration,
-                    performer    : message.audio.performer,
-                    title        : message.audio.title,
-                    fileName     : message.audio.file_name,
-                    mimeType     : message.audio.mime_type,
-                    fileSize     : message.audio.file_size
-                }
-            );
-        }
-
-        // Voice message
-        if (message.voice) {
-            return this.createMediaContent(
-                'audio',
-                `telegram://file/${message.voice.file_id}`,
-                undefined,
-                {
-                    fileId       : message.voice.file_id,
-                    fileUniqueId : message.voice.file_unique_id,
-                    duration     : message.voice.duration,
-                    mimeType     : message.voice.mime_type,
-                    fileSize     : message.voice.file_size,
-                    isVoiceNote  : true
-                }
-            );
-        }
-
-        // Video message
-        if (message.video) {
-            return this.createMediaContent(
-                'video',
-                `telegram://file/${message.video.file_id}`,
-                message.caption,
-                {
-                    fileId       : message.video.file_id,
-                    fileUniqueId : message.video.file_unique_id,
-                    width        : message.video.width,
-                    height       : message.video.height,
-                    duration     : message.video.duration,
-                    fileName     : message.video.file_name,
-                    mimeType     : message.video.mime_type,
-                    fileSize     : message.video.file_size
-                }
-            );
-        }
-
-        // Document message
         if (message.document) {
-            return this.createMediaContent(
-                'document',
-                `telegram://file/${message.document.file_id}`,
-                message.caption,
-                {
-                    fileId       : message.document.file_id,
-                    fileUniqueId : message.document.file_unique_id,
-                    fileName     : message.document.file_name,
-                    mimeType     : message.document.mime_type,
-                    fileSize     : message.document.file_size
-                }
-            );
+            return {
+                MediaType : 'document',
+                Url       : message.document.file_id,
+                Caption   : message.caption,
+                Filename  : message.document.file_name,
+                MimeType  : message.document.mime_type,
+                Size      : message.document.file_size,
+            } as MediaMessageContent;
         }
-
-        // Location message
+        if (message.audio) {
+            return {
+                MediaType : 'audio',
+                Url       : message.audio.file_id,
+                Caption   : message.caption,
+                Duration  : message.audio.duration,
+            } as MediaMessageContent;
+        }
+        if (message.video) {
+            return {
+                MediaType : 'video',
+                Url       : message.video.file_id,
+                Caption   : message.caption,
+                Duration  : message.video.duration,
+            } as MediaMessageContent;
+        }
+        if (message.voice) {
+            return {
+                MediaType : 'audio',
+                Url       : message.voice.file_id,
+                Caption   : message.caption,
+                Duration  : message.voice.duration,
+            } as MediaMessageContent;
+        }
         if (message.location) {
-            return this.createLocationContent(
-                message.location.latitude,
-                message.location.longitude,
-                undefined,
-                undefined
-            );
+            return {
+                Latitude  : message.location.latitude,
+                Longitude : message.location.longitude,
+            } as LocationMessageContent;
         }
-
-        // Contact message
         if (message.contact) {
-            return this.createContactContent([{
-                name   : `${message.contact.first_name} ${message.contact.last_name || ''}`.trim(),
-                phones : [message.contact.phone_number],
-                emails : [],
-                userId : message.contact.user_id?.toString(),
-                vcard  : message.contact.vcard
-            }]);
+            return {
+                Name  : `${message.contact.first_name} ${message.contact.last_name || ''}`.trim(),
+                Phone : message.contact.phone_number,
+                Vcard : message.contact.vcard,
+            } as ContactMessageContent;
         }
 
-        // Default fallback
-        return this.createTextContent('Unsupported message type received');
+        return { Text: 'Unsupported message type' } as TextMessageContent;
     }
 
     private parseTextEntities(entities: TelegramMessageEntity[]): any {
@@ -501,34 +451,32 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
         content: MessageContent
     ): TelegramOutgoingMessage | TelegramOutgoingMessage[] {
         if (isTextMessageContent(content)) {
-            message.text = content.text;
-
-            // Add formatting if available
-            if (content.formatting) {
-                message.entities = this.formatTextEntities(content.formatting);
+            message.text = content.Text;
+            if (content.Formatting) {
+                message.entities = this.formatTextEntities(content.Formatting);
             }
-
-            // Disable web preview for URLs
-            message.disable_web_page_preview = !this.shouldShowWebPreview(content.text);
+            // Simple heuristic to disable web preview for links
+            message.disable_web_page_preview = !this.shouldShowWebPreview(content.Text);
 
         } else if (isMediaMessageContent(content)) {
-            return this.createMediaMessage(message, content as MediaMessageContent);
-        } else if (isLocationMessageContent(content)) {
-            message.latitude = content.latitude;
-            message.longitude = content.longitude!;
+            return this.createMediaMessage(message, content);
 
-            // Add location name/address if available
-            if (content.name || content.address) {
-                message.text = `${content.name || content.address}`;
+        } else if (isLocationMessageContent(content)) {
+            message.latitude = content.Latitude;
+            message.longitude = content.Longitude;
+            if (content.Name || content.Address) {
+                message.text = `${content.Name || content.Address}`;
             }
+
         } else if (isContactMessageContent(content)) {
-            const contact = content; // Telegram supports one contact per message
-            message.phone_number = contact.phone || '';
-            message.first_name = contact.name.split(' ')[0];
-            message.last_name = contact.name.split(' ').slice(1).join(' ') || undefined;
-            message.vcard = content.vcard;
+            const contact = content;
+            message.phone_number = contact.Phone || '';
+            message.first_name = contact.Name.split(' ')[0];
+            message.last_name = contact.Name.split(' ').slice(1).join(' ') || undefined;
+            message.vcard = content.Vcard;
+
         } else if (isInteractiveMessageContent(content)) {
-            message.text = content.text || '';
+            message.text = content.Text || '';
             message.reply_markup = this.formatInlineKeyboard(content);
         }
 
@@ -541,29 +489,29 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
     ): TelegramOutgoingMessage {
         const message = { ...baseMessage };
 
-        switch (content.mediaType) {
+        switch (content.MediaType) {
             case 'image':
-                message.photo = content.url;
-                if (content.caption) {
-                    message.caption = content.caption;
+                message.photo = content.Url;
+                if (content.Caption) {
+                    message.caption = content.Caption;
                 }
                 break;
             case 'audio':
-                message.audio = content.url;
-                if (content.caption) {
-                    message.caption = content.caption;
+                message.audio = content.Url;
+                if (content.Caption) {
+                    message.caption = content.Caption;
                 }
                 break;
             case 'video':
-                message.video = content.url;
-                if (content.caption) {
-                    message.caption = content.caption;
+                message.video = content.Url;
+                if (content.Caption) {
+                    message.caption = content.Caption;
                 }
                 break;
             case 'document':
-                message.document = content.url;
-                if (content.caption) {
-                    message.caption = content.caption;
+                message.document = content.Url;
+                if (content.Caption) {
+                    message.caption = content.Caption;
                 }
                 break;
         }
@@ -605,15 +553,21 @@ export class TelegramMessageTransformer extends BaseMessageTransformer {
     private formatInlineKeyboard(interactive: InteractiveMessageContent): TelegramInlineKeyboardMarkup {
         const keyboard: TelegramInlineKeyboardButton[][] = [];
 
-        if (interactive.buttons) {
-            const row: TelegramInlineKeyboardButton[] = [];
-            for (const button of interactive.buttons) {
+        if (interactive.Buttons) {
+            let row: TelegramInlineKeyboardButton[] = [];
+            interactive.Buttons.forEach((button, index) => {
                 row.push({
-                    text          : button.title,
-                    callback_data : button.payload || button.id
+                    text          : button.Title,
+                    callback_data : button.Payload || button.Id
                 });
+                if ((index + 1) % 3 === 0) { // Max 3 buttons per row
+                    keyboard.push(row);
+                    row = [];
+                }
+            });
+            if (row.length > 0) {
+                keyboard.push(row);
             }
-            keyboard.push(row);
         }
 
         return { inline_keyboard: keyboard };
