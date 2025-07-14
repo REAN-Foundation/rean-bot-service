@@ -1,54 +1,44 @@
 import * as async from 'async';
 import { injectable } from 'tsyringe';
-import { ApplicationContainer } from '../injections/application.injector';
 import { logger } from '../../logger/logger';
 import { WebhookHandlerService } from '../services/webhook.handler.service';
+import { InMessageQueueJob, InMessageQueueJobData } from './queue.types';
+import JobScopedInjector from './job.scoped.injector';
 
-interface WebhookJobData {
-    tenantId: string;
-    channel: string;
-    payload: any;
-    headers: Record<string, string>;
-    timestamp: Date;
-}
-
-interface QueueJob {
-    id: string;
-    data: WebhookJobData;
-    attempts: number;
-    maxAttempts: number;
-}
+///////////////////////////////////////////////////////////////////////////////
 
 @injectable()
 export class MessageProcessingQueue {
 
-    private queue: async.QueueObject<QueueJob>;
+    private queue: async.QueueObject<InMessageQueueJob>;
 
-    private jobCounter = 0;
+    private readonly MAX_ATTEMPTS: number = 3;
+
+    private readonly MAX_CONCURRENCY: number = 10;
 
     constructor() {
-        this.queue = async.queue(this.processMessage.bind(this), 10); // concurrency: 10
+        this.queue = async.queue(this.processMessage.bind(this), this.MAX_CONCURRENCY);
         this.setupEventHandlers();
     }
 
-    async addMessage(data: WebhookJobData): Promise<void> {
-        const job: QueueJob = {
-            id          : `job_${++this.jobCounter}_${Date.now()}`,
-            data,
-            attempts    : 0,
-            maxAttempts : 3
+    async addMessage(data: InMessageQueueJobData): Promise<void> {
+        const job: InMessageQueueJob = {
+            id          : data.JobId,
+            Data        : data,
+            Attempts    : 0,
+            MaxAttempts : this.MAX_ATTEMPTS
         };
 
         this.queue.push(job);
         logger.debug(`Message queued: ${job.id}`);
     }
 
-    private async processMessage(job: QueueJob): Promise<void> {
-        const { tenantId, channel, payload } = job.data;
-        job.attempts++;
+    private async processMessage(job: InMessageQueueJob): Promise<void> {
+        const { TenantId: tenantId, Channel: channel, Payload: payload } = job.Data;
+        job.Attempts++;
 
         // Create tenant-scoped container
-        const scopedContainer = ApplicationContainer.getContainer().createChildContainer();
+        const scopedContainer = JobScopedInjector.createScopedContainer();
 
         const webhookHandler = scopedContainer.resolve('WebhookHandlerService') as WebhookHandlerService;
 
@@ -56,19 +46,19 @@ export class MessageProcessingQueue {
             await webhookHandler.handleWebhook(channel, payload);
             logger.info(`Message processed successfully: tenantId=${tenantId}, channel=${channel}, jobId=${job.id}`);
         } catch (error) {
-            logger.error(`Message processing failed: tenantId=${tenantId}, channel=${channel}, jobId=${job.id}, attempt=${job.attempts}, error=${error}`);
+            logger.error(`Message processing failed: tenantId=${tenantId}, channel=${channel}, jobId=${job.id}, attempt=${job.Attempts}, error=${error}`);
 
             // Retry logic
-            if (job.attempts < job.maxAttempts) {
+            if (job.Attempts < job.MaxAttempts) {
                 // Exponential backoff delay
-                const delay = Math.min(2000 * Math.pow(2, job.attempts - 1), 30000);
-                logger.info(`Retrying job ${job.id} in ${delay}ms (attempt ${job.attempts + 1}/${job.maxAttempts})`);
+                const delay = Math.min(2000 * Math.pow(2, job.Attempts - 1), 30000);
+                logger.info(`Retrying job ${job.id} in ${delay}ms (attempt ${job.Attempts + 1}/${job.MaxAttempts})`);
 
                 setTimeout(() => {
                     this.queue.push(job);
                 }, delay);
             } else {
-                logger.error(`Job ${job.id} failed after ${job.maxAttempts} attempts`);
+                logger.error(`Job ${job.id} failed after ${job.MaxAttempts} attempts`);
                 this.onJobFailed(job, error);
             }
         }
@@ -84,7 +74,7 @@ export class MessageProcessingQueue {
         });
     }
 
-    private onJobFailed(job: QueueJob, error: any): void {
+    private onJobFailed(job: InMessageQueueJob, error: any): void {
         logger.error(`Job permanently failed: ${job.id}, error: ${error}`);
         // Could implement dead letter queue logic here
     }

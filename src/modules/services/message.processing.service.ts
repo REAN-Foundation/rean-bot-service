@@ -1,12 +1,13 @@
-import { injectable, inject } from 'tsyringe';
+import { inject, scoped, Lifecycle } from 'tsyringe';
 import { MessageRepository } from '../../database/repositories/message.repository';
 import { ConversationRepository } from '../../database/repositories/conversation.repository';
 import { MessageDirection } from '../../database/models/message.entity';
-// import { IntentRecognitionService } from './intent.recognition.service';
 import { IMessageHandler } from '../message.handlers/interfaces/handler.interface';
 import { logger } from '../../logger/logger';
 
-@injectable()
+///////////////////////////////////////////////////////////////////////////////
+
+@scoped(Lifecycle.ContainerScoped)
 export class MessageProcessingService {
 
     private handlers = new Map<string, IMessageHandler>();
@@ -14,7 +15,6 @@ export class MessageProcessingService {
     constructor(
     @inject('MessageRepository') private messageRepo: MessageRepository,
     @inject('ConversationRepository') private conversationRepo: ConversationRepository,
-    // @inject('IntentRecognitionService') private intentService: IntentRecognitionService,
     @inject('AssessmentHandler') assessmentHandler: IMessageHandler,
     @inject('WorkflowHandler') workflowHandler: IMessageHandler,
     @inject('ReminderHandler') reminderHandler: IMessageHandler,
@@ -36,14 +36,14 @@ export class MessageProcessingService {
         try {
             // Save message
             const message = await this.messageRepo.create({
-                id               : messageData.id,
-                ConversationId   : '', // Will be set after conversation creation
-                UserId           : messageData.from,
-                Channel          : messageData.channel,
-                MessageType      : messageData.type,
-                Direction        : MessageDirection.Inbound,
-                Content          : messageData.content,
-                Status           : 'processing'
+                id             : messageData.id,
+                ConversationId : '', // Will be set after conversation creation
+                UserId         : messageData.from,
+                Channel        : messageData.channel,
+                MessageType    : messageData.type,
+                Direction      : MessageDirection.Inbound,
+                Content        : messageData.content,
+                Status         : 'processing'
             });
 
             // Get or create conversation

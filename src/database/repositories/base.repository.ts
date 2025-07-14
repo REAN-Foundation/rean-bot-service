@@ -2,6 +2,7 @@ import { Repository, EntityTarget } from 'typeorm';
 import { inject } from 'tsyringe';
 import { TenantConnectionService } from '../tenant.db.connection.service';
 
+///////////////////////////////////////////////////////////////////////////////
 export abstract class BaseTenantRepository<T> {
 
     constructor(
@@ -39,7 +40,7 @@ export abstract class BaseTenantRepository<T> {
     async delete(id: string): Promise<boolean> {
         const repo = await this.getRepository();
         const result = await repo.delete(id);
-        return result.affected! > 0;
+        return result.affected && result.affected > 0;
     }
 
 }

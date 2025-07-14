@@ -3,6 +3,8 @@ import { BaseTenantRepository } from './base.repository';
 import { Message } from '../models/message.entity';
 import { MessageDirection } from '../models/message.entity';
 
+///////////////////////////////////////////////////////////////////////////////
+
 @injectable()
 export class MessageRepository extends BaseTenantRepository<Message> {
 
@@ -13,42 +15,42 @@ export class MessageRepository extends BaseTenantRepository<Message> {
     async findByConversation(conversationId: string): Promise<Message[]> {
         const repo = await this.getRepository();
         return repo.find({
-            where: { ConversationId: conversationId },
-            order: { CreatedAt: 'ASC' }
+            where : { ConversationId: conversationId },
+            order : { CreatedAt: 'ASC' }
         });
     }
 
     async findByUserId(userId: string): Promise<Message[]> {
         const repo = await this.getRepository();
         return repo.find({
-            where: { UserId: userId },
-            order: { CreatedAt: 'DESC' }
+            where : { UserId: userId },
+            order : { CreatedAt: 'DESC' }
         });
     }
 
     async findByChannel(channel: string, limit?: number): Promise<Message[]> {
         const repo = await this.getRepository();
         return repo.find({
-            where: { Channel: channel },
-            order: { CreatedAt: 'DESC' },
-            take: limit
+            where : { Channel: channel },
+            order : { CreatedAt: 'DESC' },
+            take  : limit
         });
     }
 
     async findByDirection(direction: MessageDirection): Promise<Message[]> {
         const repo = await this.getRepository();
         return repo.find({
-            where: { Direction: direction },
-            order: { CreatedAt: 'DESC' }
+            where : { Direction: direction },
+            order : { CreatedAt: 'DESC' }
         });
     }
 
     async countByChannel(channel: string, dateFrom: Date): Promise<number> {
         const repo = await this.getRepository();
         return repo.count({
-            where: {
-                Channel: channel,
-                CreatedAt: { $gte: dateFrom } as any
+            where : {
+                Channel   : channel,
+                CreatedAt : { $gte: dateFrom } as any
             }
         });
     }
@@ -56,8 +58,8 @@ export class MessageRepository extends BaseTenantRepository<Message> {
     async findByStatus(status: string): Promise<Message[]> {
         const repo = await this.getRepository();
         return repo.find({
-            where: { Status: status },
-            order: { CreatedAt: 'DESC' }
+            where : { Status: status },
+            order : { CreatedAt: 'DESC' }
         });
     }
 
@@ -70,9 +72,9 @@ export class MessageRepository extends BaseTenantRepository<Message> {
     async findConversationHistory(conversationId: string, limit?: number): Promise<Message[]> {
         const repo = await this.getRepository();
         return repo.find({
-            where: { ConversationId: conversationId },
-            order: { CreatedAt: 'ASC' },
-            take: limit
+            where : { ConversationId: conversationId },
+            order : { CreatedAt: 'ASC' },
+            take  : limit
         });
     }
 

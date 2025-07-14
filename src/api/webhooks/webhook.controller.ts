@@ -3,6 +3,10 @@ import { injectable, inject } from 'tsyringe';
 import { WebhookHandlerService } from '../../modules/services/webhook.handler.service';
 import { MessageProcessingQueue } from '../../modules/queues/message.processing.queue';
 import { logger } from '../../logger/logger';
+import { InMessageQueueJobData } from '../../modules/queues/queue.types';
+import { StringUtils } from '../../common/utilities/string.utils';
+
+///////////////////////////////////////////////////////////////////////////////
 
 @injectable()
 export class WebhookController {
@@ -24,13 +28,15 @@ export class WebhookController {
             }
 
             // Queue for async processing
-            await this.messageQueue.addMessage({
-                tenantId,
-                channel,
-                payload   : req.body,
-                headers   : req.headers as Record<string, string>,
-                timestamp : new Date()
-            });
+            const data: InMessageQueueJobData = {
+                JobId     : StringUtils.generateDisplayCode_RandomChars(12, 'MsgJob'),
+                TenantId  : tenantId,
+                Channel   : channel,
+                Payload   : req.body,
+                Headers   : req.headers as Record<string, string>,
+                Timestamp : new Date()
+            };
+            await this.messageQueue.addMessage(data);
 
             // Respond immediately
             res.status(200).json({ received: true });
