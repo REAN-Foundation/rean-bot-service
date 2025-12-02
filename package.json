@@ -63,7 +63,7 @@
         "needle": "^3.2.0",
         "node-cron": "^3.0.2",
         "node-forge": "^1.3.1",
-        "nodemailer": "^7.0.3",
+        "nodemailer": "^7.0.11",
         "pg": "^8.9.0",
         "pg-hstore": "^2.3.4",
         "pino": "^8.11.0",
